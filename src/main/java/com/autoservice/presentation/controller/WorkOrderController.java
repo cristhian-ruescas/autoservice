@@ -25,10 +25,10 @@ public class WorkOrderController {
     @PostMapping
     public ResponseEntity<WorkOrderDTO> create(@Valid @RequestBody final CreateWorkOrderRequest request) {
         final WorkOrder workOrder = workOrderService.create(
-                request.customerId(),
-                request.vehicleId(),
-                request.serviceIds(),
-                mapPartInputs(request.parts())
+                request.clienteId(),
+                request.veiculoId(),
+                request.servicoIds(),
+                mapPartInputs(request.pecas())
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(WorkOrderMapper.toDTO(workOrder));
     }
@@ -51,10 +51,10 @@ public class WorkOrderController {
     public ResponseEntity<WorkOrderDTO> update(@PathVariable final String id, @Valid @RequestBody final UpdateWorkOrderRequest request) {
         final WorkOrder workOrder = workOrderService.update(
                 WorkOrderID.from(id),
-                request.customerId(),
-                request.vehicleId(),
-                request.serviceIds(),
-                mapPartInputs(request.parts())
+                request.clienteId(),
+                request.veiculoId(),
+                request.servicoIds(),
+                mapPartInputs(request.pecas())
         );
         return ResponseEntity.ok(WorkOrderMapper.toDTO(workOrder));
     }
@@ -73,13 +73,13 @@ public class WorkOrderController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    private List<WorkOrderService.PartSelectionInput> mapPartInputs(final List<WorkOrderPartInputDTO> parts) {
-        if (parts == null) {
+    private List<WorkOrderService.PartSelectionInput> mapPartInputs(final List<WorkOrderPartInputDTO> pecas) {
+        if (pecas == null) {
             return List.of();
         }
 
-        return parts.stream()
-                .map(item -> new WorkOrderService.PartSelectionInput(item.partId(), item.quantity()))
+        return pecas.stream()
+                .map(item -> new WorkOrderService.PartSelectionInput(item.pecaId(), item.quantidade()))
                 .toList();
     }
 }

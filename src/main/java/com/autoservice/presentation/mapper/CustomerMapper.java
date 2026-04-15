@@ -29,36 +29,36 @@ public class CustomerMapper {
 
     public static Address toAddress(AddressDTO dto) {
         return Address.from(
-            dto.street(),
-            dto.number(),
-            dto.complement(),
-            dto.neighborhood(),
-            dto.city(),
-            State.valueOf(dto.state()),
-            ZipCode.from(dto.zipCode())
+            dto.rua(),
+            dto.numero(),
+            dto.complemento(),
+            dto.bairro(),
+            dto.cidade(),
+            State.valueOf(dto.estado()),
+            ZipCode.from(dto.cep())
         );
     }
 
     public static Customer toCustomer(CreateCustomerRequest request) {
-        Address address = toAddress(request.address());
+        Address address = toAddress(request.endereco());
         return Customer.newCustomer(
-            request.name(),
-            PhoneNumber.from(request.phoneNumber()),
+            request.nome(),
+            PhoneNumber.from(request.telefone()),
             address,
-            Document.from(request.document()),
-            RegistrationDate.from(LocalDate.parse(request.registrationDate()))
+            Document.from(request.documento()),
+            RegistrationDate.from(LocalDate.parse(request.dataRegistro()))
         );
     }
 
     public static Customer toCustomer(String id, UpdateCustomerRequest request) {
-        Address address = toAddress(request.address());
+        Address address = toAddress(request.endereco());
         return Customer.withId(
             CustomerID.from(id),
-            request.name(),
-            PhoneNumber.from(request.phoneNumber()),
+            request.nome(),
+            PhoneNumber.from(request.telefone()),
             address,
-            Document.from(request.document()),
-            RegistrationDate.from(LocalDate.parse(request.registrationDate()))
+            Document.from(request.documento()),
+            RegistrationDate.from(LocalDate.parse(request.dataRegistro()))
         );
     }
 }

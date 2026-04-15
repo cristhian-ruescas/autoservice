@@ -4,11 +4,11 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record CreateVehicleRequest(
-        @NotBlank String plate,
-        @NotBlank String brand,
-        @NotBlank String model,
-        @NotNull Integer year,
-        @NotBlank String customerId
+        @NotBlank String placa,
+        @NotBlank String marca,
+        @NotBlank String modelo,
+        @NotNull Integer ano,
+        @NotBlank String clienteId
 ) {
 }
 

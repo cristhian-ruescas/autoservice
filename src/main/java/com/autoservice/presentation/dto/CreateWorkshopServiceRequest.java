@@ -7,9 +7,9 @@ import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 public record CreateWorkshopServiceRequest(
-        @NotBlank String name,
-        String description,
-        @NotNull @DecimalMin("0.0") BigDecimal basePrice
+        @NotBlank String nome,
+        String descricao,
+        @NotNull @DecimalMin("0.0") BigDecimal precoBase
 ) {
 }
 

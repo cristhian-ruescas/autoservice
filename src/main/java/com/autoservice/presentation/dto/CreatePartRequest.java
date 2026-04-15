@@ -8,9 +8,9 @@ import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 public record CreatePartRequest(
-        @NotBlank String name,
-        @NotNull @Min(0) Integer quantity,
-        @NotNull @DecimalMin("0.0") BigDecimal unitPrice
+        @NotBlank String nome,
+        @NotNull @Min(0) Integer quantidade,
+        @NotNull @DecimalMin("0.0") BigDecimal precoUnitario
 ) {
 }
 

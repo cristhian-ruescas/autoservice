@@ -4,9 +4,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record UpdateCustomerRequest(
-    @NotBlank String name,
-    @NotBlank String phoneNumber,
-    @NotNull AddressDTO address,
-    @NotBlank String document,
-    @NotBlank String registrationDate
+    @NotBlank String nome,
+    @NotBlank String telefone,
+    @NotNull AddressDTO endereco,
+    @NotBlank String documento,
+    @NotBlank String dataRegistro
 ) {}
