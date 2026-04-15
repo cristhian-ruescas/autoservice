@@ -60,7 +60,7 @@ public class WorkOrder extends AggregateRoot<WorkOrderID> {
         this.id = anId;
         this.customer = aCustomer;
         this.vehicle = aVehicle;
-        this.status = WorkOrderStatus.RECEIVED;
+        this.status = WorkOrderStatus.RECEBIDO;
         this.totalAmount = BigDecimal.ZERO;
     }
 

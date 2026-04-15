@@ -27,11 +27,11 @@ public class CustomerController {
     @PostMapping
     public ResponseEntity<CustomerDTO> create(@RequestBody CreateCustomerRequest request) {
         Customer customer = customerService.create(
-            request.name(),
-            PhoneNumber.from(request.phoneNumber()),
-            CustomerMapper.toAddress(request.address()),
-            Document.from(request.document()),
-            RegistrationDate.from(parse(request.registrationDate()))
+            request.nome(),
+            PhoneNumber.from(request.telefone()),
+            CustomerMapper.toAddress(request.endereco()),
+            Document.from(request.documento()),
+            RegistrationDate.from(parse(request.dataRegistro()))
         );
         CustomerDTO dto = CustomerMapper.toDTO(customer);
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
@@ -55,11 +55,11 @@ public class CustomerController {
     public ResponseEntity<CustomerDTO> update(@PathVariable String id, @RequestBody UpdateCustomerRequest request) {
         Customer customer = customerService.update(
             CustomerID.from(id),
-            request.name(),
-            PhoneNumber.from(request.phoneNumber()),
-            CustomerMapper.toAddress(request.address()),
-            Document.from(request.document()),
-            RegistrationDate.from(parse(request.registrationDate()))
+            request.nome(),
+            PhoneNumber.from(request.telefone()),
+            CustomerMapper.toAddress(request.endereco()),
+            Document.from(request.documento()),
+            RegistrationDate.from(parse(request.dataRegistro()))
         );
         CustomerDTO dto = CustomerMapper.toDTO(customer);
         return ResponseEntity.ok(dto);

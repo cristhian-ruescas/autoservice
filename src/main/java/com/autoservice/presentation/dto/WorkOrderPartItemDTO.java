@@ -3,10 +3,10 @@ package com.autoservice.presentation.dto;
 import java.math.BigDecimal;
 
 public record WorkOrderPartItemDTO(
-        String partId,
-        String name,
-        Integer quantity,
-        BigDecimal unitPrice,
+        String pecaId,
+        String nome,
+        Integer quantidade,
+        BigDecimal precoUnitario,
         BigDecimal subtotal
 ) {
 }

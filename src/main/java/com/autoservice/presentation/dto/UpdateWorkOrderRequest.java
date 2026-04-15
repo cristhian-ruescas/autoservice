@@ -7,10 +7,10 @@ import jakarta.validation.constraints.NotEmpty;
 import java.util.List;
 
 public record UpdateWorkOrderRequest(
-        @NotBlank String customerId,
-        @NotBlank String vehicleId,
-        @NotEmpty List<String> serviceIds,
-        @Valid List<WorkOrderPartInputDTO> parts
+        @NotBlank String clienteId,
+        @NotBlank String veiculoId,
+        @NotEmpty List<String> servicoIds,
+        @Valid List<WorkOrderPartInputDTO> pecas
 ) {
 }
 
