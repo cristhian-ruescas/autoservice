@@ -4,9 +4,9 @@ import java.math.BigDecimal;
 
 public record WorkshopServiceDTO(
         String id,
-        String name,
-        String description,
-        BigDecimal basePrice
+        String nome,
+        String descricao,
+        BigDecimal precoBase
 ) {
 }
 

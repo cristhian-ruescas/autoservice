@@ -1,11 +1,11 @@
 package com.autoservice.presentation.dto;
 
 public record AddressDTO(
-    String street,
-    String number,
-    String complement,
-    String neighborhood,
-    String city,
-    String state,
-    String zipCode
+    String rua,
+    String numero,
+    String complemento,
+    String bairro,
+    String cidade,
+    String estado,
+    String cep
 ) {}

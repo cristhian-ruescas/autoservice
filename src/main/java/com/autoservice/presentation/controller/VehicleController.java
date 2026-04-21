@@ -27,11 +27,11 @@ public class VehicleController {
     @PostMapping
     public ResponseEntity<VehicleDTO> create(@Valid @RequestBody final CreateVehicleRequest request) {
         final Vehicle vehicle = vehicleService.create(
-                request.plate(),
-                request.brand(),
-                request.model(),
-                request.year(),
-                request.customerId()
+                request.placa(),
+                request.marca(),
+                request.modelo(),
+                request.ano(),
+                request.clienteId()
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(VehicleMapper.toDTO(vehicle));
     }
@@ -54,11 +54,11 @@ public class VehicleController {
     public ResponseEntity<VehicleDTO> update(@PathVariable final String id, @Valid @RequestBody final UpdateVehicleRequest request) {
         final Vehicle vehicle = vehicleService.update(
                 VehicleID.from(id),
-                request.plate(),
-                request.brand(),
-                request.model(),
-                request.year(),
-                request.customerId()
+                request.placa(),
+                request.marca(),
+                request.modelo(),
+                request.ano(),
+                request.clienteId()
         );
         return ResponseEntity.ok(VehicleMapper.toDTO(vehicle));
     }

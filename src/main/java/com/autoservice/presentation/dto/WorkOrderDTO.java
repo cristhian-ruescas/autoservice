@@ -7,12 +7,12 @@ import java.util.List;
 
 public record WorkOrderDTO(
         String id,
-        String customerId,
-        String vehicleId,
+        String clienteId,
+        String veiculoId,
         WorkOrderStatus status,
-        BigDecimal totalAmount,
-        List<WorkOrderServiceItemDTO> services,
-        List<WorkOrderPartItemDTO> parts
+        BigDecimal valorTotal,
+        List<WorkOrderServiceItemDTO> servicos,
+        List<WorkOrderPartItemDTO> pecas
 ) {
 }
 

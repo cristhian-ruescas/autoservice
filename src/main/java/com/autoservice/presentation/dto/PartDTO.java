@@ -4,9 +4,9 @@ import java.math.BigDecimal;
 
 public record PartDTO(
         String id,
-        String name,
-        Integer quantity,
-        BigDecimal unitPrice
+        String nome,
+        Integer quantidade,
+        BigDecimal precoUnitario
 ) {
 }
 
