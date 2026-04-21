@@ -27,9 +27,9 @@ public class WorkshopServiceController {
     @PostMapping
     public ResponseEntity<WorkshopServiceDTO> create(@Valid @RequestBody final CreateWorkshopServiceRequest request) {
         final WorkshopService workshopService = workshopServiceApplicationService.create(
-                request.name(),
-                request.description(),
-                request.basePrice()
+                request.nome(),
+                request.descricao(),
+                request.precoBase()
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(WorkshopServiceMapper.toDTO(workshopService));
     }
@@ -54,9 +54,9 @@ public class WorkshopServiceController {
     public ResponseEntity<WorkshopServiceDTO> update(@PathVariable final String id, @Valid @RequestBody final UpdateWorkshopServiceRequest request) {
         final WorkshopService workshopService = workshopServiceApplicationService.update(
                 WorkshopServiceID.from(id),
-                request.name(),
-                request.description(),
-                request.basePrice()
+                request.nome(),
+                request.descricao(),
+                request.precoBase()
         );
         return ResponseEntity.ok(WorkshopServiceMapper.toDTO(workshopService));
     }

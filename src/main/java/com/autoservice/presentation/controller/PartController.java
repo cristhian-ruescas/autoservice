@@ -26,7 +26,7 @@ public class PartController {
 
     @PostMapping
     public ResponseEntity<PartDTO> create(@Valid @RequestBody final CreatePartRequest request) {
-        final Part part = partService.create(request.name(), request.quantity(), request.unitPrice());
+        final Part part = partService.create(request.nome(), request.quantidade(), request.precoUnitario());
         return ResponseEntity.status(HttpStatus.CREATED).body(PartMapper.toDTO(part));
     }
 
@@ -46,7 +46,7 @@ public class PartController {
 
     @PutMapping("/{id}")
     public ResponseEntity<PartDTO> update(@PathVariable final String id, @Valid @RequestBody final UpdatePartRequest request) {
-        final Part part = partService.update(PartID.from(id), request.name(), request.quantity(), request.unitPrice());
+        final Part part = partService.update(PartID.from(id), request.nome(), request.quantidade(), request.precoUnitario());
         return ResponseEntity.ok(PartMapper.toDTO(part));
     }
 

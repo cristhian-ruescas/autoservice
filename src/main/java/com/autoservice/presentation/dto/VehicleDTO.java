@@ -2,11 +2,11 @@ package com.autoservice.presentation.dto;
 
 public record VehicleDTO(
         String id,
-        String plate,
-        String brand,
-        String model,
-        Integer year,
-        String customerId
+        String placa,
+        String marca,
+        String modelo,
+        Integer ano,
+        String clienteId
 ) {
 }
 
