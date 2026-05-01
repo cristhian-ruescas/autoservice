@@ -164,6 +164,15 @@ public class WorkOrderService {
 
     public record PartSelectionInput(String partId, Integer quantity) {
     }
+
+    public double calculateExecutionTime(WorkOrderID id) {
+        Optional<WorkOrder> workOrderOpt = findById(id);
+        if (workOrderOpt.isPresent()) {
+            WorkOrder wo = workOrderOpt.get();
+            if (wo.getStartDateTime() != null && wo.getEndDateTime() != null) {
+                return java.time.Duration.between(wo.getStartDateTime(), wo.getEndDateTime()).toMinutes();
+            }
+        }
+        return 0.0;
+    }
 }
-
-

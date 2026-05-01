@@ -1,12 +1,8 @@
 package com.autoservice.domain.customer;
 
 import com.autoservice.domain.ValueObject;
+import jakarta.persistence.*;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
-import jakarta.persistence.Embedded;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import java.util.Objects;
 
 @Embeddable
@@ -91,12 +87,12 @@ public class Address extends ValueObject {
         if (o == null || getClass() != o.getClass()) return false;
         final Address that = (Address) o;
         return Objects.equals(street, that.street) &&
-               Objects.equals(number, that.number) &&
-               Objects.equals(complement, that.complement) &&
-               Objects.equals(neighborhood, that.neighborhood) &&
-               Objects.equals(city, that.city) &&
-               Objects.equals(state, that.state) &&
-               Objects.equals(zipCode, that.zipCode);
+                Objects.equals(number, that.number) &&
+                Objects.equals(complement, that.complement) &&
+                Objects.equals(neighborhood, that.neighborhood) &&
+                Objects.equals(city, that.city) &&
+                Objects.equals(state, that.state) &&
+                Objects.equals(zipCode, that.zipCode);
     }
 
     @Override

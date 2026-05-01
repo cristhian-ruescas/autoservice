@@ -18,4 +18,3 @@ public @interface ValidCpfOrCnpj {
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }
-

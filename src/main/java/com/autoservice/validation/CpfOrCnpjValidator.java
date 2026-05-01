@@ -16,4 +16,3 @@ public class CpfOrCnpjValidator implements ConstraintValidator<ValidCpfOrCnpj, S
         return false;
     }
 }
-

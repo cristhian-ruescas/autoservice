@@ -7,19 +7,10 @@ import com.autoservice.domain.service.WorkshopService;
 import com.autoservice.domain.vehicle.Vehicle;
 import com.autoservice.validation.Error;
 import com.autoservice.validation.ValidationHandler;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,6 +42,12 @@ public class WorkOrder extends AggregateRoot<WorkOrderID> {
     @OneToMany(mappedBy = "workOrder", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<WorkOrderPartItem> parts = new ArrayList<>();
 
+    @Column(name = "start_date_time")
+    private LocalDateTime startDateTime;
+
+    @Column(name = "end_date_time")
+    private LocalDateTime endDateTime;
+
     protected WorkOrder() {
         super();
     }
@@ -62,6 +59,7 @@ public class WorkOrder extends AggregateRoot<WorkOrderID> {
         this.vehicle = aVehicle;
         this.status = WorkOrderStatus.RECEIVED;
         this.totalAmount = BigDecimal.ZERO;
+        this.startDateTime = LocalDateTime.now();
     }
 
     public static WorkOrder newWorkOrder(final Customer aCustomer, final Vehicle aVehicle) {
@@ -86,6 +84,9 @@ public class WorkOrder extends AggregateRoot<WorkOrderID> {
 
     public void changeStatus(final WorkOrderStatus aStatus) {
         this.status = aStatus;
+        if (aStatus == WorkOrderStatus.COMPLETED) {
+            this.endDateTime = LocalDateTime.now();
+        }
     }
 
     public void reassign(final Customer aCustomer, final Vehicle aVehicle) {
@@ -151,6 +152,14 @@ public class WorkOrder extends AggregateRoot<WorkOrderID> {
     }
 
     public record PartSelection(Part part, Integer quantity) {
+    }
+
+    public LocalDateTime getStartDateTime() {
+        return startDateTime;
+    }
+
+    public LocalDateTime getEndDateTime() {
+        return endDateTime;
     }
 }
 
