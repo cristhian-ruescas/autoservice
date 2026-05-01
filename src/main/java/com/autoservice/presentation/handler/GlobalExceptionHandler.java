@@ -30,11 +30,11 @@ public class GlobalExceptionHandler {
         });
 
         ErrorResponse errorResponse = new ErrorResponse(
-            HttpStatus.BAD_REQUEST.value(),
-            "Validation failed",
-            request.getRequestURI(),
-            LocalDateTime.now(),
-            fieldErrors
+                HttpStatus.BAD_REQUEST.value(),
+                "Validation failed",
+                request.getRequestURI(),
+                LocalDateTime.now(),
+                fieldErrors
         );
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
@@ -46,11 +46,11 @@ public class GlobalExceptionHandler {
             HttpServletRequest request) {
 
         ErrorResponse errorResponse = new ErrorResponse(
-            HttpStatus.UNPROCESSABLE_ENTITY.value(),
-            ex.getMessage(),
-            request.getRequestURI(),
-            LocalDateTime.now(),
-            List.of()
+                HttpStatus.UNPROCESSABLE_ENTITY.value(),
+                ex.getMessage(),
+                request.getRequestURI(),
+                LocalDateTime.now(),
+                List.of()
         );
 
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(errorResponse);
@@ -62,11 +62,11 @@ public class GlobalExceptionHandler {
             HttpServletRequest request) {
 
         ErrorResponse errorResponse = new ErrorResponse(
-            HttpStatus.NOT_FOUND.value(),
-            ex.getMessage(),
-            request.getRequestURI(),
-            LocalDateTime.now(),
-            List.of()
+                HttpStatus.NOT_FOUND.value(),
+                ex.getMessage(),
+                request.getRequestURI(),
+                LocalDateTime.now(),
+                List.of()
         );
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
@@ -78,11 +78,11 @@ public class GlobalExceptionHandler {
             HttpServletRequest request) {
 
         ErrorResponse errorResponse = new ErrorResponse(
-            HttpStatus.INTERNAL_SERVER_ERROR.value(),
-            "An unexpected error occurred",
-            request.getRequestURI(),
-            LocalDateTime.now(),
-            List.of()
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "An unexpected error occurred",
+                request.getRequestURI(),
+                LocalDateTime.now(),
+                List.of()
         );
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);

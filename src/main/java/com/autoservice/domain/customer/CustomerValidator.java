@@ -31,7 +31,7 @@ public class CustomerValidator extends Validator {
     }
 
     private void checkConstraints() {
-        final var  name = this.customer.getName();
+        final var name = this.customer.getName();
         if (name == null || name.isBlank()) {
             this.validationHandler().append(new Error("Name should not be null or empty"));
             return;

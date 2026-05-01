@@ -4,7 +4,7 @@ import com.autoservice.validation.Error;
 
 import java.util.List;
 
-public class DomainException extends NoStackTraceException{
+public class DomainException extends NoStackTraceException {
 
     private final List<Error> errors;
 

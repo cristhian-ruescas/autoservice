@@ -1,7 +1,6 @@
 package com.autoservice.application;
 
 import com.autoservice.domain.customer.*;
-import com.autoservice.domain.customer.CustomerRepository;
 import com.autoservice.validation.ValidationHandler;
 import com.autoservice.validation.handler.ThrowsValidationHandler;
 import org.springframework.stereotype.Service;

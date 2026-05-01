@@ -2,12 +2,7 @@ package com.autoservice.domain.customer;
 
 import com.autoservice.domain.AggregateRoot;
 import com.autoservice.validation.ValidationHandler;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Embedded;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "customer", schema = "customer")

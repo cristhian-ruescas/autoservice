@@ -10,11 +10,11 @@ public class SwaggerConfig {
     @Bean
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
-            .info(new Info()
-                .title("Autoservice API")
-                .version("1.0.0")
-                .description("API para gestão de oficina mecânica - MVP FIAP")
-            );
+                .info(new Info()
+                        .title("Autoservice API")
+                        .version("1.0.0")
+                        .description("API para gestão de oficina mecânica")
+                );
     }
 }
 

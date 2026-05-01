@@ -1,125 +1,199 @@
 package com.autoservice.presentation.controller;
 
 import com.autoservice.application.WorkOrderService;
+import com.autoservice.domain.customer.Customer;
+import com.autoservice.domain.customer.CustomerID;
+import com.autoservice.domain.vehicle.Vehicle;
+import com.autoservice.domain.vehicle.VehicleID;
 import com.autoservice.domain.workorder.WorkOrder;
 import com.autoservice.domain.workorder.WorkOrderID;
 import com.autoservice.domain.workorder.WorkOrderStatus;
 import com.autoservice.presentation.dto.*;
-import com.autoservice.presentation.mapper.WorkOrderMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
 
-import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class WorkOrderControllerTest {
-    @Mock
-    private WorkOrderService workOrderService;
-
-    @InjectMocks
     private WorkOrderController workOrderController;
+    private FakeWorkOrderService fakeWorkOrderService;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        fakeWorkOrderService = new FakeWorkOrderService();
+        fakeWorkOrderService.createdWorkOrder = new WorkOrderStub();
+        fakeWorkOrderService.updatedWorkOrder = new WorkOrderStub();
+        fakeWorkOrderService.updatedStatusWorkOrder = new WorkOrderStub();
+        fakeWorkOrderService.workOrders = List.of(new WorkOrderStub());
+        fakeWorkOrderService.foundWorkOrder = Optional.of(new WorkOrderStub());
+        workOrderController = new WorkOrderController(fakeWorkOrderService);
     }
 
     @Test
     void testCreate() {
-        CreateWorkOrderRequest request = mock(CreateWorkOrderRequest.class);
-        WorkOrder workOrder = mock(WorkOrder.class);
-        when(workOrderService.create(any(), any(), any(), any())).thenReturn(workOrder);
-        when(request.customerId()).thenReturn("1");
-        when(request.vehicleId()).thenReturn("2");
-        when(request.serviceIds()).thenReturn(List.of("3"));
-        when(request.parts()).thenReturn(List.of());
-        when(workOrder.getId()).thenReturn(WorkOrderID.unique());
+        CreateWorkOrderRequest request = new CreateWorkOrderRequest("1", "2", List.of("3"), List.of());
         ResponseEntity<WorkOrderDTO> response = workOrderController.create(request);
-        assertEquals(201, response.getStatusCodeValue());
+        assertEquals(201, response.getStatusCode().value());
         assertNotNull(response.getBody());
     }
 
     @Test
     void testFindAll() {
-        when(workOrderService.findAll()).thenReturn(List.of(mock(WorkOrder.class)));
         ResponseEntity<List<WorkOrderDTO>> response = workOrderController.findAll();
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(200, response.getStatusCode().value());
         assertNotNull(response.getBody());
     }
 
     @Test
     void testFindByIdFound() {
-        WorkOrder workOrder = mock(WorkOrder.class);
-        when(workOrderService.findById(any())).thenReturn(Optional.of(workOrder));
         ResponseEntity<WorkOrderDTO> response = workOrderController.findById("1");
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(200, response.getStatusCode().value());
         assertNotNull(response.getBody());
     }
 
     @Test
     void testFindByIdNotFound() {
-        when(workOrderService.findById(any())).thenReturn(Optional.empty());
+        fakeWorkOrderService.foundWorkOrder = Optional.empty();
         ResponseEntity<WorkOrderDTO> response = workOrderController.findById("1");
-        assertEquals(404, response.getStatusCodeValue());
+        assertEquals(404, response.getStatusCode().value());
     }
 
     @Test
     void testUpdate() {
-        UpdateWorkOrderRequest request = mock(UpdateWorkOrderRequest.class);
-        WorkOrder workOrder = mock(WorkOrder.class);
-        when(workOrderService.update(any(), any(), any(), any(), any())).thenReturn(workOrder);
-        when(request.customerId()).thenReturn("1");
-        when(request.vehicleId()).thenReturn("2");
-        when(request.serviceIds()).thenReturn(List.of("3"));
-        when(request.parts()).thenReturn(List.of());
+        UpdateWorkOrderRequest request = new UpdateWorkOrderRequest("1", "2", List.of("3"), List.of());
         ResponseEntity<WorkOrderDTO> response = workOrderController.update("1", request);
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(200, response.getStatusCode().value());
         assertNotNull(response.getBody());
     }
 
     @Test
     void testUpdateStatus() {
-        UpdateWorkOrderStatusRequest request = mock(UpdateWorkOrderStatusRequest.class);
-        WorkOrder workOrder = mock(WorkOrder.class);
-        when(workOrderService.updateStatus(any(), any())).thenReturn(workOrder);
-        when(request.status()).thenReturn(WorkOrderStatus.FINISHED);
+        UpdateWorkOrderStatusRequest request = new UpdateWorkOrderStatusRequest(WorkOrderStatus.COMPLETED);
         ResponseEntity<WorkOrderDTO> response = workOrderController.updateStatus("1", request);
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(200, response.getStatusCode().value());
         assertNotNull(response.getBody());
     }
 
     @Test
     void testGetStatusFound() {
-        WorkOrder workOrder = mock(WorkOrder.class);
-        when(workOrderService.findById(any())).thenReturn(Optional.of(workOrder));
         ResponseEntity<WorkOrderStatusDTO> response = workOrderController.getStatus("1");
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(200, response.getStatusCode().value());
         assertNotNull(response.getBody());
     }
 
     @Test
     void testGetStatusNotFound() {
-        when(workOrderService.findById(any())).thenReturn(Optional.empty());
+        fakeWorkOrderService.foundWorkOrder = Optional.empty();
         ResponseEntity<WorkOrderStatusDTO> response = workOrderController.getStatus("1");
-        assertEquals(404, response.getStatusCodeValue());
+        assertEquals(404, response.getStatusCode().value());
     }
 
     @Test
     void testGetAverageExecutionTime() {
-        when(workOrderService.calculateExecutionTime(any())).thenReturn(42.0);
+        fakeWorkOrderService.executionTime = 42.0;
         ResponseEntity<Double> response = workOrderController.getAverageExecutionTime("1");
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(200, response.getStatusCode().value());
         assertEquals(42.0, response.getBody());
     }
-}
 
+    static class FakeWorkOrderService extends WorkOrderService {
+        public WorkOrder createdWorkOrder;
+        public List<WorkOrder> workOrders = new ArrayList<>();
+        public Optional<WorkOrder> foundWorkOrder = Optional.empty();
+        public WorkOrder updatedWorkOrder;
+        public WorkOrder updatedStatusWorkOrder;
+        public double executionTime = 0.0;
+
+        public FakeWorkOrderService() {
+            super(null, null, null, null, null);
+        }
+
+        @Override
+        public WorkOrder create(String customerId, String vehicleId, List<String> serviceIds, List<PartSelectionInput> parts) {
+            return createdWorkOrder != null ? createdWorkOrder : new WorkOrderStub();
+        }
+
+        @Override
+        public List<WorkOrder> findAll() {
+            return workOrders.isEmpty() ? List.of(new WorkOrderStub()) : workOrders;
+        }
+
+        @Override
+        public Optional<WorkOrder> findById(WorkOrderID id) {
+            return foundWorkOrder;
+        }
+
+        @Override
+        public WorkOrder update(WorkOrderID id, String customerId, String vehicleId, List<String> serviceIds, List<PartSelectionInput> parts) {
+            return updatedWorkOrder != null ? updatedWorkOrder : new WorkOrderStub();
+        }
+
+        @Override
+        public WorkOrder updateStatus(WorkOrderID id, WorkOrderStatus status) {
+            return updatedStatusWorkOrder != null ? updatedStatusWorkOrder : new WorkOrderStub();
+        }
+
+        @Override
+        public double calculateExecutionTime(WorkOrderID workOrderId) {
+            return executionTime;
+        }
+    }
+
+    static class WorkOrderStub extends WorkOrder {
+        private final Customer stubCustomer;
+
+        public WorkOrderStub() {
+            super();
+            stubCustomer = new Customer() {
+                @Override
+                public CustomerID getId() {
+                    return CustomerID.from("test-customer-id");
+                }
+            };
+            try {
+                java.lang.reflect.Field customerField = WorkOrder.class.getDeclaredField("customer");
+                customerField.setAccessible(true);
+                customerField.set(this, stubCustomer);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public WorkOrderID getId() {
+            return WorkOrderID.unique();
+        }
+
+        @Override
+        public WorkOrderStatus getStatus() {
+            return WorkOrderStatus.COMPLETED;
+        }
+
+        @Override
+        public Customer getCustomer() {
+            return stubCustomer;
+        }
+
+        @Override
+        public Vehicle getVehicle() {
+            Customer customer = stubCustomer;
+            return new Vehicle() {
+                @Override
+                public VehicleID getId() {
+                    return VehicleID.from("test-vehicle-id");
+                }
+
+                @Override
+                public Customer getCustomer() {
+                    return customer;
+                }
+            };
+        }
+    }
+}

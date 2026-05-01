@@ -4,13 +4,7 @@ import com.autoservice.domain.AggregateRoot;
 import com.autoservice.domain.customer.Customer;
 import com.autoservice.validation.Error;
 import com.autoservice.validation.ValidationHandler;
-import jakarta.persistence.Column;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "vehicle", schema = "customer")

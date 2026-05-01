@@ -77,10 +77,14 @@ public class WorkOrderController {
         if (parts == null) {
             return List.of();
         }
-
         return parts.stream()
                 .map(item -> new WorkOrderService.PartSelectionInput(item.partId(), item.quantity()))
                 .toList();
     }
-}
 
+    @GetMapping("/{id}/average-execution-time")
+    public ResponseEntity<Double> getAverageExecutionTime(@PathVariable final String id) {
+        double minutes = workOrderService.calculateExecutionTime(WorkOrderID.from(id));
+        return ResponseEntity.ok(minutes);
+    }
+}
