@@ -1,0 +1,224 @@
+package com.autoservice.infrastructure.ordemservico.query;
+
+import com.autoservice.application.ordemservico.detail.DetailOrdemServicoOutput;
+import com.autoservice.application.ordemservico.detail.DetailOrdemServicoQuery;
+import com.autoservice.application.ordemservico.list.ListOrdemServicoOutput;
+import com.autoservice.application.ordemservico.list.ListOrdemServicoQuery;
+import com.autoservice.domain.cliente.Cliente;
+import com.autoservice.domain.itemservico.ItemServico;
+import com.autoservice.domain.ordemservico.OrdemServico;
+import com.autoservice.domain.ordemservico.OrdemServicoID;
+import com.autoservice.domain.peca.Peca;
+import com.autoservice.domain.pessoa.PessoaFisica;
+import com.autoservice.domain.pessoa.PessoaJuridica;
+import com.autoservice.domain.tipoveiculo.TipoVeiculo;
+import com.autoservice.domain.veiculo.Veiculo;
+import jakarta.persistence.EntityManager;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.UUID;
+
+@Service
+public class OrdemServicoQueryService implements ListOrdemServicoQuery, DetailOrdemServicoQuery {
+
+    private final EntityManager entityManager;
+
+    public OrdemServicoQueryService(final EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ListOrdemServicoOutput> execute() {
+        final var query = """
+                select os, v, tipoVeiculo, c, pf, pj, representante
+                from OrdemServico os
+                join Veiculo v on v.id = os.veiculoId
+                join TipoVeiculo tipoVeiculo on tipoVeiculo.id = v.tipoVeiculoId
+                join Cliente c on c.pessoaId = v.proprietarioId
+                left join PessoaFisica pf on pf.id = c.pessoaId
+                left join PessoaJuridica pj on pj.id = c.pessoaId
+                left join PessoaFisica representante on representante.id = pj.representanteLegalId
+                order by os.dataCriacao.value desc
+                """;
+
+        return this.entityManager.createQuery(query, Object[].class)
+                .getResultList()
+                .stream()
+                .map(this::mapToOutput)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public DetailOrdemServicoOutput execute(final UUID ordemServicoId) {
+        final var id = OrdemServicoID.from(ordemServicoId);
+
+        final var ordemServico = buscarResumo(id);
+        final var itens = buscarItens(id);
+
+        return DetailOrdemServicoOutput.from(ordemServico, itens);
+    }
+
+    private ListOrdemServicoOutput buscarResumo(final OrdemServicoID id) {
+        final var query = """
+                select os, v, tipoVeiculo, c, pf, pj, representante
+                from OrdemServico os
+                join Veiculo v on v.id = os.veiculoId
+                join TipoVeiculo tipoVeiculo on tipoVeiculo.id = v.tipoVeiculoId
+                join Cliente c on c.pessoaId = v.proprietarioId
+                left join PessoaFisica pf on pf.id = c.pessoaId
+                left join PessoaJuridica pj on pj.id = c.pessoaId
+                left join PessoaFisica representante on representante.id = pj.representanteLegalId
+                where os.id = :id
+                """;
+
+        final var rows = this.entityManager.createQuery(query, Object[].class)
+                .setParameter("id", id)
+                .getResultList();
+
+        if (rows.isEmpty()) {
+            throw new IllegalArgumentException("Ordem de serviço não encontrada");
+        }
+
+        return this.mapToOutput(rows.getFirst());
+    }
+
+    private List<DetailOrdemServicoOutput.ItemOutput> buscarItens(final OrdemServicoID id) {
+        final var query = """
+                select item, peca
+                from ItemServico item
+                left join Peca peca on peca.id = item.pecaId
+                where item.ordemServicoId = :id
+                order by item.tipo asc, item.descricao asc
+                """;
+
+        return this.entityManager.createQuery(query, Object[].class)
+                .setParameter("id", id)
+                .getResultList()
+                .stream()
+                .map(this::mapItem)
+                .toList();
+    }
+
+    private DetailOrdemServicoOutput.ItemOutput mapItem(final Object[] row) {
+        final var item = (ItemServico) row[0];
+        final var peca = (Peca) row[1];
+
+        return new DetailOrdemServicoOutput.ItemOutput(
+                item.getId().getValue(),
+                item.getTipo().name(),
+                item.getDescricao(),
+                item.getPecaId() == null ? null : item.getPecaId().getValue(),
+                mapPeca(peca),
+                item.getQuantidade(),
+                item.getValorUnitario(),
+                item.getValorTotal()
+        );
+    }
+
+    private DetailOrdemServicoOutput.PecaOutput mapPeca(final Peca peca) {
+        if (peca == null) {
+            return null;
+        }
+
+        return new DetailOrdemServicoOutput.PecaOutput(
+                peca.getId().getValue(),
+                peca.getCodigo(),
+                peca.getDescricao(),
+                peca.getTipoVeiculoId() == null ? null : peca.getTipoVeiculoId().getValue()
+        );
+    }
+
+    private ListOrdemServicoOutput mapToOutput(final Object[] row) {
+        final var ordemServico = (OrdemServico) row[0];
+        final var veiculo = (Veiculo) row[1];
+        final var tipoVeiculo = (TipoVeiculo) row[2];
+        final var cliente = (Cliente) row[3];
+        final var pessoaFisica = (PessoaFisica) row[4];
+        final var pessoaJuridica = (PessoaJuridica) row[5];
+        final var representante = (PessoaFisica) row[6];
+
+        return new ListOrdemServicoOutput(
+                ordemServico.getId().getValue(),
+                ordemServico.getStatus().name(),
+                ordemServico.getDataCriacao().getValue(),
+                ordemServico.getRelato(),
+                ordemServico.getTempoPrevistoExecucaoDias(),
+                ordemServico.getTempoPrevistoExecucaoHoras(),
+                ordemServico.getIniciadoEm(),
+                ordemServico.getFinalizadoEm(),
+                mapVeiculo(veiculo, tipoVeiculo),
+                mapCliente(cliente, pessoaFisica, pessoaJuridica, representante)
+        );
+    }
+
+    private ListOrdemServicoOutput.VeiculoOutput mapVeiculo(
+            final Veiculo veiculo,
+            final TipoVeiculo tipoVeiculo
+    ) {
+        return new ListOrdemServicoOutput.VeiculoOutput(
+                veiculo.getId().getValue(),
+                veiculo.getPlaca().getValue(),
+                tipoVeiculo.getMarca().getValue(),
+                tipoVeiculo.getModelo().getValue(),
+                tipoVeiculo.getAno().getValue(),
+                veiculo.getCor().getValue(),
+                veiculo.getKilometragem().getValue()
+        );
+    }
+
+    private ListOrdemServicoOutput.ClienteOutput mapCliente(
+            final Cliente cliente,
+            final PessoaFisica pessoaFisica,
+            final PessoaJuridica pessoaJuridica,
+            final PessoaFisica representante
+    ) {
+        if (pessoaJuridica != null) {
+            return new ListOrdemServicoOutput.ClienteOutput(
+                    cliente.getId().getValue(),
+                    "JURIDICA",
+                    null,
+                    null,
+                    pessoaJuridica.getRazaoSocial(),
+                    pessoaJuridica.getCnpj().getValue(),
+                    valueOf(pessoaJuridica.getEmail()),
+                    valueOf(pessoaJuridica.getTelefone()),
+                    mapRepresentanteLegal(representante)
+            );
+        }
+
+        return new ListOrdemServicoOutput.ClienteOutput(
+                cliente.getId().getValue(),
+                "FISICA",
+                pessoaFisica.getNome(),
+                pessoaFisica.getCpf().getValue(),
+                null,
+                null,
+                valueOf(pessoaFisica.getEmail()),
+                valueOf(pessoaFisica.getTelefone()),
+                null
+        );
+    }
+
+    private ListOrdemServicoOutput.RepresentanteLegalOutput mapRepresentanteLegal(
+            final PessoaFisica representante
+    ) {
+        if (representante == null) {
+            return null;
+        }
+
+        return new ListOrdemServicoOutput.RepresentanteLegalOutput(
+                representante.getNome(),
+                representante.getCpf().getValue(),
+                valueOf(representante.getEmail()),
+                valueOf(representante.getTelefone())
+        );
+    }
+
+    private String valueOf(final Object valueObject) {
+        return valueObject == null ? null : valueObject.toString();
+    }
+}
