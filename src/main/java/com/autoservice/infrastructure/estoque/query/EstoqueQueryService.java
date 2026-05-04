@@ -4,7 +4,9 @@ import com.autoservice.application.estoque.query.EstoqueOutput;
 import com.autoservice.application.estoque.query.EstoqueQuery;
 import com.autoservice.domain.estoque.Estoque;
 import com.autoservice.domain.estoque.EstoqueID;
+import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.peca.Peca;
+import com.autoservice.validation.Error;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,7 +55,7 @@ public class EstoqueQueryService implements EstoqueQuery {
                 .getResultList();
 
         if (rows.isEmpty()) {
-            throw new IllegalArgumentException("Estoque não encontrado");
+            throw DomainException.with(new Error("Estoque não encontrado"));
         }
 
         return map(rows.getFirst());

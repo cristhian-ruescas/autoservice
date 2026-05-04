@@ -3,6 +3,7 @@ package com.autoservice.infrastructure.pessoa;
 import com.autoservice.domain.pessoa.Pessoa;
 import com.autoservice.domain.pessoa.PessoaFisica;
 import com.autoservice.domain.pessoa.PessoaGateway;
+import com.autoservice.domain.pessoa.PessoaID;
 import com.autoservice.domain.pessoa.PessoaJuridica;
 import com.autoservice.domain.pessoa.valueobject.CNPJ;
 import com.autoservice.domain.pessoa.valueobject.CPF;
@@ -24,6 +25,16 @@ public class PessoaGatewayImpl implements PessoaGateway {
     @Override
     public Pessoa create(final Pessoa pessoa) {
         return this.repository.save(pessoa);
+    }
+
+    @Override
+    public Pessoa update(final Pessoa pessoa) {
+        return this.repository.save(pessoa);
+    }
+
+    @Override
+    public Optional<Pessoa> findById(final PessoaID id) {
+        return this.repository.findById(id);
     }
 
     @Override

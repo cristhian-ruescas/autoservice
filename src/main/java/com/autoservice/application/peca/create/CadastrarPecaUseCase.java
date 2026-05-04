@@ -1,10 +1,12 @@
 package com.autoservice.application.peca.create;
 
 import com.autoservice.application.UseCase;
+import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.peca.Peca;
 import com.autoservice.domain.peca.PecaGateway;
 import com.autoservice.domain.tipoveiculo.TipoVeiculoGateway;
 import com.autoservice.domain.tipoveiculo.TipoVeiculoID;
+import com.autoservice.validation.Error;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,7 +49,7 @@ public class CadastrarPecaUseCase extends UseCase<CadastrarPecaCommand, Cadastra
 
         final var tipoVeiculoId = TipoVeiculoID.from(command.tipoVeiculoId());
         this.tipoVeiculoGateway.findById(tipoVeiculoId)
-                .orElseThrow(() -> new IllegalArgumentException("Tipo de veículo não encontrado"));
+                .orElseThrow(() -> DomainException.with(new Error("Tipo de veículo não encontrado")));
 
         return tipoVeiculoId;
     }

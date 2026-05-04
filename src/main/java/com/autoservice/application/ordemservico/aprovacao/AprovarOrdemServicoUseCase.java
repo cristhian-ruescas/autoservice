@@ -3,8 +3,10 @@ package com.autoservice.application.ordemservico.aprovacao;
 import com.autoservice.application.UseCase;
 import com.autoservice.application.ordemservico.status.OrdemServicoStatusOutput;
 import com.autoservice.domain.events.DomainEventPublisher;
+import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.ordemservico.OrdemServicoGateway;
 import com.autoservice.domain.ordemservico.OrdemServicoID;
+import com.autoservice.validation.Error;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +32,7 @@ public class AprovarOrdemServicoUseCase extends UseCase<AprovarOrdemServicoComma
         final var id = OrdemServicoID.from(command.ordemServicoId());
 
         final var ordemServico = this.ordemServicoGateway.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Ordem de serviço não encontrada"));
+                .orElseThrow(() -> DomainException.with(new Error("Ordem de serviço não encontrada")));
 
         ordemServico.aprovarOrcamento();
 

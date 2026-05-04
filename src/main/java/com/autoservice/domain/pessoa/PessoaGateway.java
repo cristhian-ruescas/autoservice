@@ -9,6 +9,10 @@ public interface PessoaGateway {
 
     Pessoa create(Pessoa pessoa);
 
+    Pessoa update(Pessoa pessoa);
+
+    Optional<Pessoa> findById(PessoaID id);
+
     Optional<PessoaFisica> findPessoaFisicaByCpf(CPF cpf);
 
     Optional<PessoaJuridica> findPessoaJuridicaByCnpj(CNPJ cnpj);

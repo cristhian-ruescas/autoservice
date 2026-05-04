@@ -64,7 +64,7 @@ class IniciarDiagnosticoUseCaseTest {
 
         when(gateway.findById(any())).thenReturn(Optional.empty());
 
-        final var exception = assertThrows(IllegalArgumentException.class, () -> useCase.execute(command));
+        final var exception = assertThrows(DomainException.class, () -> useCase.execute(command));
 
         assertEquals("Ordem de serviço não encontrada", exception.getMessage());
     }
