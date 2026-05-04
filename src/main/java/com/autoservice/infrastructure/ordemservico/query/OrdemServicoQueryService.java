@@ -1,18 +1,24 @@
 package com.autoservice.infrastructure.ordemservico.query;
 
+import com.autoservice.application.PaginationOutput;
+import com.autoservice.application.ordemservico.acompanhamento.AcompanharOrdemServicoOutput;
+import com.autoservice.application.ordemservico.acompanhamento.AcompanharOrdemServicoQuery;
 import com.autoservice.application.ordemservico.detail.DetailOrdemServicoOutput;
 import com.autoservice.application.ordemservico.detail.DetailOrdemServicoQuery;
 import com.autoservice.application.ordemservico.list.ListOrdemServicoOutput;
 import com.autoservice.application.ordemservico.list.ListOrdemServicoQuery;
 import com.autoservice.domain.cliente.Cliente;
+import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.itemservico.ItemServico;
 import com.autoservice.domain.ordemservico.OrdemServico;
 import com.autoservice.domain.ordemservico.OrdemServicoID;
+import com.autoservice.domain.ordemservico.enums.OrdemServicoStatus;
 import com.autoservice.domain.peca.Peca;
 import com.autoservice.domain.pessoa.PessoaFisica;
 import com.autoservice.domain.pessoa.PessoaJuridica;
 import com.autoservice.domain.tipoveiculo.TipoVeiculo;
 import com.autoservice.domain.veiculo.Veiculo;
+import com.autoservice.validation.Error;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +27,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-public class OrdemServicoQueryService implements ListOrdemServicoQuery, DetailOrdemServicoQuery {
+public class OrdemServicoQueryService implements ListOrdemServicoQuery, DetailOrdemServicoQuery, AcompanharOrdemServicoQuery {
 
     private final EntityManager entityManager;
 
@@ -31,7 +37,14 @@ public class OrdemServicoQueryService implements ListOrdemServicoQuery, DetailOr
 
     @Override
     @Transactional(readOnly = true)
-    public List<ListOrdemServicoOutput> execute() {
+    public PaginationOutput<ListOrdemServicoOutput> execute(
+            final int page,
+            final int size,
+            final String status
+    ) {
+        validarPaginacao(page, size);
+        final var statusNormalizado = normalizeStatus(status);
+
         final var query = """
                 select os, v, tipoVeiculo, c, pf, pj, representante
                 from OrdemServico os
@@ -41,14 +54,20 @@ public class OrdemServicoQueryService implements ListOrdemServicoQuery, DetailOr
                 left join PessoaFisica pf on pf.id = c.pessoaId
                 left join PessoaJuridica pj on pj.id = c.pessoaId
                 left join PessoaFisica representante on representante.id = pj.representanteLegalId
+                where (:status is null or os.status = :status)
                 order by os.dataCriacao.value desc
                 """;
 
-        return this.entityManager.createQuery(query, Object[].class)
+        final var items = this.entityManager.createQuery(query, Object[].class)
+                .setParameter("status", statusNormalizado)
+                .setFirstResult(page * size)
+                .setMaxResults(size)
                 .getResultList()
                 .stream()
                 .map(this::mapToOutput)
                 .toList();
+
+        return PaginationOutput.from(items, page, size, totalOrdensServico(statusNormalizado));
     }
 
     @Override
@@ -60,6 +79,14 @@ public class OrdemServicoQueryService implements ListOrdemServicoQuery, DetailOr
         final var itens = buscarItens(id);
 
         return DetailOrdemServicoOutput.from(ordemServico, itens);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AcompanharOrdemServicoOutput acompanhar(final UUID ordemServicoId) {
+        final var id = OrdemServicoID.from(ordemServicoId);
+
+        return AcompanharOrdemServicoOutput.from(buscarResumo(id));
     }
 
     private ListOrdemServicoOutput buscarResumo(final OrdemServicoID id) {
@@ -80,7 +107,7 @@ public class OrdemServicoQueryService implements ListOrdemServicoQuery, DetailOr
                 .getResultList();
 
         if (rows.isEmpty()) {
-            throw new IllegalArgumentException("Ordem de serviço não encontrada");
+            throw DomainException.with(new Error("Ordem de serviço não encontrada"));
         }
 
         return this.mapToOutput(rows.getFirst());
@@ -153,6 +180,42 @@ public class OrdemServicoQueryService implements ListOrdemServicoQuery, DetailOr
                 mapVeiculo(veiculo, tipoVeiculo),
                 mapCliente(cliente, pessoaFisica, pessoaJuridica, representante)
         );
+    }
+
+    private long totalOrdensServico(final OrdemServicoStatus status) {
+        final var query = """
+                select count(os)
+                from OrdemServico os
+                where (:status is null or os.status = :status)
+                """;
+
+        return this.entityManager.createQuery(query, Long.class)
+                .setParameter("status", status)
+                .getSingleResult();
+    }
+
+    private OrdemServicoStatus normalizeStatus(final String status) {
+        if (status == null || status.isBlank()) {
+            return null;
+        }
+
+        try {
+            return OrdemServicoStatus.valueOf(status.trim().toUpperCase());
+        } catch (final IllegalArgumentException ex) {
+            throw DomainException.with(new Error("Status da ordem de serviço inválido"));
+        }
+    }
+
+    private void validarPaginacao(final int page, final int size) {
+        if (page < 0) {
+            throw DomainException.with(new Error("Página não deve ser menor que zero"));
+        }
+        if (size <= 0) {
+            throw DomainException.with(new Error("Tamanho da página deve ser maior que zero"));
+        }
+        if (size > 100) {
+            throw DomainException.with(new Error("Tamanho da página não deve ser maior que 100"));
+        }
     }
 
     private ListOrdemServicoOutput.VeiculoOutput mapVeiculo(

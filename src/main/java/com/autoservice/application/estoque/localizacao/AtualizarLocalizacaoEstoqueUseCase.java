@@ -3,6 +3,8 @@ package com.autoservice.application.estoque.localizacao;
 import com.autoservice.application.UseCase;
 import com.autoservice.domain.estoque.EstoqueGateway;
 import com.autoservice.domain.estoque.EstoqueID;
+import com.autoservice.domain.exceptions.DomainException;
+import com.autoservice.validation.Error;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +23,7 @@ public class AtualizarLocalizacaoEstoqueUseCase extends UseCase<AtualizarLocaliz
     @Transactional
     public AtualizarLocalizacaoEstoqueOutput execute(final AtualizarLocalizacaoEstoqueCommand command) {
         final var estoque = this.estoqueGateway.findById(EstoqueID.from(command.id()))
-                .orElseThrow(() -> new IllegalArgumentException("Estoque não encontrado"));
+                .orElseThrow(() -> DomainException.with(new Error("Estoque não encontrado")));
 
         estoque.alterarLocalizacao(command.localizacao());
 

@@ -243,6 +243,18 @@ public class OrdemServico extends AggregateRoot<OrdemServicoID> {
         this.status = OrdemServicoStatus.ENTREGUE;
     }
 
+    public void cancelar() {
+        if (this.status == OrdemServicoStatus.FINALIZADA
+                || this.status == OrdemServicoStatus.ENTREGUE
+                || this.status == OrdemServicoStatus.REPROVADO) {
+            throw DomainException.with(List.of(
+                    new Error("Ordem de serviço FINALIZADA, ENTREGUE ou REPROVADO não pode ser cancelada")
+            ));
+        }
+
+        this.status = OrdemServicoStatus.CANCELADO;
+    }
+
     @Override
     public void validate(final ValidationHandler handler) {
         new OrdemServicoValidator(this, handler).validate();
