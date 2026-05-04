@@ -30,3 +30,12 @@ autoservice:
         base-url: ${APP_BASE_URL:http://localhost:8088}
     mail:
         from: ${MAIL_FROM:orcamentos@autoservice.local}
+
+springdoc:
+    api-docs:
+        path: /v3/api-docs
+    swagger-ui:
+        path: /swagger-ui.html
+        tags-sorter: alpha
+        operations-sorter: alpha
+    show-actuator: false

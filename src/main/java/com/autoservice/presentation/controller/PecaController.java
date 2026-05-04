@@ -4,6 +4,8 @@ import com.autoservice.application.peca.create.CadastrarPecaCommand;
 import com.autoservice.application.peca.create.CadastrarPecaUseCase;
 import com.autoservice.presentation.dto.peca.CadastrarPecaRequest;
 import com.autoservice.presentation.dto.peca.CadastrarPecaResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/pecas")
+@Tag(name = "Peças", description = "Cadastro de peças vinculadas a tipo de veículo.")
 public class PecaController {
 
     private final CadastrarPecaUseCase cadastrarPecaUseCase;
@@ -23,6 +26,7 @@ public class PecaController {
     }
 
     @PostMapping
+    @Operation(summary = "Cadastrar peça")
     public ResponseEntity<CadastrarPecaResponse> create(
             @RequestBody @Valid final CadastrarPecaRequest request
     ) {
