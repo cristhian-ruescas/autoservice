@@ -6,6 +6,8 @@ import com.autoservice.application.estoque.query.EstoqueQuery;
 import com.autoservice.presentation.dto.estoque.AtualizarLocalizacaoEstoqueRequest;
 import com.autoservice.presentation.dto.estoque.AtualizarLocalizacaoEstoqueResponse;
 import com.autoservice.presentation.dto.estoque.EstoqueResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -19,6 +21,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/estoques")
+@Tag(name = "Estoques", description = "Consulta de estoque e atualização de localização física.")
 public class EstoqueController {
 
     private final EstoqueQuery estoqueQuery;
@@ -33,6 +36,7 @@ public class EstoqueController {
     }
 
     @GetMapping
+    @Operation(summary = "Listar estoques")
     public ResponseEntity<List<EstoqueResponse>> listar() {
         final var response = this.estoqueQuery.listar()
                 .stream()
@@ -43,11 +47,13 @@ public class EstoqueController {
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "Detalhar estoque")
     public ResponseEntity<EstoqueResponse> detalhar(@PathVariable final UUID id) {
         return ResponseEntity.ok(EstoqueResponse.from(this.estoqueQuery.detalhar(id)));
     }
 
     @PatchMapping("/{id}/localizacao")
+    @Operation(summary = "Atualizar localização do estoque")
     public ResponseEntity<AtualizarLocalizacaoEstoqueResponse> atualizarLocalizacao(
             @PathVariable final UUID id,
             @RequestBody final AtualizarLocalizacaoEstoqueRequest request

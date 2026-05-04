@@ -1,14 +1,12 @@
 package com.autoservice;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.junit.jupiter.api.condition.EnabledIf;
 
-@SpringBootTest
-class ApplicationTests {
+@EnabledIf("com.autoservice.support.TestEnvironment#dockerAvailable")
+class ApplicationTests extends AbstractIntegrationTest {
 
-	@Test
-	void contextLoads() {
-		Application.main(new String[] {});
-	}
-
+    @Test
+    void contextLoads() {
+    }
 }
