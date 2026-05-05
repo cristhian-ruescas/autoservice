@@ -1,11 +1,13 @@
 package com.autoservice.presentation.controller;
 
 import com.autoservice.AbstractIntegrationTest;
+import com.autoservice.config.JwtAuthenticationFilter;
 import com.autoservice.presentation.dto.tipoveiculo.CadastrarTipoVeiculoRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
@@ -27,6 +29,9 @@ class TipoVeiculoControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Mock
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Test
     @DisplayName("POST /tipos-veiculo persiste e retorna 201 com corpo esperado")
