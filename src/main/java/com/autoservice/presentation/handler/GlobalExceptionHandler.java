@@ -3,6 +3,7 @@ package com.autoservice.presentation.handler;
 import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.presentation.dto.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -45,12 +46,19 @@ public class GlobalExceptionHandler {
             DomainException ex,
             HttpServletRequest request) {
 
+        final var errors = ex.getErrors().stream()
+                .map(error -> new ErrorResponse.FieldError(null, error.message()))
+                .toList();
+        final var message = ex.getMessage() == null || ex.getMessage().isBlank()
+                ? "Erro de domínio"
+                : ex.getMessage();
+
         ErrorResponse errorResponse = new ErrorResponse(
             HttpStatus.UNPROCESSABLE_ENTITY.value(),
-            ex.getMessage(),
+            message,
             request.getRequestURI(),
             LocalDateTime.now(),
-            List.of()
+            errors
         );
 
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(errorResponse);
@@ -72,6 +80,23 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolationException(
+            DataIntegrityViolationException ex,
+            HttpServletRequest request) {
+
+        final var message = resolveDataIntegrityMessage(ex);
+        ErrorResponse errorResponse = new ErrorResponse(
+            HttpStatus.UNPROCESSABLE_ENTITY.value(),
+            message,
+            request.getRequestURI(),
+            LocalDateTime.now(),
+            List.of(new ErrorResponse.FieldError(null, message))
+        );
+
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(errorResponse);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(
             Exception ex,
@@ -87,5 +112,16 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
-}
 
+    private String resolveDataIntegrityMessage(final DataIntegrityViolationException ex) {
+        final var rootMessage = ex.getMostSpecificCause() == null
+                ? null
+                : ex.getMostSpecificCause().getMessage();
+
+        if (rootMessage != null && !rootMessage.isBlank()) {
+            return rootMessage;
+        }
+
+        return "Dados inválidos para gravação";
+    }
+}

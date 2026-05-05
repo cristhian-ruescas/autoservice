@@ -1,10 +1,13 @@
 package com.autoservice.infrastructure.estoque.query;
 
+import com.autoservice.application.PaginationOutput;
 import com.autoservice.application.estoque.query.EstoqueOutput;
 import com.autoservice.application.estoque.query.EstoqueQuery;
 import com.autoservice.domain.estoque.Estoque;
 import com.autoservice.domain.estoque.EstoqueID;
+import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.peca.Peca;
+import com.autoservice.validation.Error;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +26,9 @@ public class EstoqueQueryService implements EstoqueQuery {
 
     @Override
     @Transactional(readOnly = true)
-    public List<EstoqueOutput> listar() {
+    public PaginationOutput<EstoqueOutput> listar(final int page, final int size) {
+        validarPaginacao(page, size);
+
         final var query = """
                 select estoque, peca
                 from Estoque estoque
@@ -31,11 +36,15 @@ public class EstoqueQueryService implements EstoqueQuery {
                 order by peca.descricao asc
                 """;
 
-        return this.entityManager.createQuery(query, Object[].class)
+        final var items = this.entityManager.createQuery(query, Object[].class)
+                .setFirstResult(page * size)
+                .setMaxResults(size)
                 .getResultList()
                 .stream()
                 .map(this::map)
                 .toList();
+
+        return PaginationOutput.from(items, page, size, totalEstoques());
     }
 
     @Override
@@ -53,7 +62,7 @@ public class EstoqueQueryService implements EstoqueQuery {
                 .getResultList();
 
         if (rows.isEmpty()) {
-            throw new IllegalArgumentException("Estoque não encontrado");
+            throw DomainException.with(new Error("Estoque não encontrado"));
         }
 
         return map(rows.getFirst());
@@ -83,5 +92,26 @@ public class EstoqueQueryService implements EstoqueQuery {
                 peca.getDescricao(),
                 peca.getMarca()
         );
+    }
+
+    private long totalEstoques() {
+        final var query = """
+                select count(estoque)
+                from Estoque estoque
+                """;
+
+        return this.entityManager.createQuery(query, Long.class).getSingleResult();
+    }
+
+    private void validarPaginacao(final int page, final int size) {
+        if (page < 0) {
+            throw DomainException.with(new Error("Página não deve ser menor que zero"));
+        }
+        if (size <= 0) {
+            throw DomainException.with(new Error("Tamanho da página deve ser maior que zero"));
+        }
+        if (size > 100) {
+            throw DomainException.with(new Error("Tamanho da página não deve ser maior que 100"));
+        }
     }
 }

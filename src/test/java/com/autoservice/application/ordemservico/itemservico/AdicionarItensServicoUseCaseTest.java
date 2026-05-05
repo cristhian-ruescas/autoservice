@@ -1,5 +1,6 @@
 package com.autoservice.application.ordemservico.itemservico;
 
+import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.itemservico.ItemServico;
 import com.autoservice.domain.itemservico.ItemServicoGateway;
 import com.autoservice.domain.itemservico.enums.ItemServicoTipo;
@@ -52,7 +53,7 @@ class AdicionarItensServicoUseCaseTest {
     void listaVaziaFalha() {
         final OrdemServicoID id = OrdemServicoID.unique();
         final var cmd = AdicionarItensServicoCommand.with(UUID.fromString(id.getValue()), List.of());
-        assertThrows(IllegalArgumentException.class, () -> useCase.execute(cmd));
+        assertThrows(DomainException.class, () -> useCase.execute(cmd));
     }
 
     @Test
@@ -68,7 +69,7 @@ class AdicionarItensServicoUseCaseTest {
                         null,
                         1,
                         BigDecimal.ONE)));
-        assertThrows(IllegalArgumentException.class, () -> useCase.execute(cmd));
+        assertThrows(DomainException.class, () -> useCase.execute(cmd));
     }
 
     @Test
@@ -90,7 +91,7 @@ class AdicionarItensServicoUseCaseTest {
                         null,
                         1,
                         BigDecimal.ONE)));
-        assertThrows(IllegalArgumentException.class, () -> useCase.execute(cmd));
+        assertThrows(DomainException.class, () -> useCase.execute(cmd));
     }
 
     @Test
@@ -112,7 +113,7 @@ class AdicionarItensServicoUseCaseTest {
                         null,
                         1,
                         BigDecimal.ONE)));
-        assertThrows(IllegalArgumentException.class, () -> useCase.execute(cmd));
+        assertThrows(DomainException.class, () -> useCase.execute(cmd));
     }
 
     @Test
@@ -136,7 +137,7 @@ class AdicionarItensServicoUseCaseTest {
                         UUID.fromString(pecaId.getValue()),
                         1,
                         BigDecimal.ONE)));
-        assertThrows(IllegalArgumentException.class, () -> useCase.execute(cmd));
+        assertThrows(DomainException.class, () -> useCase.execute(cmd));
     }
 
     @Test

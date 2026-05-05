@@ -5,14 +5,26 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.servers.Server;
+import io.swagger.v3.oas.models.tags.Tag;
+import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Configuration
 public class OpenApiConfiguration {
+
+    private static final List<String> TAG_ORDER = List.of(
+            "Atendimentos",
+            "Tipos de veículo",
+            "Peças",
+            "Estoques",
+            "Ordens de serviço",
+            "Ordens de compra"
+    );
 
     @Bean
     public OpenAPI autoserviceOpenApi(
@@ -25,44 +37,68 @@ public class OpenApiConfiguration {
                 .info(new Info()
                         .title("Autoservice API")
                         .version("0.0.1-SNAPSHOT")
-                        .description(descricaoFluxoOrdemServico())
+                        .description(descricaoFluxoENegocio())
                         .contact(new Contact().name("Autoservice").url(baseUrl)))
                 .externalDocs(new ExternalDocumentation()
-                        .description("UI Swagger")
-                        .url(baseUrl + "/swagger-ui/index.html"));
+                        .description("Interface Swagger")
+                        .url(baseUrl + "/swagger-ui.html"));
     }
 
-    /**
-     * Documenta o fluxo de negócio (diagrama) e o mapeamento para os valores reais expostos pela API
-     * (`com.autoservice.domain.ordemservico.enums.OrdemServicoStatus`).
-     */
-    private static String descricaoFluxoOrdemServico() {
+    @Bean
+    public OpenApiCustomizer ordenarTagsPeloFluxo() {
+        return openApi -> {
+            final var tags = openApi.getTags();
+            if (tags == null || tags.isEmpty()) {
+                return;
+            }
+            final var sorted = tags.stream()
+                    .sorted(Comparator
+                            .comparingInt((Tag t) -> {
+                                final int i = TAG_ORDER.indexOf(t.getName());
+                                return i >= 0 ? i : Integer.MAX_VALUE;
+                            })
+                            .thenComparing(Tag::getName, Comparator.nullsFirst(String::compareToIgnoreCase)))
+                    .toList();
+            openApi.setTags(sorted);
+        };
+    }
+
+    private static String descricaoFluxoENegocio() {
         return """
-                API do oficina: atendimento (abertura de OS), ordem de serviço, estoque, peças, ordem de compra e cadastro de tipo de veículo.
+                API da oficina: atendimento (abertura de OS com cliente PF ou PJ), ordem de serviço, peças, estoque e ordem de compra.
 
-                ## Fluxo da ordem de serviço (visão de negócio × API)
+                ## Fluxo sugerido (happy path)
 
-                | Etapa no diagrama | Valor em `status` na API | Endpoints relacionados |
-                |---------------------|--------------------------|--------------------------|
-                | Recebida | `RECEBIDO` | `POST /atendimentos` (cria cliente/veículo e OS) |
-                | Em diagnóstico | `EM_DIAGNOSTICO` | `PATCH /ordens-servico/{id}/diagnostico` |
-                | Orçamento (itens, preço, estoque) | (ainda `EM_DIAGNOSTICO`) | `POST /ordens-servico/{id}/itens` — só com OS em diagnóstico |
-                | Orçamento gerado → aguardando cliente | `AGUARDANDO_APROVACAO` | `PATCH /ordens-servico/{id}/diagnostico/finalizar` — envio de e-mail de orçamento no fluxo de domínio |
-                | Reprovada | `REPROVADO` | `PATCH` ou `GET /ordens-servico/{id}/aprovacao/reprovar` |
-                | Aprovada | `APROVADO` | `PATCH` ou `GET /ordens-servico/{id}/aprovacao/aprovar` |
-                | Em execução | `EM_EXECUCAO` | Transição após aprovação (pedido de peças pode ser disparado por eventos) |
-                | Finalizada | `FINALIZADA` | `PATCH /ordens-servico/{id}/finalizar` |
-                | Entregue | `ENTREGUE` | `PATCH /ordens-servico/{id}/entregar` |
-                | Cancelada | `CANCELADO` | Estado de domínio; exposto quando aplicável em consultas |
+                1. **Cliente PF ou PJ + OS** — `POST /atendimentos` com `tipoPessoa` `FISICA` ou `JURIDICA`. Retorna a OS em `RECEBIDO`.
+                2. **Iniciar diagnóstico** — `PATCH /ordens-servico/{id}/diagnostico` → `EM_DIAGNOSTICO`.
+                3. **Cadastrar peças (catálogo)** — `POST /pecas` (e, se necessário, `POST /tipos-veiculo` para o catálogo marca/modelo/ano).
+                4. **Incluir itens na OS (serviço e/ou peça)** — `POST /ordens-servico/{id}/itens` com itens do tipo `SERVICO` ou `PECA` (somente com OS em `EM_DIAGNOSTICO`). Opcional: `GET /estoques` para consultar disponibilidade.
+                5. **Finalizar diagnóstico / orçamento** — `PATCH /ordens-servico/{id}/diagnostico/finalizar` → `AGUARDANDO_APROVACAO` (valor total do orçamento deve ser maior que zero).
+                6. **Aprovação** — `PATCH /ordens-servico/{id}/aprovacao/aprovar` (ou `.../reprovar`) → `EM_EXECUCAO` quando aprovada.
+                7. **Ordem de compra** — `GET /ordens-compra` e `GET /ordens-compra/{id}`; **realizar** com `PATCH /ordens-compra/{id}/realizar` (atualiza estoque na conclusão do pedido).
+                8. **Encerrar serviço** — `PATCH /ordens-servico/{id}/finalizar` → `FINALIZADA`.
+                9. **Entrega** — `PATCH /ordens-servico/{id}/entregar` → `ENTREGUE`.
 
-                **Nota:** no diagrama aparecem rótulos no feminino (ex.: RECEBIDA); na API o enum usa os identificadores acima (`RECEBIDO`, `APROVADO`, …).
+                **Atalho de leitura:** acompanhamento do cliente — `GET /ordens-servico/{id}/andamento`.
+
+                ## Resumo: status da ordem de serviço
+
+                | Fase | Valor em `status` (API) | Endpoints principais |
+                |------|-------------------------|----------------------|
+                | Recebida | `RECEBIDO` | `POST /atendimentos` |
+                | Em diagnóstico / montando orçamento | `EM_DIAGNOSTICO` | `PATCH .../diagnostico`, `POST .../itens` |
+                | Aguardando cliente | `AGUARDANDO_APROVACAO` | `PATCH .../diagnostico/finalizar` |
+                | Aprovada / reprovada | `APROVADO` / `REPROVADO` | `PATCH .../aprovacao/aprovar` ou `reprovar` |
+                | Em execução | `EM_EXECUCAO` | após aprovação; ordens de compra no painel `GET /ordens-compra` |
+                | Finalizada / entregue | `FINALIZADA` / `ENTREGUE` | `PATCH .../finalizar`, `PATCH .../entregar` |
+                | Cancelada | `CANCELADO` | estados de domínio; consultas podem expor quando aplicável |
+
+                **Nota:** rótulos de negócio podem estar no feminino; os identificadores do enum seguem os nomes acima (`RECEBIDO`, `APROVADO`, etc.).
 
                 ## Outros recursos
 
                 - **Estoque:** `GET /estoques`, `GET /estoques/{id}`, `PATCH /estoques/{id}/localizacao`
-                - **Peças:** `POST /pecas`
-                - **Ordens de compra:** `GET /ordens-compra`, `GET /ordens-compra/{id}`, `PATCH /ordens-compra/{id}/realizar`
-                - **Tipos de veículo:** `POST /tipos-veiculo`
+                - **Listagem e detalhe da OS:** `GET /ordens-servico`, `GET /ordens-servico/{id}`
                 """;
     }
 }

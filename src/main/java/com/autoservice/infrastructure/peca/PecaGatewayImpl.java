@@ -32,4 +32,9 @@ public class PecaGatewayImpl implements PecaGateway {
     public Optional<Peca> findById(final PecaID id) {
         return this.repository.findById(id);
     }
+
+    @Override
+    public void deleteById(final PecaID id) {
+        this.repository.deleteById(id);
+    }
 }

@@ -18,7 +18,12 @@ public class DomainException extends NoStackTraceException{
     }
 
     public static DomainException with(final List<Error> anErrors) {
-        return new DomainException("", anErrors);
+        final var message = anErrors.stream()
+                .map(Error::message)
+                .reduce((current, next) -> current + "; " + next)
+                .orElse("");
+
+        return new DomainException(message, anErrors);
     }
 
     public List<Error> getErrors() {
