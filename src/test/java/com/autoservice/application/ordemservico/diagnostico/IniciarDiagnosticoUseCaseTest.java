@@ -1,6 +1,7 @@
 package com.autoservice.application.ordemservico.diagnostico;
 
 import com.autoservice.domain.events.DomainEventPublisher;
+import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.ordemservico.OrdemServico;
 import com.autoservice.domain.ordemservico.OrdemServicoGateway;
 import com.autoservice.domain.ordemservico.enums.OrdemServicoStatus;
