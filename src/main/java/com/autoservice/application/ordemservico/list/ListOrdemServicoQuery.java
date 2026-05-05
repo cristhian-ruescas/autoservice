@@ -1,8 +1,8 @@
 package com.autoservice.application.ordemservico.list;
 
-import java.util.List;
+import com.autoservice.application.PaginationOutput;
 
 public interface ListOrdemServicoQuery {
 
-    List<ListOrdemServicoOutput> execute();
+    PaginationOutput<ListOrdemServicoOutput> execute(int page, int size, String status);
 }

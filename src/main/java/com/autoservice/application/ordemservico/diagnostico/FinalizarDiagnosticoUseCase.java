@@ -2,10 +2,12 @@ package com.autoservice.application.ordemservico.diagnostico;
 
 import com.autoservice.application.UseCase;
 import com.autoservice.domain.events.DomainEventPublisher;
+import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.itemservico.ItemServicoGateway;
 import com.autoservice.domain.ordemservico.OrdemServicoGateway;
 import com.autoservice.domain.ordemservico.OrdemServicoID;
 import com.autoservice.application.ordemservico.status.OrdemServicoStatusOutput;
+import com.autoservice.validation.Error;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,13 +37,13 @@ public class FinalizarDiagnosticoUseCase extends UseCase<FinalizarDiagnosticoCom
         final var id = OrdemServicoID.from(command.ordemServicoId());
 
         final var ordemServico = this.ordemServicoGateway.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Ordem de serviço não encontrada"));
+                .orElseThrow(() -> DomainException.with(new Error("Ordem de serviço não encontrada")));
 
         final BigDecimal valorTotal = this.itemServicoGateway.totalByOrdemServicoId(id);
         if (valorTotal == null || valorTotal.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException(
+            throw DomainException.with(new Error(
                     "Ordem de serviço precisa possuir valor maior que zero para aguardar aprovação"
-            );
+            ));
         }
 
         ordemServico.finalizarDiagnostico(

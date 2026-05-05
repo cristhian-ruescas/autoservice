@@ -36,6 +36,6 @@ springdoc:
         path: /v3/api-docs
     swagger-ui:
         path: /swagger-ui.html
-        tags-sorter: alpha
         operations-sorter: alpha
+        display-request-duration: true
     show-actuator: false

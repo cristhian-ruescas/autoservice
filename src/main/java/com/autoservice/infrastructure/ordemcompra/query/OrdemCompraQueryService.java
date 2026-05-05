@@ -2,10 +2,12 @@ package com.autoservice.infrastructure.ordemcompra.query;
 
 import com.autoservice.application.ordemcompra.query.OrdemCompraOutput;
 import com.autoservice.application.ordemcompra.query.OrdemCompraQuery;
+import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.ordemcompra.ItemOrdemCompra;
 import com.autoservice.domain.ordemcompra.OrdemCompra;
 import com.autoservice.domain.ordemcompra.OrdemCompraID;
 import com.autoservice.domain.peca.Peca;
+import com.autoservice.validation.Error;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,7 +48,7 @@ public class OrdemCompraQueryService implements OrdemCompraQuery {
         final var ordemCompra = this.entityManager.find(OrdemCompra.class, ordemCompraId);
 
         if (ordemCompra == null) {
-            throw new IllegalArgumentException("Ordem de compra não encontrada");
+            throw DomainException.with(new Error("Ordem de compra não encontrada"));
         }
 
         return map(ordemCompra);

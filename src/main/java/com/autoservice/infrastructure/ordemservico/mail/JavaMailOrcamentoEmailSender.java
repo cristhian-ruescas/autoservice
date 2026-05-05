@@ -2,6 +2,8 @@ package com.autoservice.infrastructure.ordemservico.mail;
 
 import com.autoservice.application.ordemservico.detail.DetailOrdemServicoOutput;
 import com.autoservice.application.ordemservico.orcamento.OrcamentoEmailSender;
+import com.autoservice.domain.exceptions.DomainException;
+import com.autoservice.validation.Error;
 import jakarta.mail.MessagingException;
 import jakarta.mail.util.ByteArrayDataSource;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,7 +34,7 @@ public class JavaMailOrcamentoEmailSender implements OrcamentoEmailSender {
         final String email = ordemServico.cliente().email();
 
         if (email == null || email.isBlank()) {
-            throw new IllegalArgumentException("Cliente não possui email para envio do orçamento");
+            throw DomainException.with(new Error("Cliente não possui email para envio do orçamento"));
         }
 
         try {

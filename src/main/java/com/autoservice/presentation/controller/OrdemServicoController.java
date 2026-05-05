@@ -1,5 +1,8 @@
 package com.autoservice.presentation.controller;
 
+import com.autoservice.application.PaginationOutput;
+import com.autoservice.application.ordemservico.acompanhamento.AcompanharOrdemServicoOutput;
+import com.autoservice.application.ordemservico.acompanhamento.AcompanharOrdemServicoQuery;
 import com.autoservice.application.ordemservico.detail.DetailOrdemServicoOutput;
 import com.autoservice.application.ordemservico.detail.DetailOrdemServicoQuery;
 import com.autoservice.application.ordemservico.aprovacao.AprovarOrdemServicoCommand;
@@ -12,6 +15,8 @@ import com.autoservice.application.ordemservico.diagnostico.FinalizarDiagnostico
 import com.autoservice.application.ordemservico.diagnostico.FinalizarDiagnosticoUseCase;
 import com.autoservice.application.ordemservico.diagnostico.IniciarDiagnosticoCommand;
 import com.autoservice.application.ordemservico.diagnostico.IniciarDiagnosticoUseCase;
+import com.autoservice.application.ordemservico.delete.RemoverOrdemServicoCommand;
+import com.autoservice.application.ordemservico.delete.RemoverOrdemServicoUseCase;
 import com.autoservice.application.ordemservico.entrega.EntregarOrdemServicoCommand;
 import com.autoservice.application.ordemservico.entrega.EntregarOrdemServicoUseCase;
 import com.autoservice.application.ordemservico.finalizacao.FinalizarOrdemServicoCommand;
@@ -19,27 +24,43 @@ import com.autoservice.application.ordemservico.finalizacao.FinalizarOrdemServic
 import com.autoservice.application.ordemservico.itemservico.AdicionarItemServicoCommand;
 import com.autoservice.application.ordemservico.itemservico.AdicionarItensServicoCommand;
 import com.autoservice.application.ordemservico.itemservico.AdicionarItensServicoUseCase;
+import com.autoservice.application.ordemservico.itemservico.AtualizarItemServicoCommand;
+import com.autoservice.application.ordemservico.itemservico.AtualizarItemServicoUseCase;
+import com.autoservice.application.ordemservico.itemservico.ListItensServicoQuery;
+import com.autoservice.application.ordemservico.itemservico.RemoverItemServicoCommand;
+import com.autoservice.application.ordemservico.itemservico.RemoverItemServicoUseCase;
+import com.autoservice.application.ordemservico.update.AtualizarOrdemServicoCommand;
+import com.autoservice.application.ordemservico.update.AtualizarOrdemServicoOutput;
+import com.autoservice.application.ordemservico.update.AtualizarOrdemServicoUseCase;
+import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.itemservico.enums.ItemServicoTipo;
 import com.autoservice.presentation.dto.ordemservico.AdicionarItemServicoRequest;
+import com.autoservice.presentation.dto.ordemservico.AdicionarItemServicoResponse;
 import com.autoservice.presentation.dto.ordemservico.AdicionarItensServicoRequest;
 import com.autoservice.presentation.dto.ordemservico.AdicionarItensServicoResponse;
+import com.autoservice.presentation.dto.ordemservico.AtualizarItemServicoRequest;
+import com.autoservice.presentation.dto.ordemservico.AtualizarOrdemServicoRequest;
 import com.autoservice.presentation.dto.ordemservico.FinalizarDiagnosticoRequest;
 import com.autoservice.presentation.dto.ordemservico.OrdemServicoStatusResponse;
+import com.autoservice.validation.Error;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/ordens-servico")
@@ -53,7 +74,13 @@ public class OrdemServicoController {
     private final FinalizarDiagnosticoUseCase finalizarDiagnosticoUseCase;
     private final ListOrdemServicoQuery listOrdemServicoQuery;
     private final DetailOrdemServicoQuery detailOrdemServicoQuery;
+    private final AcompanharOrdemServicoQuery acompanharOrdemServicoQuery;
+    private final AtualizarOrdemServicoUseCase atualizarOrdemServicoUseCase;
+    private final RemoverOrdemServicoUseCase removerOrdemServicoUseCase;
     private final AdicionarItensServicoUseCase adicionarItensServicoUseCase;
+    private final ListItensServicoQuery listItensServicoQuery;
+    private final AtualizarItemServicoUseCase atualizarItemServicoUseCase;
+    private final RemoverItemServicoUseCase removerItemServicoUseCase;
     private final AprovarOrdemServicoUseCase aprovarOrdemServicoUseCase;
     private final ReprovarOrdemServicoUseCase reprovarOrdemServicoUseCase;
     private final FinalizarOrdemServicoUseCase finalizarOrdemServicoUseCase;
@@ -64,7 +91,13 @@ public class OrdemServicoController {
             final FinalizarDiagnosticoUseCase finalizarDiagnosticoUseCase,
             final ListOrdemServicoQuery listOrdemServicoQuery,
             final DetailOrdemServicoQuery detailOrdemServicoQuery,
+            final AcompanharOrdemServicoQuery acompanharOrdemServicoQuery,
+            final AtualizarOrdemServicoUseCase atualizarOrdemServicoUseCase,
+            final RemoverOrdemServicoUseCase removerOrdemServicoUseCase,
             final AdicionarItensServicoUseCase adicionarItensServicoUseCase,
+            final ListItensServicoQuery listItensServicoQuery,
+            final AtualizarItemServicoUseCase atualizarItemServicoUseCase,
+            final RemoverItemServicoUseCase removerItemServicoUseCase,
             final AprovarOrdemServicoUseCase aprovarOrdemServicoUseCase,
             final ReprovarOrdemServicoUseCase reprovarOrdemServicoUseCase,
             final FinalizarOrdemServicoUseCase finalizarOrdemServicoUseCase,
@@ -74,7 +107,13 @@ public class OrdemServicoController {
         this.finalizarDiagnosticoUseCase = finalizarDiagnosticoUseCase;
         this.listOrdemServicoQuery = listOrdemServicoQuery;
         this.detailOrdemServicoQuery = detailOrdemServicoQuery;
+        this.acompanharOrdemServicoQuery = acompanharOrdemServicoQuery;
+        this.atualizarOrdemServicoUseCase = atualizarOrdemServicoUseCase;
+        this.removerOrdemServicoUseCase = removerOrdemServicoUseCase;
         this.adicionarItensServicoUseCase = adicionarItensServicoUseCase;
+        this.listItensServicoQuery = listItensServicoQuery;
+        this.atualizarItemServicoUseCase = atualizarItemServicoUseCase;
+        this.removerItemServicoUseCase = removerItemServicoUseCase;
         this.aprovarOrdemServicoUseCase = aprovarOrdemServicoUseCase;
         this.reprovarOrdemServicoUseCase = reprovarOrdemServicoUseCase;
         this.finalizarOrdemServicoUseCase = finalizarOrdemServicoUseCase;
@@ -82,15 +121,46 @@ public class OrdemServicoController {
     }
 
     @GetMapping
-    @Operation(summary = "Listar ordens de serviço")
-    public ResponseEntity<List<ListOrdemServicoOutput>> list() {
-        return ResponseEntity.ok(this.listOrdemServicoQuery.execute());
+    public ResponseEntity<PaginationOutput<ListOrdemServicoOutput>> list(
+            @RequestParam(defaultValue = "0") final int page,
+            @RequestParam(defaultValue = "20") final int size,
+            @RequestParam(required = false) final String status
+    ) {
+        return ResponseEntity.ok(this.listOrdemServicoQuery.execute(page, size, status));
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Detalhar ordem de serviço", description = "Inclui veículo, cliente, itens e valor total.")
     public ResponseEntity<DetailOrdemServicoOutput> detail(@PathVariable final UUID id) {
         return ResponseEntity.ok(this.detailOrdemServicoQuery.execute(id));
+    }
+
+    @GetMapping("/{id}/andamento")
+    public ResponseEntity<AcompanharOrdemServicoOutput> acompanhar(@PathVariable final UUID id) {
+        return ResponseEntity.ok(this.acompanharOrdemServicoQuery.acompanhar(id));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<AtualizarOrdemServicoOutput> atualizar(
+            @PathVariable final UUID id,
+            @RequestBody @Valid final AtualizarOrdemServicoRequest request
+    ) {
+        final var output = this.atualizarOrdemServicoUseCase.execute(AtualizarOrdemServicoCommand.with(
+                id,
+                request.veiculoId(),
+                request.relato(),
+                request.tempoPrevistoExecucaoDias(),
+                request.tempoPrevistoExecucaoHoras()
+        ));
+
+        return ResponseEntity.ok(output);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<OrdemServicoStatusResponse> remover(@PathVariable final UUID id) {
+        final var output = this.removerOrdemServicoUseCase.execute(RemoverOrdemServicoCommand.with(id));
+
+        return ResponseEntity.ok(OrdemServicoStatusResponse.from(output));
     }
 
     @PostMapping("/{id}/itens")
@@ -115,18 +185,68 @@ public class OrdemServicoController {
                 .body(AdicionarItensServicoResponse.from(output));
     }
 
+    @GetMapping("/{id}/itens")
+    public ResponseEntity<List<AdicionarItemServicoResponse>> listarItens(@PathVariable final UUID id) {
+        final var itens = this.listItensServicoQuery.execute(id).stream()
+                .map(AdicionarItemServicoResponse::from)
+                .toList();
+
+        return ResponseEntity.ok(itens);
+    }
+
     private AdicionarItemServicoCommand toCommand(
             final UUID ordemServicoId,
             final AdicionarItemServicoRequest item
     ) {
         return AdicionarItemServicoCommand.with(
                 ordemServicoId,
-                ItemServicoTipo.valueOf(item.tipo().trim().toUpperCase()),
+                parseItemServicoTipo(item.tipo()),
                 item.descricao(),
                 item.pecaId(),
                 item.quantidade(),
                 item.valorUnitario()
         );
+    }
+
+    @PutMapping("/{id}/itens/{itemId}")
+    public ResponseEntity<AdicionarItemServicoResponse> atualizarItem(
+            @PathVariable final UUID id,
+            @PathVariable final UUID itemId,
+            @RequestBody @Valid final AtualizarItemServicoRequest request
+    ) {
+        final var output = this.atualizarItemServicoUseCase.execute(AtualizarItemServicoCommand.with(
+                id,
+                itemId,
+                request.tipo() == null || request.tipo().isBlank() ? null : parseItemServicoTipo(request.tipo()),
+                request.descricao(),
+                request.pecaId(),
+                request.quantidade(),
+                request.valorUnitario()
+        ));
+
+        return ResponseEntity.ok(AdicionarItemServicoResponse.from(output));
+    }
+
+    @DeleteMapping("/{id}/itens/{itemId}")
+    public ResponseEntity<Void> removerItem(
+            @PathVariable final UUID id,
+            @PathVariable final UUID itemId
+    ) {
+        this.removerItemServicoUseCase.execute(RemoverItemServicoCommand.with(id, itemId));
+
+        return ResponseEntity.noContent().build();
+    }
+
+    private ItemServicoTipo parseItemServicoTipo(final String tipo) {
+        if (tipo == null || tipo.isBlank()) {
+            throw DomainException.with(new Error("Tipo do item de serviço não deve ser nulo"));
+        }
+
+        try {
+            return ItemServicoTipo.valueOf(tipo.trim().toUpperCase());
+        } catch (final IllegalArgumentException ex) {
+            throw DomainException.with(new Error("Tipo do item de serviço deve ser SERVICO ou PECA"));
+        }
     }
 
     @PatchMapping("/{id}/diagnostico")

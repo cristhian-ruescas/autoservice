@@ -24,6 +24,11 @@ public class TipoVeiculoGatewayImpl implements TipoVeiculoGateway {
     }
 
     @Override
+    public TipoVeiculo update(final TipoVeiculo tipoVeiculo) {
+        return this.repository.save(tipoVeiculo);
+    }
+
+    @Override
     public Optional<TipoVeiculo> findById(final TipoVeiculoID id) {
         return this.repository.findById(id);
     }
@@ -31,5 +36,10 @@ public class TipoVeiculoGatewayImpl implements TipoVeiculoGateway {
     @Override
     public Optional<TipoVeiculo> findByMarcaModeloAno(final String marca, final String modelo, final Integer ano) {
         return this.repository.findByMarcaModeloAno(marca, modelo, ano);
+    }
+
+    @Override
+    public void deleteById(final TipoVeiculoID id) {
+        this.repository.deleteById(id);
     }
 }

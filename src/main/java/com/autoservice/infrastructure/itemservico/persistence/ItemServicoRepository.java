@@ -3,6 +3,8 @@ package com.autoservice.infrastructure.itemservico.persistence;
 import com.autoservice.domain.itemservico.ItemServico;
 import com.autoservice.domain.itemservico.ItemServicoID;
 import com.autoservice.domain.ordemservico.OrdemServicoID;
+import com.autoservice.domain.ordemservico.enums.OrdemServicoStatus;
+import com.autoservice.domain.peca.PecaID;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.query.Param;
@@ -22,4 +24,16 @@ public interface ItemServicoRepository extends JpaRepository<ItemServico, ItemSe
     BigDecimal totalByOrdemServicoId(@Param("ordemServicoId") OrdemServicoID ordemServicoId);
 
     List<ItemServico> findByOrdemServicoId(OrdemServicoID ordemServicoId);
+
+    @Query("""
+            select count(item) > 0
+            from ItemServico item
+            join OrdemServico ordemServico on ordemServico.id = item.ordemServicoId
+            where item.pecaId = :pecaId
+              and ordemServico.status <> :status
+            """)
+    boolean existsByPecaIdAndOrdemServicoStatusNot(
+            @Param("pecaId") PecaID pecaId,
+            @Param("status") OrdemServicoStatus status
+    );
 }
