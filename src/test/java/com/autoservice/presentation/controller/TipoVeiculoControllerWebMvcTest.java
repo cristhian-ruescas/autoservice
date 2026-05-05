@@ -3,6 +3,10 @@ package com.autoservice.presentation.controller;
 import com.autoservice.application.tipoveiculo.create.CadastrarTipoVeiculoCommand;
 import com.autoservice.application.tipoveiculo.create.CadastrarTipoVeiculoOutput;
 import com.autoservice.application.tipoveiculo.create.CadastrarTipoVeiculoUseCase;
+import com.autoservice.application.tipoveiculo.delete.RemoverTipoVeiculoUseCase;
+import com.autoservice.application.tipoveiculo.query.GetTipoVeiculoByIdQuery;
+import com.autoservice.application.tipoveiculo.query.ListTipoVeiculoQuery;
+import com.autoservice.application.tipoveiculo.update.AtualizarTipoVeiculoUseCase;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +30,18 @@ class TipoVeiculoControllerWebMvcTest {
 
     @MockBean
     private CadastrarTipoVeiculoUseCase cadastrarTipoVeiculoUseCase;
+
+    @MockBean
+    private ListTipoVeiculoQuery listTipoVeiculoQuery;
+
+    @MockBean
+    private GetTipoVeiculoByIdQuery getTipoVeiculoByIdQuery;
+
+    @MockBean
+    private AtualizarTipoVeiculoUseCase atualizarTipoVeiculoUseCase;
+
+    @MockBean
+    private RemoverTipoVeiculoUseCase removerTipoVeiculoUseCase;
 
     @Test
     @DisplayName("POST delega ao caso de uso e serializa resposta")
