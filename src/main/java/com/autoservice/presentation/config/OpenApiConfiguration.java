@@ -21,8 +21,10 @@ public class OpenApiConfiguration {
             "Atendimentos",
             "Tipos de veículo",
             "Peças",
+            "Serviços",
             "Estoques",
             "Ordens de serviço",
+            "Ordem de serviço — métricas",
             "Ordens de compra"
     );
 
@@ -65,13 +67,13 @@ public class OpenApiConfiguration {
 
     private static String descricaoFluxoENegocio() {
         return """
-                API da oficina: atendimento (abertura de OS com cliente PF ou PJ), ordem de serviço, peças, estoque e ordem de compra.
+                API da oficina: atendimento (abertura de OS com cliente PF ou PJ), ordem de serviço, peças, **catálogo de serviços**, estoque, ordem de compra e **métricas** de execução.
 
                 ## Fluxo sugerido (happy path)
 
                 1. **Cliente PF ou PJ + OS** — `POST /atendimentos` com `tipoPessoa` `FISICA` ou `JURIDICA`. Retorna a OS em `RECEBIDO`.
                 2. **Iniciar diagnóstico** — `PATCH /ordens-servico/{id}/diagnostico` → `EM_DIAGNOSTICO`.
-                3. **Cadastrar peças (catálogo)** — `POST /pecas` (e, se necessário, `POST /tipos-veiculo` para o catálogo marca/modelo/ano).
+                3. **Catálogos** — `POST /pecas`, opcional `POST /tipos-veiculo` (marca/modelo/ano) e `POST /servicos` (serviços ofertados e valor de referência).
                 4. **Incluir itens na OS (serviço e/ou peça)** — `POST /ordens-servico/{id}/itens` com itens do tipo `SERVICO` ou `PECA` (somente com OS em `EM_DIAGNOSTICO`). Opcional: `GET /estoques` para consultar disponibilidade.
                 5. **Finalizar diagnóstico / orçamento** — `PATCH /ordens-servico/{id}/diagnostico/finalizar` → `AGUARDANDO_APROVACAO` (valor total do orçamento deve ser maior que zero).
                 6. **Aprovação** — `PATCH /ordens-servico/{id}/aprovacao/aprovar` (ou `.../reprovar`) → `EM_EXECUCAO` quando aprovada.
@@ -99,6 +101,8 @@ public class OpenApiConfiguration {
 
                 - **Estoque:** `GET /estoques`, `GET /estoques/{id}`, `PATCH /estoques/{id}/localizacao`
                 - **Listagem e detalhe da OS:** `GET /ordens-servico`, `GET /ordens-servico/{id}`
+                - **CRUD de serviços (catálogo):** `GET/POST /servicos`, `GET/PUT/DELETE /servicos/{id}`
+                - **Tempo médio de execução (após aprovar até finalizar):** `GET /ordens-servico/metricas/tempo-medio-execucao`
                 """;
     }
 }
