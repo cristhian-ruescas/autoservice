@@ -9,4 +9,6 @@ public interface PecaGateway {
     Peca update(Peca peca);
 
     Optional<Peca> findById(PecaID id);
+
+    void deleteById(PecaID id);
 }
