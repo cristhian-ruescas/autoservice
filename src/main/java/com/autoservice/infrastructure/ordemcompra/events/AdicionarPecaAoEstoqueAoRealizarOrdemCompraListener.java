@@ -2,10 +2,12 @@ package com.autoservice.infrastructure.ordemcompra.events;
 
 import com.autoservice.domain.estoque.Estoque;
 import com.autoservice.domain.estoque.EstoqueGateway;
+import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.ordemcompra.ItemOrdemCompra;
 import com.autoservice.domain.ordemcompra.ItemOrdemCompraGateway;
 import com.autoservice.domain.ordemcompra.events.OrdemCompraRealizadaEvent;
 import com.autoservice.domain.peca.PecaGateway;
+import com.autoservice.validation.Error;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -48,7 +50,7 @@ public class AdicionarPecaAoEstoqueAoRealizarOrdemCompraListener {
             final OrdemCompraRealizadaEvent event
     ) {
         final var peca = this.pecaGateway.findById(item.getPecaId())
-                .orElseThrow(() -> new IllegalArgumentException("Peça da ordem de compra não encontrada"));
+                .orElseThrow(() -> DomainException.with(new Error("Peça da ordem de compra não encontrada")));
         final int quantidade = item.getQuantidade();
 
         if (peca.getEstoqueId() == null) {
@@ -70,7 +72,7 @@ public class AdicionarPecaAoEstoqueAoRealizarOrdemCompraListener {
         }
 
         final var estoque = this.estoqueGateway.findById(peca.getEstoqueId())
-                .orElseThrow(() -> new IllegalArgumentException("Estoque da peça não encontrado"));
+                .orElseThrow(() -> DomainException.with(new Error("Estoque da peça não encontrado")));
 
         estoque.adicionar(quantidade);
         this.estoqueGateway.update(estoque);

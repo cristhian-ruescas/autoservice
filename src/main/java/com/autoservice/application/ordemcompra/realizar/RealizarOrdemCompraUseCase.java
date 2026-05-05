@@ -2,8 +2,10 @@ package com.autoservice.application.ordemcompra.realizar;
 
 import com.autoservice.application.UseCase;
 import com.autoservice.domain.events.DomainEventPublisher;
+import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.ordemcompra.OrdemCompraGateway;
 import com.autoservice.domain.ordemcompra.OrdemCompraID;
+import com.autoservice.validation.Error;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +31,7 @@ public class RealizarOrdemCompraUseCase extends UseCase<RealizarOrdemCompraComma
         final var id = OrdemCompraID.from(command.ordemCompraId());
 
         final var ordemCompra = this.ordemCompraGateway.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Ordem de compra não encontrada"));
+                .orElseThrow(() -> DomainException.with(new Error("Ordem de compra não encontrada")));
 
         ordemCompra.realizar();
 
