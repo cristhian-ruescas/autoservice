@@ -13,6 +13,8 @@ import com.autoservice.application.tipoveiculo.update.AtualizarTipoVeiculoUseCas
 import com.autoservice.presentation.dto.tipoveiculo.AtualizarTipoVeiculoRequest;
 import com.autoservice.presentation.dto.tipoveiculo.CadastrarTipoVeiculoRequest;
 import com.autoservice.presentation.dto.tipoveiculo.TipoVeiculoResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +32,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/tipos-veiculo")
+@Tag(name = "Tipos de veículo", description = "Catálogo marca/modelo/ano para veículos e peças.")
 public class TipoVeiculoController {
 
     private final CadastrarTipoVeiculoUseCase cadastrarTipoVeiculoUseCase;
@@ -97,6 +100,7 @@ public class TipoVeiculoController {
     }
 
     @PostMapping
+    @Operation(summary = "Cadastrar ou reutilizar tipo de veículo", description = "Idempotente por marca, modelo e ano (case-insensitive).")
     public ResponseEntity<TipoVeiculoResponse> create(
             @RequestBody @Valid final CadastrarTipoVeiculoRequest request
     ) {

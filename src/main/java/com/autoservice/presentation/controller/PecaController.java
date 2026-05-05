@@ -13,6 +13,8 @@ import com.autoservice.application.peca.update.AtualizarPecaUseCase;
 import com.autoservice.presentation.dto.peca.AtualizarPecaRequest;
 import com.autoservice.presentation.dto.peca.CadastrarPecaRequest;
 import com.autoservice.presentation.dto.peca.CadastrarPecaResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +32,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/pecas")
+@Tag(name = "Peças", description = "Cadastro de peças vinculadas a tipo de veículo.")
 public class PecaController {
 
     private final CadastrarPecaUseCase cadastrarPecaUseCase;
@@ -92,6 +95,7 @@ public class PecaController {
     }
 
     @PostMapping
+    @Operation(summary = "Cadastrar peça")
     public ResponseEntity<CadastrarPecaResponse> create(
             @RequestBody @Valid final CadastrarPecaRequest request
     ) {
