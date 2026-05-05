@@ -5,6 +5,8 @@ import com.autoservice.application.atendimento.create.enums.TipoPessoaAtendiment
 import com.autoservice.application.atendimento.create.AbrirAtendimentoUseCase;
 import com.autoservice.presentation.dto.atendimento.AbrirAtendimentoRequest;
 import com.autoservice.presentation.dto.atendimento.AbrirAtendimentoResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/atendimentos")
+@Tag(
+        name = "Atendimentos",
+        description = "Abertura de atendimento: cadastro de cliente/pessoa, veículo e ordem de serviço inicial (status RECEBIDO)."
+)
 public class AtendimentoController {
 
     private final AbrirAtendimentoUseCase abrirAtendimentoUseCase;
@@ -24,6 +30,7 @@ public class AtendimentoController {
     }
 
     @PostMapping
+    @Operation(summary = "Abrir atendimento / criar OS", description = "Primeiro passo do fluxo: OS criada em RECEBIDO com cliente e veículo.")
     public ResponseEntity<AbrirAtendimentoResponse> abrir(
             @RequestBody @Valid final AbrirAtendimentoRequest request
     ) {

@@ -43,6 +43,8 @@ import com.autoservice.presentation.dto.ordemservico.AtualizarOrdemServicoReques
 import com.autoservice.presentation.dto.ordemservico.FinalizarDiagnosticoRequest;
 import com.autoservice.presentation.dto.ordemservico.OrdemServicoStatusResponse;
 import com.autoservice.validation.Error;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -62,6 +64,10 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/ordens-servico")
+@Tag(
+        name = "Ordens de serviço",
+        description = "Ciclo de vida da OS: listagem, detalhe, diagnóstico, itens/orçamento, aprovação (inclui links por e-mail), finalização e entrega."
+)
 public class OrdemServicoController {
 
     private final IniciarDiagnosticoUseCase iniciarDiagnosticoUseCase;
@@ -124,6 +130,7 @@ public class OrdemServicoController {
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "Detalhar ordem de serviço", description = "Inclui veículo, cliente, itens e valor total.")
     public ResponseEntity<DetailOrdemServicoOutput> detail(@PathVariable final UUID id) {
         return ResponseEntity.ok(this.detailOrdemServicoQuery.execute(id));
     }
@@ -157,6 +164,10 @@ public class OrdemServicoController {
     }
 
     @PostMapping("/{id}/itens")
+    @Operation(
+            summary = "Adicionar itens à OS",
+            description = "Serviços e peças com quantidade e valor. Exige status EM_DIAGNOSTICO (etapa de orçamento no fluxo)."
+    )
     public ResponseEntity<AdicionarItensServicoResponse> adicionarItens(
             @PathVariable final UUID id,
             @RequestBody @Valid final AdicionarItensServicoRequest request
@@ -239,6 +250,7 @@ public class OrdemServicoController {
     }
 
     @PatchMapping("/{id}/diagnostico")
+    @Operation(summary = "Iniciar diagnóstico", description = "Transição RECEBIDO → EM_DIAGNOSTICO.")
     public ResponseEntity<OrdemServicoStatusResponse> iniciarDiagnostico(@PathVariable final UUID id) {
         final var output = this.iniciarDiagnosticoUseCase.execute(IniciarDiagnosticoCommand.with(id));
 
@@ -246,6 +258,10 @@ public class OrdemServicoController {
     }
 
     @PatchMapping("/{id}/diagnostico/finalizar")
+    @Operation(
+            summary = "Finalizar diagnóstico / gerar orçamento",
+            description = "Define previsão de execução, passa para AGUARDANDO_APROVACAO e dispara fluxo de envio de orçamento."
+    )
     public ResponseEntity<OrdemServicoStatusResponse> finalizarDiagnostico(
             @PathVariable final UUID id,
             @RequestBody @Valid final FinalizarDiagnosticoRequest request
@@ -260,26 +276,31 @@ public class OrdemServicoController {
     }
 
     @PatchMapping("/{id}/aprovacao/aprovar")
+    @Operation(summary = "Aprovar orçamento (PATCH)")
     public ResponseEntity<OrdemServicoStatusResponse> aprovar(@PathVariable final UUID id) {
         return ResponseEntity.ok(this.aprovarOrdemServico(id));
     }
 
     @PatchMapping("/{id}/aprovacao/reprovar")
+    @Operation(summary = "Reprovar orçamento (PATCH)")
     public ResponseEntity<OrdemServicoStatusResponse> reprovar(@PathVariable final UUID id) {
         return ResponseEntity.ok(this.reprovarOrdemServico(id));
     }
 
     @GetMapping("/{id}/aprovacao/aprovar")
+    @Operation(summary = "Aprovar orçamento por link (GET)", description = "Destinado a links em e-mail (sem corpo).")
     public ResponseEntity<OrdemServicoStatusResponse> aprovarPorLink(@PathVariable final UUID id) {
         return ResponseEntity.ok(this.aprovarOrdemServico(id));
     }
 
     @GetMapping("/{id}/aprovacao/reprovar")
+    @Operation(summary = "Reprovar orçamento por link (GET)", description = "Destinado a links em e-mail (sem corpo).")
     public ResponseEntity<OrdemServicoStatusResponse> reprovarPorLink(@PathVariable final UUID id) {
         return ResponseEntity.ok(this.reprovarOrdemServico(id));
     }
 
     @PatchMapping("/{id}/finalizar")
+    @Operation(summary = "Finalizar execução da OS", description = "EM_EXECUCAO → FINALIZADA.")
     public ResponseEntity<OrdemServicoStatusResponse> finalizar(@PathVariable final UUID id) {
         final var output = this.finalizarOrdemServicoUseCase.execute(FinalizarOrdemServicoCommand.with(id));
 
@@ -287,6 +308,7 @@ public class OrdemServicoController {
     }
 
     @PatchMapping("/{id}/entregar")
+    @Operation(summary = "Registrar entrega do veículo", description = "FINALIZADA ou REPROVADO → ENTREGUE.")
     public ResponseEntity<OrdemServicoStatusResponse> entregar(@PathVariable final UUID id) {
         final var output = this.entregarOrdemServicoUseCase.execute(EntregarOrdemServicoCommand.with(id));
 
