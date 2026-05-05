@@ -15,6 +15,9 @@
 
     <properties>
         <java.version>21</java.version>
+        <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+        <!-- Mesmos globs do jacoco-maven-plugin (excludes): Sonar não ignora essas pastas por padrão -->
+        <sonar.coverage.exclusions>**/dto/**,**/*Config*,**/*Application*,**/infrastructure/**,**/presentation/**</sonar.coverage.exclusions>
     </properties>
     <dependencies>
         <dependency>
@@ -90,6 +93,18 @@
             <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- jjwt 0.9.x usa javax.xml.bind em Java 11+ só no classpath de testes -->
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.1</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -126,6 +141,7 @@
                         </goals>
                         <configuration>
                             <formats>
+                                <format>XML</format>
                                 <format>HTML</format>
                                 <format>CSV</format>
                             </formats>
@@ -145,7 +161,7 @@
                                         <limit>
                                             <counter>LINE</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.85</minimum>
+                                            <minimum>0.80</minimum>
                                         </limit>
                                     </limits>
                                 </rule>

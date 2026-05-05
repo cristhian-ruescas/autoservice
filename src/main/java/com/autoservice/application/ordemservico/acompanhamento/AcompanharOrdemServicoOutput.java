@@ -24,7 +24,7 @@ public record AcompanharOrdemServicoOutput(
         List<EtapaOutput> etapas
 ) {
 
-    private static final List<Etapa> ETAPAS = List.of(
+    private static final List<Etapa> DEFINICOES_ETAPAS_PADRAO = List.of(
             new Etapa(OrdemServicoStatus.RECEBIDO, "Recebimento", 10),
             new Etapa(OrdemServicoStatus.EM_DIAGNOSTICO, "Diagnostico", 30),
             new Etapa(OrdemServicoStatus.AGUARDANDO_APROVACAO, "Aguardando aprovacao", 50),
@@ -103,7 +103,7 @@ public record AcompanharOrdemServicoOutput(
 
         final var percentualAtual = percentualAndamento(status);
 
-        return ETAPAS.stream()
+        return DEFINICOES_ETAPAS_PADRAO.stream()
                 .map(etapa -> new EtapaOutput(
                         etapa.status().name(),
                         etapa.nome(),
@@ -130,7 +130,7 @@ public record AcompanharOrdemServicoOutput(
     }
 
     private static Etapa etapaByStatus(final OrdemServicoStatus status) {
-        return ETAPAS.stream()
+        return DEFINICOES_ETAPAS_PADRAO.stream()
                 .filter(etapa -> etapa.status() == status)
                 .findFirst()
                 .orElseGet(() -> new Etapa(status, status.getDescricao(), percentualAndamento(status)));

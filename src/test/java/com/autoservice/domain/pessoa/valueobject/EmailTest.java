@@ -109,7 +109,7 @@ class EmailTest {
     void deveSerDiferenteDeNull() {
         final Email email = Email.from("usuario@email.com");
 
-        assertNotEquals(email, null);
+        assertFalse(email.equals(null));
     }
 
     @Test
@@ -117,7 +117,7 @@ class EmailTest {
     void deveSerDiferenteDeOutroTipo() {
         final Email email = Email.from("usuario@email.com");
 
-        assertNotEquals(email, "usuario@email.com");
+        assertFalse(email.equals("usuario@email.com"));
     }
 
     @Test

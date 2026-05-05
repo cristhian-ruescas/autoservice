@@ -65,10 +65,11 @@ class EntityTest {
         assertNull(e4.getId());
 
 
-        assertEquals(e1, e1);
+        boolean reflexividade = e1.equals(e1);
+        assertTrue(reflexividade);
         assertEquals(e1, e2);
-        assertNotEquals(e1, null);
-        assertNotEquals(e1, "Outro Objeto");
+        assertFalse(e1.equals(null));
+        assertFalse(e1.equals("Outro Objeto"));
         assertNotEquals(e1, e3);
         assertNotEquals(e1, e4);
         

@@ -32,7 +32,7 @@ public class EstoqueQueryService implements EstoqueQuery {
         final var query = """
                 select estoque, peca
                 from Estoque estoque
-                left join Peca peca on peca.estoqueId = estoque.id
+                left join Peca peca on peca.estoqueId = estoque.embeddedId
                 order by peca.descricao asc
                 """;
 
@@ -53,8 +53,8 @@ public class EstoqueQueryService implements EstoqueQuery {
         final var query = """
                 select estoque, peca
                 from Estoque estoque
-                left join Peca peca on peca.estoqueId = estoque.id
-                where estoque.id = :id
+                left join Peca peca on peca.estoqueId = estoque.embeddedId
+                where estoque.embeddedId = :id
                 """;
 
         final var rows = this.entityManager.createQuery(query, Object[].class)

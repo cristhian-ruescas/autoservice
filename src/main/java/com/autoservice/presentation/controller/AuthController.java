@@ -1,7 +1,6 @@
 package com.autoservice.presentation.controller;
 
 import com.autoservice.config.JwtUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -14,12 +13,19 @@ import java.util.Map;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
-    @Autowired
-    private AuthenticationManager authenticationManager;
-    @Autowired
-    private JwtUtil jwtUtil;
-    @Autowired
-    private UserDetailsService userDetailsService;
+
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtil jwtUtil;
+    private final UserDetailsService userDetailsService;
+
+    public AuthController(
+            AuthenticationManager authenticationManager,
+            JwtUtil jwtUtil,
+            UserDetailsService userDetailsService) {
+        this.authenticationManager = authenticationManager;
+        this.jwtUtil = jwtUtil;
+        this.userDetailsService = userDetailsService;
+    }
 
     @PostMapping("/login")
     public Map<String, String> login(@RequestBody Map<String, String> body) {

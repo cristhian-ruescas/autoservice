@@ -114,9 +114,7 @@ public class GlobalExceptionHandler {
     }
 
     private String resolveDataIntegrityMessage(final DataIntegrityViolationException ex) {
-        final var rootMessage = ex.getMostSpecificCause() == null
-                ? null
-                : ex.getMostSpecificCause().getMessage();
+        final String rootMessage = ex.getMostSpecificCause().getMessage();
 
         if (rootMessage != null && !rootMessage.isBlank()) {
             return rootMessage;

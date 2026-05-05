@@ -75,7 +75,7 @@ public class TipoVeiculoQueryService implements ListTipoVeiculoQuery, GetTipoVei
         final var query = """
                 select tipo
                 from TipoVeiculo tipo
-                where tipo.id = :id
+                where tipo.embeddedId = :id
                 """;
 
         final var rows = this.entityManager.createQuery(query, TipoVeiculo.class)

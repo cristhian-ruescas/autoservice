@@ -16,7 +16,7 @@ import java.time.LocalDate;
 public class Cliente extends AggregateRoot<ClienteID> {
 
     @EmbeddedId
-    private ClienteID id;
+    private ClienteID embeddedId;
 
     @Embedded
     @AttributeOverrides({
@@ -41,7 +41,7 @@ public class Cliente extends AggregateRoot<ClienteID> {
             DataCadastro dataCadastro
     ) {
         super(id);
-        this.id = id;
+        this.embeddedId = id;
         this.pessoaId = pessoaId;
         this.dataCadastro = dataCadastro;
     }
@@ -73,7 +73,7 @@ public class Cliente extends AggregateRoot<ClienteID> {
 
     @Override
     public ClienteID getId() {
-        return id;
+        return embeddedId;
     }
 
     public PessoaID getPessoaId() {

@@ -48,12 +48,12 @@ public class OrdemServicoQueryService implements ListOrdemServicoQuery, DetailOr
         final var query = """
                 select os, v, tipoVeiculo, c, pf, pj, representante
                 from OrdemServico os
-                join Veiculo v on v.id = os.veiculoId
-                join TipoVeiculo tipoVeiculo on tipoVeiculo.id = v.tipoVeiculoId
+                join Veiculo v on v.embeddedId = os.veiculoId
+                join TipoVeiculo tipoVeiculo on tipoVeiculo.embeddedId = v.tipoVeiculoId
                 join Cliente c on c.pessoaId = v.proprietarioId
-                left join PessoaFisica pf on pf.id = c.pessoaId
-                left join PessoaJuridica pj on pj.id = c.pessoaId
-                left join PessoaFisica representante on representante.id = pj.representanteLegalId
+                left join PessoaFisica pf on pf.embeddedId = c.pessoaId
+                left join PessoaJuridica pj on pj.embeddedId = c.pessoaId
+                left join PessoaFisica representante on representante.embeddedId = pj.representanteLegalId
                 where (:status is null or os.status = :status)
                 order by os.dataCriacao.value desc
                 """;
@@ -93,13 +93,13 @@ public class OrdemServicoQueryService implements ListOrdemServicoQuery, DetailOr
         final var query = """
                 select os, v, tipoVeiculo, c, pf, pj, representante
                 from OrdemServico os
-                join Veiculo v on v.id = os.veiculoId
-                join TipoVeiculo tipoVeiculo on tipoVeiculo.id = v.tipoVeiculoId
+                join Veiculo v on v.embeddedId = os.veiculoId
+                join TipoVeiculo tipoVeiculo on tipoVeiculo.embeddedId = v.tipoVeiculoId
                 join Cliente c on c.pessoaId = v.proprietarioId
-                left join PessoaFisica pf on pf.id = c.pessoaId
-                left join PessoaJuridica pj on pj.id = c.pessoaId
-                left join PessoaFisica representante on representante.id = pj.representanteLegalId
-                where os.id = :id
+                left join PessoaFisica pf on pf.embeddedId = c.pessoaId
+                left join PessoaJuridica pj on pj.embeddedId = c.pessoaId
+                left join PessoaFisica representante on representante.embeddedId = pj.representanteLegalId
+                where os.embeddedId = :id
                 """;
 
         final var rows = this.entityManager.createQuery(query, Object[].class)
@@ -117,7 +117,7 @@ public class OrdemServicoQueryService implements ListOrdemServicoQuery, DetailOr
         final var query = """
                 select item, peca
                 from ItemServico item
-                left join Peca peca on peca.id = item.pecaId
+                left join Peca peca on peca.embeddedId = item.pecaId
                 where item.ordemServicoId = :id
                 order by item.tipo asc, item.descricao asc
                 """;

@@ -21,7 +21,7 @@ import java.math.BigDecimal;
 public class Peca extends AggregateRoot<PecaID> {
 
     @EmbeddedId
-    private PecaID id;
+    private PecaID embeddedId;
 
     @Column(name = "descricao", nullable = false, length = 180)
     private String descricao;
@@ -57,7 +57,7 @@ public class Peca extends AggregateRoot<PecaID> {
             final TipoVeiculoID tipoVeiculoId
     ) {
         super(id);
-        this.id = id;
+        this.embeddedId = id;
         this.descricao = descricao;
         this.codigo = codigo;
         this.marca = marca;
@@ -135,7 +135,7 @@ public class Peca extends AggregateRoot<PecaID> {
 
     @Override
     public PecaID getId() {
-        return id;
+        return embeddedId;
     }
 
     public String getDescricao() {

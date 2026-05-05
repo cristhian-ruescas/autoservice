@@ -7,15 +7,22 @@ import com.autoservice.application.tipoveiculo.delete.RemoverTipoVeiculoUseCase;
 import com.autoservice.application.tipoveiculo.query.GetTipoVeiculoByIdQuery;
 import com.autoservice.application.tipoveiculo.query.ListTipoVeiculoQuery;
 import com.autoservice.application.tipoveiculo.update.AtualizarTipoVeiculoUseCase;
+import com.autoservice.config.JwtAuthenticationFilter;
+import com.autoservice.config.SecurityConfig;
+import jakarta.servlet.FilterChain;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -23,10 +30,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = TipoVeiculoController.class)
+@Import(SecurityConfig.class)
+@WithMockUser
 class TipoVeiculoControllerWebMvcTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockBean
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @MockBean
     private CadastrarTipoVeiculoUseCase cadastrarTipoVeiculoUseCase;
@@ -42,6 +54,15 @@ class TipoVeiculoControllerWebMvcTest {
 
     @MockBean
     private RemoverTipoVeiculoUseCase removerTipoVeiculoUseCase;
+
+    @BeforeEach
+    void jwtFilterDelegaCadeia() throws Exception {
+        doAnswer(invocation -> {
+            FilterChain chain = invocation.getArgument(2);
+            chain.doFilter(invocation.getArgument(0), invocation.getArgument(1));
+            return null;
+        }).when(jwtAuthenticationFilter).doFilter(any(), any(), any());
+    }
 
     @Test
     @DisplayName("POST delega ao caso de uso e serializa resposta")

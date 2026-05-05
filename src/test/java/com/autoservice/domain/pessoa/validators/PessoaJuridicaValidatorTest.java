@@ -10,6 +10,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @DisplayName("PessoaJuridicaValidator")
@@ -23,13 +24,16 @@ class PessoaJuridicaValidatorTest {
     @Test
     @DisplayName("Deve validar pessoa jurídica válida com sucesso")
     void deveValidarPessoaJuridicaValida() {
-        PessoaJuridica.newPessoaJuridica(
+        final var pj = PessoaJuridica.newPessoaJuridica(
                 Email.from(EMAIL_VALIDO),
                 Telefone.from(TELEFONE_VALIDO),
                 RAZAO_SOCIAL_VALIDA,
                 CNPJ.from(CNPJ_VALIDO),
                 PessoaID.unique()
         );
+        assertNotNull(pj);
+        assertNotNull(pj.getId());
+        assertEquals(RAZAO_SOCIAL_VALIDA, pj.getRazaoSocial());
     }
 
     @Test
@@ -113,13 +117,15 @@ class PessoaJuridicaValidatorTest {
     @Test
     @DisplayName("Deve aceitar CNPJ nulo na validação")
     void deveAceitarCnpjNulo() {
-        PessoaJuridica.newPessoaJuridica(
+        final var pj = PessoaJuridica.newPessoaJuridica(
                 Email.from(EMAIL_VALIDO),
                 Telefone.from(TELEFONE_VALIDO),
                 RAZAO_SOCIAL_VALIDA,
                 null,
                 PessoaID.unique()
         );
+        assertNotNull(pj);
+        assertEquals(RAZAO_SOCIAL_VALIDA, pj.getRazaoSocial());
     }
 
     @Test

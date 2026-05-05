@@ -108,7 +108,7 @@ class CNPJTest {
 
         assertEquals(cnpj1, cnpj2);
         assertNotEquals(cnpj1, cnpj3);
-        assertNotEquals(cnpj1, null);
+        assertFalse(cnpj1.equals(null));
     }
 
     @Test

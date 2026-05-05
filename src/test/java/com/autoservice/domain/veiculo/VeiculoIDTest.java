@@ -95,7 +95,7 @@ class VeiculoIDTest {
     void deveRetornarFalsoAoCompararComNull() {
         final VeiculoID id = VeiculoID.from("id");
 
-        assertNotEquals(id, null);
+        assertFalse(id.equals(null));
     }
 
     @Test
@@ -103,6 +103,6 @@ class VeiculoIDTest {
     void deveRetornarFalsoAoCompararComOutroTipo() {
         final VeiculoID id = VeiculoID.from("id");
 
-        assertNotEquals(id, "id");
+        assertFalse(id.equals("id"));
     }
 }

@@ -107,7 +107,7 @@ class PessoaIDTest {
     void deveRetornarFalsoAoCompararComNull() {
         final PessoaID pessoaID = PessoaID.from("id");
 
-        assertNotEquals(pessoaID, null);
+        assertFalse(pessoaID.equals(null));
     }
 
     @Test
@@ -115,6 +115,6 @@ class PessoaIDTest {
     void deveRetornarFalsoAoCompararComOutroTipo() {
         final PessoaID pessoaID = PessoaID.from("id");
 
-        assertNotEquals(pessoaID, "id");
+        assertFalse(pessoaID.equals("id"));
     }
 }

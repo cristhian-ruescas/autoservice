@@ -28,7 +28,7 @@ public interface ItemServicoRepository extends JpaRepository<ItemServico, ItemSe
     @Query("""
             select count(item) > 0
             from ItemServico item
-            join OrdemServico ordemServico on ordemServico.id = item.ordemServicoId
+            join OrdemServico ordemServico on ordemServico.embeddedId = item.ordemServicoId
             where item.pecaId = :pecaId
               and ordemServico.status <> :status
             """)

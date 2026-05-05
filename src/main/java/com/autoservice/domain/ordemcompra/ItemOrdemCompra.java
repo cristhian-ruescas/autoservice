@@ -18,7 +18,7 @@ import jakarta.persistence.Table;
 public class ItemOrdemCompra extends AggregateRoot<ItemOrdemCompraID> {
 
     @EmbeddedId
-    private ItemOrdemCompraID id;
+    private ItemOrdemCompraID embeddedId;
 
     @Embedded
     @AttributeOverride(name = "valor", column = @Column(name = "ordem_compra_id", nullable = false))
@@ -42,7 +42,7 @@ public class ItemOrdemCompra extends AggregateRoot<ItemOrdemCompraID> {
             final Integer quantidade
     ) {
         super(id);
-        this.id = id;
+        this.embeddedId = id;
         this.ordemCompraId = ordemCompraId;
         this.pecaId = pecaId;
         this.quantidade = quantidade;
@@ -81,7 +81,7 @@ public class ItemOrdemCompra extends AggregateRoot<ItemOrdemCompraID> {
 
     @Override
     public ItemOrdemCompraID getId() {
-        return id;
+        return embeddedId;
     }
 
     public OrdemCompraID getOrdemCompraId() {

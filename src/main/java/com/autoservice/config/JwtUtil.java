@@ -14,7 +14,7 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
     private final String SECRET_KEY = "secret-key-change-this";
-    private final long EXPIRATION = 1000 * 60 * 60 * 10; // 10 hours
+    private final long EXPIRATION = 1000L * 60 * 60 * 10; // 10 hours
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
