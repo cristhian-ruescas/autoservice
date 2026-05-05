@@ -1,6 +1,8 @@
 package com.autoservice.domain.itemservico;
 
 import com.autoservice.domain.ordemservico.OrdemServicoID;
+import com.autoservice.domain.ordemservico.enums.OrdemServicoStatus;
+import com.autoservice.domain.peca.PecaID;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -19,4 +21,6 @@ public interface ItemServicoGateway {
     BigDecimal totalByOrdemServicoId(OrdemServicoID ordemServicoId);
 
     List<ItemServico> findByOrdemServicoId(OrdemServicoID ordemServicoId);
+
+    boolean existsByPecaIdAndOrdemServicoStatusNot(PecaID pecaId, OrdemServicoStatus status);
 }

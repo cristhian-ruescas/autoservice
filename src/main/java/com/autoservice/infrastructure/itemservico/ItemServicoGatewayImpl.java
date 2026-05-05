@@ -4,6 +4,8 @@ import com.autoservice.domain.itemservico.ItemServico;
 import com.autoservice.domain.itemservico.ItemServicoGateway;
 import com.autoservice.domain.itemservico.ItemServicoID;
 import com.autoservice.domain.ordemservico.OrdemServicoID;
+import com.autoservice.domain.ordemservico.enums.OrdemServicoStatus;
+import com.autoservice.domain.peca.PecaID;
 import com.autoservice.infrastructure.itemservico.persistence.ItemServicoRepository;
 import org.springframework.stereotype.Service;
 
@@ -49,5 +51,10 @@ public class ItemServicoGatewayImpl implements ItemServicoGateway {
     @Override
     public List<ItemServico> findByOrdemServicoId(final OrdemServicoID ordemServicoId) {
         return this.repository.findByOrdemServicoId(ordemServicoId);
+    }
+
+    @Override
+    public boolean existsByPecaIdAndOrdemServicoStatusNot(final PecaID pecaId, final OrdemServicoStatus status) {
+        return this.repository.existsByPecaIdAndOrdemServicoStatusNot(pecaId, status);
     }
 }

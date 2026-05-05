@@ -26,6 +26,7 @@ import com.autoservice.application.ordemservico.itemservico.AdicionarItensServic
 import com.autoservice.application.ordemservico.itemservico.AdicionarItensServicoUseCase;
 import com.autoservice.application.ordemservico.itemservico.AtualizarItemServicoCommand;
 import com.autoservice.application.ordemservico.itemservico.AtualizarItemServicoUseCase;
+import com.autoservice.application.ordemservico.itemservico.ListItensServicoQuery;
 import com.autoservice.application.ordemservico.itemservico.RemoverItemServicoCommand;
 import com.autoservice.application.ordemservico.itemservico.RemoverItemServicoUseCase;
 import com.autoservice.application.ordemservico.update.AtualizarOrdemServicoCommand;
@@ -56,6 +57,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -70,6 +72,7 @@ public class OrdemServicoController {
     private final AtualizarOrdemServicoUseCase atualizarOrdemServicoUseCase;
     private final RemoverOrdemServicoUseCase removerOrdemServicoUseCase;
     private final AdicionarItensServicoUseCase adicionarItensServicoUseCase;
+    private final ListItensServicoQuery listItensServicoQuery;
     private final AtualizarItemServicoUseCase atualizarItemServicoUseCase;
     private final RemoverItemServicoUseCase removerItemServicoUseCase;
     private final AprovarOrdemServicoUseCase aprovarOrdemServicoUseCase;
@@ -86,6 +89,7 @@ public class OrdemServicoController {
             final AtualizarOrdemServicoUseCase atualizarOrdemServicoUseCase,
             final RemoverOrdemServicoUseCase removerOrdemServicoUseCase,
             final AdicionarItensServicoUseCase adicionarItensServicoUseCase,
+            final ListItensServicoQuery listItensServicoQuery,
             final AtualizarItemServicoUseCase atualizarItemServicoUseCase,
             final RemoverItemServicoUseCase removerItemServicoUseCase,
             final AprovarOrdemServicoUseCase aprovarOrdemServicoUseCase,
@@ -101,6 +105,7 @@ public class OrdemServicoController {
         this.atualizarOrdemServicoUseCase = atualizarOrdemServicoUseCase;
         this.removerOrdemServicoUseCase = removerOrdemServicoUseCase;
         this.adicionarItensServicoUseCase = adicionarItensServicoUseCase;
+        this.listItensServicoQuery = listItensServicoQuery;
         this.atualizarItemServicoUseCase = atualizarItemServicoUseCase;
         this.removerItemServicoUseCase = removerItemServicoUseCase;
         this.aprovarOrdemServicoUseCase = aprovarOrdemServicoUseCase;
@@ -167,6 +172,15 @@ public class OrdemServicoController {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(AdicionarItensServicoResponse.from(output));
+    }
+
+    @GetMapping("/{id}/itens")
+    public ResponseEntity<List<AdicionarItemServicoResponse>> listarItens(@PathVariable final UUID id) {
+        final var itens = this.listItensServicoQuery.execute(id).stream()
+                .map(AdicionarItemServicoResponse::from)
+                .toList();
+
+        return ResponseEntity.ok(itens);
     }
 
     private AdicionarItemServicoCommand toCommand(
