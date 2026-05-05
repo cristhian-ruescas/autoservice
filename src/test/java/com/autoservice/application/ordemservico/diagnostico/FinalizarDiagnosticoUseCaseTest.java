@@ -2,6 +2,7 @@ package com.autoservice.application.ordemservico.diagnostico;
 
 import com.autoservice.application.ordemservico.status.OrdemServicoStatusOutput;
 import com.autoservice.domain.events.DomainEventPublisher;
+import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.itemservico.ItemServicoGateway;
 import com.autoservice.domain.ordemservico.OrdemServico;
 import com.autoservice.domain.ordemservico.OrdemServicoGateway;
@@ -48,7 +49,7 @@ class FinalizarDiagnosticoUseCaseTest {
         final OrdemServicoID id = OrdemServicoID.unique();
         when(ordemServicoGateway.findById(id)).thenReturn(Optional.empty());
         final var cmd = FinalizarDiagnosticoCommand.with(UUID.fromString(id.getValue()), 1, 0);
-        assertThrows(IllegalArgumentException.class, () -> useCase.execute(cmd));
+        assertThrows(DomainException.class, () -> useCase.execute(cmd));
     }
 
     @Test
@@ -63,7 +64,7 @@ class FinalizarDiagnosticoUseCaseTest {
         when(ordemServicoGateway.findById(id)).thenReturn(Optional.of(os));
         when(itemServicoGateway.totalByOrdemServicoId(id)).thenReturn(BigDecimal.ZERO);
         final var cmd = FinalizarDiagnosticoCommand.with(UUID.fromString(id.getValue()), 1, 0);
-        assertThrows(IllegalArgumentException.class, () -> useCase.execute(cmd));
+        assertThrows(DomainException.class, () -> useCase.execute(cmd));
     }
 
     @Test

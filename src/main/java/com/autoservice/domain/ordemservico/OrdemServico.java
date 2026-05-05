@@ -6,6 +6,7 @@ import com.autoservice.domain.ordemservico.enums.OrdemServicoStatus;
 import com.autoservice.domain.ordemservico.events.OrdemServicoCriadaEvent;
 import com.autoservice.domain.ordemservico.events.OrdemServicoDiagnosticoFinalizadoEvent;
 import com.autoservice.domain.ordemservico.events.OrdemServicoDiagnosticoIniciadoEvent;
+import com.autoservice.domain.ordemservico.events.OrdemServicoFinalizadaEvent;
 import com.autoservice.domain.ordemservico.events.OrdemServicoOrcamentoAprovadoEvent;
 import com.autoservice.domain.ordemservico.validators.OrdemServicoValidator;
 import com.autoservice.domain.ordemservico.valueobject.DataCriacao;
@@ -231,6 +232,7 @@ public class OrdemServico extends AggregateRoot<OrdemServicoID> {
 
         this.status = OrdemServicoStatus.FINALIZADA;
         this.finalizadoEm = LocalDateTime.now();
+        this.registerEvent(new OrdemServicoFinalizadaEvent(this.getId()));
     }
 
     public void entregar() {
@@ -241,6 +243,18 @@ public class OrdemServico extends AggregateRoot<OrdemServicoID> {
         }
 
         this.status = OrdemServicoStatus.ENTREGUE;
+    }
+
+    public void cancelar() {
+        if (this.status == OrdemServicoStatus.FINALIZADA
+                || this.status == OrdemServicoStatus.ENTREGUE
+                || this.status == OrdemServicoStatus.REPROVADO) {
+            throw DomainException.with(List.of(
+                    new Error("Ordem de serviço FINALIZADA, ENTREGUE ou REPROVADO não pode ser cancelada")
+            ));
+        }
+
+        this.status = OrdemServicoStatus.CANCELADO;
     }
 
     @Override

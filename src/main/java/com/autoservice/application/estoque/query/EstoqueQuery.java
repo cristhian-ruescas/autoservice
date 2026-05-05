@@ -1,11 +1,11 @@
 package com.autoservice.application.estoque.query;
 
-import java.util.List;
+import com.autoservice.application.PaginationOutput;
 import java.util.UUID;
 
 public interface EstoqueQuery {
 
-    List<EstoqueOutput> listar();
+    PaginationOutput<EstoqueOutput> listar(int page, int size);
 
     EstoqueOutput detalhar(UUID id);
 }

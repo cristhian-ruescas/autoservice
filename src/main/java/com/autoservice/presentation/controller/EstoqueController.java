@@ -1,5 +1,6 @@
 package com.autoservice.presentation.controller;
 
+import com.autoservice.application.PaginationOutput;
 import com.autoservice.application.estoque.localizacao.AtualizarLocalizacaoEstoqueCommand;
 import com.autoservice.application.estoque.localizacao.AtualizarLocalizacaoEstoqueUseCase;
 import com.autoservice.application.estoque.query.EstoqueQuery;
@@ -14,9 +15,9 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -36,14 +37,22 @@ public class EstoqueController {
     }
 
     @GetMapping
-    @Operation(summary = "Listar estoques")
-    public ResponseEntity<List<EstoqueResponse>> listar() {
-        final var response = this.estoqueQuery.listar()
+    public ResponseEntity<PaginationOutput<EstoqueResponse>> listar(
+            @RequestParam(defaultValue = "0") final int page,
+            @RequestParam(defaultValue = "20") final int size
+    ) {
+        final var output = this.estoqueQuery.listar(page, size);
+        final var response = output.items()
                 .stream()
                 .map(EstoqueResponse::from)
                 .toList();
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(PaginationOutput.from(
+                response,
+                output.page(),
+                output.size(),
+                output.totalElements()
+        ));
     }
 
     @GetMapping("/{id}")
