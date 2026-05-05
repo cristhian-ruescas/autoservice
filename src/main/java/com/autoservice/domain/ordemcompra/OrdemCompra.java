@@ -25,7 +25,7 @@ import java.util.List;
 public class OrdemCompra extends AggregateRoot<OrdemCompraID> {
 
     @EmbeddedId
-    private OrdemCompraID id;
+    private OrdemCompraID embeddedId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
@@ -44,7 +44,7 @@ public class OrdemCompra extends AggregateRoot<OrdemCompraID> {
             final DataCompra dataCompra
     ) {
         super(id);
-        this.id = id;
+        this.embeddedId = id;
         this.status = status;
         this.dataCompra = dataCompra;
     }
@@ -95,7 +95,7 @@ public class OrdemCompra extends AggregateRoot<OrdemCompraID> {
 
     @Override
     public OrdemCompraID getId() {
-        return id;
+        return embeddedId;
     }
 
     public OrdemCompraStatus getStatus() {

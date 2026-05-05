@@ -109,7 +109,7 @@ class TelefoneTest {
     void deveSerDiferenteDeNull() {
         final Telefone telefone = Telefone.from("11999999999");
 
-        assertNotEquals(telefone, null);
+        assertFalse(telefone.equals(null));
     }
 
     @Test
@@ -117,7 +117,7 @@ class TelefoneTest {
     void deveSerDiferenteDeOutroTipo() {
         final Telefone telefone = Telefone.from("11999999999");
 
-        assertNotEquals(telefone, "11999999999");
+        assertFalse(telefone.equals("11999999999"));
     }
 
     @Test

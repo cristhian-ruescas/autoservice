@@ -67,7 +67,7 @@ public class OrdemCompraQueryService implements OrdemCompraQuery {
         final var query = """
                 select item, peca
                 from ItemOrdemCompra item
-                join Peca peca on peca.id = item.pecaId
+                join Peca peca on peca.embeddedId = item.pecaId
                 where item.ordemCompraId = :ordemCompraId
                 order by peca.descricao asc
                 """;

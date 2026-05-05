@@ -18,7 +18,7 @@ import jakarta.persistence.Table;
 public class TipoVeiculo extends AggregateRoot<TipoVeiculoID> {
 
     @EmbeddedId
-    private TipoVeiculoID id;
+    private TipoVeiculoID embeddedId;
 
     @Embedded
     private Marca marca;
@@ -35,7 +35,7 @@ public class TipoVeiculo extends AggregateRoot<TipoVeiculoID> {
 
     private TipoVeiculo(final TipoVeiculoID id, final Marca marca, final Modelo modelo, final Ano ano) {
         super(id);
-        this.id = id;
+        this.embeddedId = id;
         this.marca = marca;
         this.modelo = modelo;
         this.ano = ano;
@@ -76,7 +76,7 @@ public class TipoVeiculo extends AggregateRoot<TipoVeiculoID> {
 
     @Override
     public TipoVeiculoID getId() {
-        return id;
+        return embeddedId;
     }
 
     public Marca getMarca() {

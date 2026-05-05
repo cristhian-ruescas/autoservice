@@ -24,7 +24,7 @@ import java.math.BigDecimal;
 public class ItemServico extends AggregateRoot<ItemServicoID> {
 
     @EmbeddedId
-    private ItemServicoID id;
+    private ItemServicoID embeddedId;
 
     @Embedded
     @AttributeOverride(name = "valor", column = @Column(name = "ordem_servico_id", nullable = false))
@@ -61,7 +61,7 @@ public class ItemServico extends AggregateRoot<ItemServicoID> {
             final BigDecimal valorUnitario
     ) {
         super(id);
-        this.id = id;
+        this.embeddedId = id;
         this.ordemServicoId = ordemServicoId;
         this.tipo = tipo;
         this.descricao = descricao;
@@ -175,7 +175,7 @@ public class ItemServico extends AggregateRoot<ItemServicoID> {
 
     @Override
     public ItemServicoID getId() {
-        return id;
+        return embeddedId;
     }
 
     public OrdemServicoID getOrdemServicoId() {

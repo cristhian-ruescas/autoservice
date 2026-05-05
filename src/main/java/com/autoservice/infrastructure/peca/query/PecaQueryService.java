@@ -66,7 +66,7 @@ public class PecaQueryService implements ListPecasQuery, GetPecaByIdQuery {
         final var query = """
                 select peca
                 from Peca peca
-                where peca.id = :id
+                where peca.embeddedId = :id
                 """;
 
         final var rows = this.entityManager.createQuery(query, Peca.class)

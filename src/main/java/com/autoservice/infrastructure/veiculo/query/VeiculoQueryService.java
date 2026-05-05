@@ -55,9 +55,9 @@ public class VeiculoQueryService implements
         final var query = """
                 select v, tipoVeiculo, pf, pj
                 from Veiculo v
-                join TipoVeiculo tipoVeiculo on tipoVeiculo.id = v.tipoVeiculoId
-                left join PessoaFisica pf on pf.id = v.proprietarioId
-                left join PessoaJuridica pj on pj.id = v.proprietarioId
+                join TipoVeiculo tipoVeiculo on tipoVeiculo.embeddedId = v.tipoVeiculoId
+                left join PessoaFisica pf on pf.embeddedId = v.proprietarioId
+                left join PessoaJuridica pj on pj.embeddedId = v.proprietarioId
                 where (:marca is null or lower(tipoVeiculo.marca.value) like :marca)
                   and (:modelo is null or lower(tipoVeiculo.modelo.value) like :modelo)
                   and (:ano is null or tipoVeiculo.ano.value = :ano)
@@ -92,9 +92,9 @@ public class VeiculoQueryService implements
         final var query = """
                 select v, tipoVeiculo, pf, pj
                 from Veiculo v
-                join TipoVeiculo tipoVeiculo on tipoVeiculo.id = v.tipoVeiculoId
-                left join PessoaFisica pf on pf.id = v.proprietarioId
-                left join PessoaJuridica pj on pj.id = v.proprietarioId
+                join TipoVeiculo tipoVeiculo on tipoVeiculo.embeddedId = v.tipoVeiculoId
+                left join PessoaFisica pf on pf.embeddedId = v.proprietarioId
+                left join PessoaJuridica pj on pj.embeddedId = v.proprietarioId
                 where v.placa = :placa
                 """;
 
@@ -119,10 +119,10 @@ public class VeiculoQueryService implements
         final var query = """
                 select v, tipoVeiculo, pf, pj
                 from Veiculo v
-                join TipoVeiculo tipoVeiculo on tipoVeiculo.id = v.tipoVeiculoId
-                left join PessoaFisica pf on pf.id = v.proprietarioId
-                left join PessoaJuridica pj on pj.id = v.proprietarioId
-                where v.id = :id
+                join TipoVeiculo tipoVeiculo on tipoVeiculo.embeddedId = v.tipoVeiculoId
+                left join PessoaFisica pf on pf.embeddedId = v.proprietarioId
+                left join PessoaJuridica pj on pj.embeddedId = v.proprietarioId
+                where v.embeddedId = :id
                 """;
 
         final var rows = this.entityManager.createQuery(query, Object[].class)
@@ -152,7 +152,7 @@ public class VeiculoQueryService implements
         final var query = """
                 select c
                 from Cliente c
-                where c.id = :id
+                where c.embeddedId = :id
                 """;
 
         final var rows = this.entityManager.createQuery(query, Cliente.class)
@@ -170,9 +170,9 @@ public class VeiculoQueryService implements
         final var query = """
                 select v, tipoVeiculo, pf, pj
                 from Veiculo v
-                join TipoVeiculo tipoVeiculo on tipoVeiculo.id = v.tipoVeiculoId
-                left join PessoaFisica pf on pf.id = v.proprietarioId
-                left join PessoaJuridica pj on pj.id = v.proprietarioId
+                join TipoVeiculo tipoVeiculo on tipoVeiculo.embeddedId = v.tipoVeiculoId
+                left join PessoaFisica pf on pf.embeddedId = v.proprietarioId
+                left join PessoaJuridica pj on pj.embeddedId = v.proprietarioId
                 where v.proprietarioId = :proprietarioId
                 order by tipoVeiculo.marca.value asc, tipoVeiculo.modelo.value asc, v.placa.value asc
                 """;
@@ -242,7 +242,7 @@ public class VeiculoQueryService implements
         final var query = """
                 select count(v)
                 from Veiculo v
-                join TipoVeiculo tipoVeiculo on tipoVeiculo.id = v.tipoVeiculoId
+                join TipoVeiculo tipoVeiculo on tipoVeiculo.embeddedId = v.tipoVeiculoId
                 where (:marca is null or lower(tipoVeiculo.marca.value) like :marca)
                   and (:modelo is null or lower(tipoVeiculo.modelo.value) like :modelo)
                   and (:ano is null or tipoVeiculo.ano.value = :ano)

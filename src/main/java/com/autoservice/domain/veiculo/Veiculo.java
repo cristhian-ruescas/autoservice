@@ -15,7 +15,7 @@ import jakarta.persistence.*;
 public class Veiculo extends AggregateRoot<VeiculoID> {
 
     @EmbeddedId
-    private VeiculoID id;
+    private VeiculoID embeddedId;
 
     @Embedded
     @AttributeOverride(
@@ -51,7 +51,7 @@ public class Veiculo extends AggregateRoot<VeiculoID> {
             Kilometragem kilometragem
     ) {
         super(id);
-        this.id = id;
+        this.embeddedId = id;
         this.proprietarioId = proprietarioId;
         this.tipoVeiculoId = tipoVeiculoId;
         this.placa = placa;
@@ -108,7 +108,7 @@ public class Veiculo extends AggregateRoot<VeiculoID> {
 
     @Override
     public VeiculoID getId() {
-        return id;
+        return embeddedId;
     }
 
     public PessoaID getProprietarioId() {

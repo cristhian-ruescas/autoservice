@@ -1,11 +1,14 @@
 package com.autoservice.domain.cliente;
 
+import com.autoservice.domain.AggregateRoot;
+import com.autoservice.domain.events.DomainEvent;
 import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.pessoa.PessoaID;
 import com.autoservice.validation.handler.ThrowsValidationHandler;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Method;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -101,6 +104,22 @@ class ClienteTest {
                 "'pessoaId' não deve ser nulo",
                 exception.getErrors().getFirst().message()
         );
+    }
+
+    @Test
+    @DisplayName("registerEvent(null) não adiciona evento")
+    void registerEventNullIgnorado() throws Exception {
+        final var cliente = Cliente.with(
+                ClienteID.unique(),
+                PessoaID.unique(),
+                LocalDate.now()
+        );
+
+        Method m = AggregateRoot.class.getDeclaredMethod("registerEvent", DomainEvent.class);
+        m.setAccessible(true);
+        m.invoke(cliente, (Object) null);
+
+        assertTrue(cliente.getDomainEvents().isEmpty());
     }
 
     @Test

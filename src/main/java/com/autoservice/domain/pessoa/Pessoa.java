@@ -11,7 +11,7 @@ import jakarta.persistence.*;
 public abstract class Pessoa extends AggregateRoot<PessoaID> {
 
     @EmbeddedId
-    private PessoaID id;
+    private PessoaID embeddedId;
     @Embedded
     private Email email;
     @Embedded
@@ -23,14 +23,14 @@ public abstract class Pessoa extends AggregateRoot<PessoaID> {
 
     protected Pessoa(PessoaID id, Email email, Telefone telefone) {
         super(id);
-        this.id = id;
+        this.embeddedId = id;
         this.email = email;
         this.telefone = telefone;
     }
 
     @Override
     public PessoaID getId() {
-        return id;
+        return embeddedId;
     }
 
     public Email getEmail() {

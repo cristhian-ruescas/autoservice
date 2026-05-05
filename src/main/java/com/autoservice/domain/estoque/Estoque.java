@@ -17,7 +17,7 @@ import java.util.List;
 public class Estoque extends AggregateRoot<EstoqueID> {
 
     @EmbeddedId
-    private EstoqueID id;
+    private EstoqueID embeddedId;
 
     @Column(name = "quantidade_disponivel", nullable = false)
     private Integer quantidadeDisponivel;
@@ -39,7 +39,7 @@ public class Estoque extends AggregateRoot<EstoqueID> {
             final String localizacao
     ) {
         super(id);
-        this.id = id;
+        this.embeddedId = id;
         this.quantidadeDisponivel = quantidadeDisponivel;
         this.quantidadeMinima = quantidadeMinima;
         this.localizacao = localizacao;
@@ -121,7 +121,7 @@ public class Estoque extends AggregateRoot<EstoqueID> {
 
     @Override
     public EstoqueID getId() {
-        return id;
+        return embeddedId;
     }
 
     public Integer getQuantidadeDisponivel() {

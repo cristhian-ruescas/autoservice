@@ -25,7 +25,7 @@ import java.util.List;
 public class OrdemServico extends AggregateRoot<OrdemServicoID> {
 
     @EmbeddedId
-    private OrdemServicoID id;
+    private OrdemServicoID embeddedId;
 
     @Embedded
     @AttributeOverride(
@@ -73,7 +73,7 @@ public class OrdemServico extends AggregateRoot<OrdemServicoID> {
             final LocalDateTime finalizadoEm
     ) {
         super(id);
-        this.id = id;
+        this.embeddedId = id;
         this.veiculoId = veiculoId;
         this.status = status;
         this.dataCriacao = dataCriacao;
@@ -264,7 +264,7 @@ public class OrdemServico extends AggregateRoot<OrdemServicoID> {
 
     @Override
     public OrdemServicoID getId() {
-        return id;
+        return embeddedId;
     }
 
     public VeiculoID getVeiculoId() {

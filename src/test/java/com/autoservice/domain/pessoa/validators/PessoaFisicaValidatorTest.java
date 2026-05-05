@@ -9,6 +9,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @DisplayName("PessoaFisicaValidator")
@@ -17,12 +18,14 @@ class PessoaFisicaValidatorTest {
     @Test
     @DisplayName("Deve validar pessoa física válida com sucesso")
     void deveValidarPessoaFisicaValida() {
-        PessoaFisica.newPessoaFisica(
+        final var pf = PessoaFisica.newPessoaFisica(
                 Email.from("teste@email.com"),
                 Telefone.from("11999999999"),
                 "João Silva",
                 CPF.from("52998224725")
         );
+        assertNotNull(pf);
+        assertNotNull(pf.getId());
     }
 
     @Test
@@ -102,12 +105,14 @@ class PessoaFisicaValidatorTest {
     @Test
     @DisplayName("Deve aceitar CPF nulo na validação")
     void deveAceitarCpfNulo() {
-        PessoaFisica.newPessoaFisica(
+        final var pf = PessoaFisica.newPessoaFisica(
                 null,
                 null,
                 "Maria Silva",
                 null
         );
+        assertNotNull(pf);
+        assertEquals("Maria Silva", pf.getNome());
     }
 
     @Test
