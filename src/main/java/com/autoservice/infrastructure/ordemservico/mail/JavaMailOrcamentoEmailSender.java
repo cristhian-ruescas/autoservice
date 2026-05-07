@@ -59,11 +59,11 @@ public class JavaMailOrcamentoEmailSender implements OrcamentoEmailSender {
     private String plainTextBody() {
         return """
                 Olá,
-
+                
                 Segue em anexo o orçamento da sua ordem de serviço.
-
+                
                 Para aprovar ou reprovar o orçamento, abra este email em um cliente com suporte a HTML.
-
+                
                 AutoService
                 """;
     }

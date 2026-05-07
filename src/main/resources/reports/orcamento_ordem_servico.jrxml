@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
-              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<jasperReport xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xmlns="http://jasperreports.sourceforge.net/jasperreports"
               xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
               name="orcamento_ordem_servico"
               pageWidth="595"
@@ -86,7 +86,8 @@
             </textField>
             <textField>
                 <reportElement style="Base" x="0" y="96" width="515" height="14"/>
-                <textFieldExpression><![CDATA["Tempo previsto de execucao: " + $P{TEMPO_PREVISTO_EXECUCAO}]]></textFieldExpression>
+                <textFieldExpression>
+                    <![CDATA["Tempo previsto de execucao: " + $P{TEMPO_PREVISTO_EXECUCAO}]]></textFieldExpression>
             </textField>
 
             <rectangle>
@@ -120,11 +121,13 @@
             </staticText>
             <textField>
                 <reportElement style="Base" x="277" y="140" width="228" height="14"/>
-                <textFieldExpression><![CDATA[$P{VEICULO_PLACA} + " - " + $P{VEICULO_MARCA} + " " + $P{VEICULO_MODELO}]]></textFieldExpression>
+                <textFieldExpression>
+                    <![CDATA[$P{VEICULO_PLACA} + " - " + $P{VEICULO_MARCA} + " " + $P{VEICULO_MODELO}]]></textFieldExpression>
             </textField>
             <textField>
                 <reportElement style="Base" x="277" y="154" width="228" height="14"/>
-                <textFieldExpression><![CDATA["Ano " + $P{VEICULO_ANO} + " | Cor " + $P{VEICULO_COR}]]></textFieldExpression>
+                <textFieldExpression>
+                    <![CDATA["Ano " + $P{VEICULO_ANO} + " | Cor " + $P{VEICULO_COR}]]></textFieldExpression>
             </textField>
         </band>
     </title>

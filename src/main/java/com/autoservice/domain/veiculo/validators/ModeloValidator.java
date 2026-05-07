@@ -7,16 +7,14 @@ import com.autoservice.validation.Validator;
 
 public class ModeloValidator extends Validator {
 
-    private final Modelo modelo;
-
     private static final int MIN_LENGTH = 2;
     private static final int MAX_LENGTH = 50;
-
     private static final String MSG_NULO = "Modelo não deve ser nulo";
     private static final String MSG_VAZIO = "Modelo não deve estar vazio";
     private static final String MSG_MIN_LENGTH = "Modelo deve ter no mínimo %d caracteres";
     private static final String MSG_MAX_LENGTH = "Modelo deve ter no máximo %d caracteres";
     private static final String MSG_CARACTER_INVALIDO = "Modelo contém caracteres inválidos";
+    private final Modelo modelo;
 
     public ModeloValidator(
             final Modelo modelo,

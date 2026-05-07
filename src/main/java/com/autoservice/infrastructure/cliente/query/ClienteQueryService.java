@@ -1,11 +1,7 @@
 package com.autoservice.infrastructure.cliente.query;
 
 import com.autoservice.application.PaginationOutput;
-import com.autoservice.application.cliente.query.ClienteDetailOutput;
-import com.autoservice.application.cliente.query.ClienteOutput;
-import com.autoservice.application.cliente.query.GetClienteByIdQuery;
-import com.autoservice.application.cliente.query.GetClienteByCpfQuery;
-import com.autoservice.application.cliente.query.ListClientesQuery;
+import com.autoservice.application.cliente.query.*;
 import com.autoservice.domain.cliente.Cliente;
 import com.autoservice.domain.cliente.ClienteID;
 import com.autoservice.domain.exceptions.DomainException;

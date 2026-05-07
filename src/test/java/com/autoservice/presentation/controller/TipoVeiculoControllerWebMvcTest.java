@@ -3,15 +3,11 @@ package com.autoservice.presentation.controller;
 import com.autoservice.application.tipoveiculo.create.CadastrarTipoVeiculoCommand;
 import com.autoservice.application.tipoveiculo.create.CadastrarTipoVeiculoOutput;
 import com.autoservice.application.tipoveiculo.create.CadastrarTipoVeiculoUseCase;
-import com.autoservice.application.tipoveiculo.delete.RemoverTipoVeiculoUseCase;
-import com.autoservice.application.tipoveiculo.query.GetTipoVeiculoByIdQuery;
-import com.autoservice.application.tipoveiculo.query.ListTipoVeiculoQuery;
-import com.autoservice.application.tipoveiculo.update.AtualizarTipoVeiculoUseCase;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -28,20 +24,8 @@ class TipoVeiculoControllerWebMvcTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @Mock
     private CadastrarTipoVeiculoUseCase cadastrarTipoVeiculoUseCase;
-
-    @MockBean
-    private ListTipoVeiculoQuery listTipoVeiculoQuery;
-
-    @MockBean
-    private GetTipoVeiculoByIdQuery getTipoVeiculoByIdQuery;
-
-    @MockBean
-    private AtualizarTipoVeiculoUseCase atualizarTipoVeiculoUseCase;
-
-    @MockBean
-    private RemoverTipoVeiculoUseCase removerTipoVeiculoUseCase;
 
     @Test
     @DisplayName("POST delega ao caso de uso e serializa resposta")

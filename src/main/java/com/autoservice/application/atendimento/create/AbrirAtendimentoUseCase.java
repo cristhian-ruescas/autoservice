@@ -2,12 +2,7 @@ package com.autoservice.application.atendimento.create;
 
 import com.autoservice.application.UseCase;
 import com.autoservice.application.atendimento.create.enums.TipoPessoaAtendimento;
-import com.autoservice.domain.atendimento.events.ClienteAtendimentoCriadoEvent;
-import com.autoservice.domain.atendimento.events.OrdemServicoAtendimentoAbertaEvent;
-import com.autoservice.domain.atendimento.events.PessoaAtendimentoCriadaEvent;
-import com.autoservice.domain.atendimento.events.RepresentanteLegalAtendimentoCriadoEvent;
-import com.autoservice.domain.atendimento.events.TipoVeiculoAtendimentoCriadoEvent;
-import com.autoservice.domain.atendimento.events.VeiculoAtendimentoCriadoEvent;
+import com.autoservice.domain.atendimento.events.*;
 import com.autoservice.domain.cliente.Cliente;
 import com.autoservice.domain.cliente.ClienteGateway;
 import com.autoservice.domain.events.DomainEventPublisher;
@@ -26,12 +21,7 @@ import com.autoservice.domain.tipoveiculo.TipoVeiculo;
 import com.autoservice.domain.tipoveiculo.TipoVeiculoGateway;
 import com.autoservice.domain.veiculo.Veiculo;
 import com.autoservice.domain.veiculo.VeiculoGateway;
-import com.autoservice.domain.veiculo.valueobject.Ano;
-import com.autoservice.domain.veiculo.valueobject.Cor;
-import com.autoservice.domain.veiculo.valueobject.Kilometragem;
-import com.autoservice.domain.veiculo.valueobject.Marca;
-import com.autoservice.domain.veiculo.valueobject.Modelo;
-import com.autoservice.domain.veiculo.valueobject.Placa;
+import com.autoservice.domain.veiculo.valueobject.*;
 import com.autoservice.validation.Error;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -168,11 +158,11 @@ public class AbrirAtendimentoUseCase extends UseCase<AbrirAtendimentoCommand, Ab
                 .orElseGet(() -> {
                     final var representanteLegal = obterOuCriarRepresentanteLegal(command);
                     final var pessoa = (PessoaJuridica) this.pessoaGateway.create(PessoaJuridica.newPessoaJuridica(
-                        Email.from(command.email()),
-                        Telefone.from(command.telefone()),
-                        command.razaoSocial(),
-                        cnpj,
-                        representanteLegal.pessoa().getId()
+                            Email.from(command.email()),
+                            Telefone.from(command.telefone()),
+                            command.razaoSocial(),
+                            cnpj,
+                            representanteLegal.pessoa().getId()
                     ));
 
                     return new PessoaResultado(
