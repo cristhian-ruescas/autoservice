@@ -21,6 +21,29 @@ public class TempoMedioExecucaoQueryService implements TempoMedioExecucaoQuery {
         this.entityManager = Objects.requireNonNull(entityManager);
     }
 
+    private static Double toDouble(final Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof final BigDecimal bd) {
+            return bd.doubleValue();
+        }
+        if (value instanceof final Double d) {
+            return d;
+        }
+        if (value instanceof final Number n) {
+            return n.doubleValue();
+        }
+        return null;
+    }
+
+    private static Double segundosParaHoras(final Double segundos) {
+        if (segundos == null) {
+            return null;
+        }
+        return segundos / 3600.0;
+    }
+
     @Override
     @Transactional(readOnly = true)
     public TempoMedioExecucaoOutput consultar() {
@@ -90,28 +113,5 @@ public class TempoMedioExecucaoQueryService implements TempoMedioExecucaoQuery {
             ));
         }
         return list;
-    }
-
-    private static Double toDouble(final Object value) {
-        if (value == null) {
-            return null;
-        }
-        if (value instanceof final BigDecimal bd) {
-            return bd.doubleValue();
-        }
-        if (value instanceof final Double d) {
-            return d;
-        }
-        if (value instanceof final Number n) {
-            return n.doubleValue();
-        }
-        return null;
-    }
-
-    private static Double segundosParaHoras(final Double segundos) {
-        if (segundos == null) {
-            return null;
-        }
-        return segundos / 3600.0;
     }
 }

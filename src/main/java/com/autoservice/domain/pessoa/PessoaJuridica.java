@@ -38,7 +38,7 @@ public class PessoaJuridica extends Pessoa {
             CNPJ cnpj,
             PessoaID representanteLegalId
     ) {
-        super(id, email,  telefone);
+        super(id, email, telefone);
         this.razaoSocial = razaoSocial;
         this.cnpj = cnpj;
         this.representanteLegalId = representanteLegalId;

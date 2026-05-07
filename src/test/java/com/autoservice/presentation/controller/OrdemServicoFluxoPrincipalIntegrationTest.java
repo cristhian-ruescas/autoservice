@@ -1,7 +1,6 @@
 package com.autoservice.presentation.controller;
 
 import com.autoservice.AbstractIntegrationTest;
-import com.autoservice.application.ordemservico.orcamento.OrcamentoEmailSender;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -9,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -36,8 +34,11 @@ class OrdemServicoFluxoPrincipalIntegrationTest extends AbstractIntegrationTest 
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
-    private OrcamentoEmailSender orcamentoEmailSender;
+    private static String placaMercosulAleatoria() {
+        final int d = ThreadLocalRandom.current().nextInt(0, 10);
+        final int dd = ThreadLocalRandom.current().nextInt(10, 99);
+        return String.format("ZZZ%dK%02d", d, dd);
+    }
 
     @Test
     @DisplayName("Fluxo feliz completo até métrica de tempo médio")
@@ -109,11 +110,5 @@ class OrdemServicoFluxoPrincipalIntegrationTest extends AbstractIntegrationTest 
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.tempoMedioGlobalSegundos").exists())
                 .andExpect(jsonPath("$.porDescricaoItemServico[0].descricaoItemServico").value("Troca de óleo integração"));
-    }
-
-    private static String placaMercosulAleatoria() {
-        final int d = ThreadLocalRandom.current().nextInt(0, 10);
-        final int dd = ThreadLocalRandom.current().nextInt(10, 99);
-        return String.format("ZZZ%dK%02d", d, dd);
     }
 }

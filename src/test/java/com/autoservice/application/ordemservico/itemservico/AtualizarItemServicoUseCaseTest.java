@@ -1,5 +1,6 @@
 package com.autoservice.application.ordemservico.itemservico;
 
+import com.autoservice.domain.estoque.EstoqueID;
 import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.itemservico.ItemServico;
 import com.autoservice.domain.itemservico.ItemServicoGateway;
@@ -14,7 +15,6 @@ import com.autoservice.domain.peca.Peca;
 import com.autoservice.domain.peca.PecaGateway;
 import com.autoservice.domain.peca.PecaID;
 import com.autoservice.domain.tipoveiculo.TipoVeiculoID;
-import com.autoservice.domain.estoque.EstoqueID;
 import com.autoservice.domain.veiculo.VeiculoID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -9,13 +9,11 @@ import java.time.LocalDate;
 
 public class AnoValidator extends Validator {
 
-    private final Ano ano;
-
     private static final int ANO_MINIMO = 1886;
-
     private static final String MSG_NULO = "Ano não deve ser nulo";
     private static final String MSG_MINIMO = "Ano não pode ser menor que %d";
     private static final String MSG_MAXIMO = "Ano não pode ser maior que %d";
+    private final Ano ano;
 
     public AnoValidator(
             final Ano ano,

@@ -26,10 +26,10 @@ class DataCriacaoValidatorTest {
         }
 
         final DataCriacao dataFinal = dataCriacao;
-        var exception = assertThrows(DomainException.class, () -> 
+        var exception = assertThrows(DomainException.class, () ->
                 new DataCriacaoValidator(dataFinal, new ThrowsValidationHandler()).validate()
         );
-        
+
         assertEquals("Data de criação não deve ser nula", exception.getErrors().getFirst().message());
     }
 
@@ -37,9 +37,9 @@ class DataCriacaoValidatorTest {
     @DisplayName("Deve falhar ao validar DataCriacao com data futura no validador")
     void deveRejeitarDataCriacaoFutura() {
         final LocalDate dataFutura = LocalDate.now().plusDays(2);
-        
+
         var exception = assertThrows(DomainException.class, () -> DataCriacao.from(dataFutura));
-        
+
         assertEquals("Data de criação não pode ser no futuro", exception.getErrors().getFirst().message());
     }
 }

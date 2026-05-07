@@ -13,25 +13,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("Pessoa")
 class PessoaTest {
 
-    private static class PessoaFake extends Pessoa {
-
-        protected PessoaFake() {
-            super();
-        }
-
-        protected PessoaFake(
-                final PessoaID id,
-                final Email email,
-                final Telefone telefone
-        ) {
-            super(id, email, telefone);
-        }
-
-        @Override
-        public void validate(final ValidationHandler handler) {
-        }
-    }
-
     @Test
     @DisplayName("Deve testar construtor protegido para JPA")
     void deveTestarConstrutorProtegidoParaJPA() throws Exception {
@@ -81,5 +62,24 @@ class PessoaTest {
         assertEquals(pessoaId, pessoa.getId());
         assertNull(pessoa.getEmail());
         assertNull(pessoa.getTelefone());
+    }
+
+    private static class PessoaFake extends Pessoa {
+
+        protected PessoaFake() {
+            super();
+        }
+
+        protected PessoaFake(
+                final PessoaID id,
+                final Email email,
+                final Telefone telefone
+        ) {
+            super(id, email, telefone);
+        }
+
+        @Override
+        public void validate(final ValidationHandler handler) {
+        }
     }
 }

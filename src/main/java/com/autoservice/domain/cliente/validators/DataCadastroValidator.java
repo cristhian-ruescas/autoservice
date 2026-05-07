@@ -9,9 +9,9 @@ import java.time.LocalDate;
 
 public class DataCadastroValidator extends Validator {
 
-    private final DataCadastro dataCadastro;
     private static final int MAX_ANOS_PASSADO = 10;
     private static final int MAX_DIAS_FUTURO = 0;
+    private final DataCadastro dataCadastro;
 
     public DataCadastroValidator(
             final DataCadastro dataCadastro,

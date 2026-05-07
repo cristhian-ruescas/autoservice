@@ -3,8 +3,6 @@ package com.autoservice.domain.veiculo.valueobject;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Constructor;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("Marca")
