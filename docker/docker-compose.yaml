@@ -14,9 +14,9 @@ services:
     ports:
       - "5432:5432"
 
-    #    volumes:
-    #      - ./docker/initdb.sql:/docker-entrypoint-initdb.d/01-init.sql
-    #      - ./docker/populate.sql:/docker-entrypoint-initdb.d/02-populate.sql
+    volumes:
+      - ./initdb.sql:/docker-entrypoint-initdb.d/01-init.sql
+      - ./populate.sql:/docker-entrypoint-initdb.d/02-populate.sql
 
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
@@ -33,6 +33,8 @@ services:
       dockerfile: docker/Dockerfile
     container_name: autoservice-app
     restart: unless-stopped
+    env_file:
+      - ../local.variable.env
     ports:
       - "8088:8088"
     environment:
@@ -42,7 +44,6 @@ services:
       APP_BASE_URL: http://localhost:8088
       MAIL_HOST: localhost
       MAIL_PORT: "1025"
-      AUTOSERVICE_JWT_SECRET: Xip4obfk6W9Mzo+cA+gUDuevNOfULy8Q3yYEr8ByYU8=
     depends_on:
       postgres:
         condition: service_healthy
