@@ -18,18 +18,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class WebSecurityConfig {
 
     @Bean
-    public UserDetailsService userDetailsService(UsuarioUserDetailsService usuarioUserDetailsService) {
-        return usuarioUserDetailsService;
-    }
-
-    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter(JwtUtil jwtUtil, UserDetailsService userDetailsService) {
-        return new JwtAuthenticationFilter(jwtUtil, userDetailsService);
+    public JwtAuthenticationFilter jwtAuthenticationFilter(JwtUtil jwtUtil, UsuarioUserDetailsService usuarioUserDetailsService) {
+        return new JwtAuthenticationFilter(jwtUtil, usuarioUserDetailsService);
     }
 
     @Bean
@@ -47,9 +42,9 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(HttpSecurity http, PasswordEncoder encoder, UserDetailsService userDetailsService) throws Exception {
+    public AuthenticationManager authenticationManager(HttpSecurity http, PasswordEncoder encoder, UsuarioUserDetailsService usuarioUserDetailsService) throws Exception {
         AuthenticationManagerBuilder builder = http.getSharedObject(AuthenticationManagerBuilder.class);
-        builder.userDetailsService(userDetailsService).passwordEncoder(encoder);
+        builder.userDetailsService(usuarioUserDetailsService).passwordEncoder(encoder);
         return builder.build();
     }
 }
