@@ -7,6 +7,7 @@ spring:
     password: postgres
     driver-class-name: org.postgresql.Driver
   jpa:
+    defer-datasource-initialization: true
     hibernate:
       ddl-auto: update
     show-sql: true
@@ -14,6 +15,9 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
+  sql:
+    init:
+      mode: always
   mail:
     host: ${MAIL_HOST:localhost}
     port: ${MAIL_PORT:1025}
