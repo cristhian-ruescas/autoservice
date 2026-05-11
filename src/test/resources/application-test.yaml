@@ -25,6 +25,9 @@ spring:
             enable: false
   main:
     allow-bean-definition-overriding: true
+  sql:
+    init:
+      mode: never
 
 autoservice:
   app:
