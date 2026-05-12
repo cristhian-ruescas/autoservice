@@ -15,6 +15,8 @@
 
     <properties>
         <java.version>21</java.version>
+        <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.coverage.exclusions>**/dto/**,**/*Config*,**/*Application*,**/infrastructure/**,**/presentation/**</sonar.coverage.exclusions>
     </properties>
     <dependencies>
         <dependency>
@@ -119,6 +121,7 @@
                         <configuration>
                             <formats>
                                 <format>HTML</format>
+                                <format>XML</format>
                                 <format>CSV</format>
                             </formats>
                         </configuration>
