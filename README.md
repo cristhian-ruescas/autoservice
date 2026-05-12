@@ -84,11 +84,46 @@ Suba o SonarQube:
 docker compose -f docker/docker-compose.yaml --profile quality up -d sonarqube
 ```
 
-Acesse `http://localhost:9000`, crie um token de análise e execute:
+
+
+Acesse `http://localhost:9000`. Caso credenciais de acesso sejam solicitadas pelo Sonar, utilize o login padrão:
+```bash
+usuario: admin
+senha: admin
+```
+
+Crie um token de análise como na imagem abaixo. Clique no seu perfil e vá para **My Account > Security**:
+<img src="readme.assets/criando-sonar-token.png" width="400">
+
+Para publicar a análise no SonarQube, execute:
 
 ```bash
 export SONAR_TOKEN=<token-gerado-no-sonarqube>
 ./mvnw clean verify sonar:sonar
+```
+
+O projeto é publicado com a chave `com.autoservice:autoservice`.
+
+Para gerar o relatório de vulnerabilidades usado na entrega, utilize um **User Token** do SonarQube, pois tokens apenas
+de análise podem não ter permissão para consultar Security Hotspots pela API:
+
+```bash
+export SONAR_TOKEN=<user-token-gerado-no-sonarqube>
+./scripts/generate-sonar-security-report.sh
+```
+
+O relatório consolidado é gerado em:
+
+[docs/security/sonar-vulnerability-report.md](docs/security/sonar-vulnerability-report.md)
+
+O script responsável pela geração está em:
+
+[scripts/generate-sonar-security-report.sh](scripts/generate-sonar-security-report.sh)
+
+As respostas brutas da API do SonarQube são salvas em:
+
+```text
+target/sonar-security/
 ```
 
 ## Principais recursos da API
