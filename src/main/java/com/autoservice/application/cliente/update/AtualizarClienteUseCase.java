@@ -6,11 +6,7 @@ import com.autoservice.domain.cliente.Cliente;
 import com.autoservice.domain.cliente.ClienteGateway;
 import com.autoservice.domain.cliente.ClienteID;
 import com.autoservice.domain.exceptions.DomainException;
-import com.autoservice.domain.pessoa.Pessoa;
-import com.autoservice.domain.pessoa.PessoaFisica;
-import com.autoservice.domain.pessoa.PessoaGateway;
-import com.autoservice.domain.pessoa.PessoaID;
-import com.autoservice.domain.pessoa.PessoaJuridica;
+import com.autoservice.domain.pessoa.*;
 import com.autoservice.domain.pessoa.valueobject.CPF;
 import com.autoservice.domain.pessoa.valueobject.Email;
 import com.autoservice.domain.pessoa.valueobject.Telefone;
@@ -102,9 +98,9 @@ public class AtualizarClienteUseCase extends UseCase<AtualizarClienteCommand, Cl
         final var representante = representanteLegalId == null
                 ? null
                 : this.pessoaGateway.findById(representanteLegalId)
-                        .filter(PessoaFisica.class::isInstance)
-                        .map(PessoaFisica.class::cast)
-                        .orElse(null);
+                  .filter(PessoaFisica.class::isInstance)
+                  .map(PessoaFisica.class::cast)
+                  .orElse(null);
 
         return mapPessoaJuridica(cliente, pessoaSalva, representante);
     }

@@ -1,5 +1,6 @@
 package com.autoservice.application.peca.update;
 
+import com.autoservice.domain.estoque.EstoqueID;
 import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.peca.Peca;
 import com.autoservice.domain.peca.PecaGateway;
@@ -7,7 +8,6 @@ import com.autoservice.domain.peca.PecaID;
 import com.autoservice.domain.tipoveiculo.TipoVeiculo;
 import com.autoservice.domain.tipoveiculo.TipoVeiculoGateway;
 import com.autoservice.domain.tipoveiculo.TipoVeiculoID;
-import com.autoservice.domain.estoque.EstoqueID;
 import com.autoservice.domain.veiculo.valueobject.Ano;
 import com.autoservice.domain.veiculo.valueobject.Marca;
 import com.autoservice.domain.veiculo.valueobject.Modelo;

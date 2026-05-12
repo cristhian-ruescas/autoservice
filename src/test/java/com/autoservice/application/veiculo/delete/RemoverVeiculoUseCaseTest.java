@@ -1,11 +1,11 @@
 package com.autoservice.application.veiculo.delete;
 
 import com.autoservice.domain.exceptions.DomainException;
+import com.autoservice.domain.pessoa.PessoaID;
+import com.autoservice.domain.tipoveiculo.TipoVeiculoID;
 import com.autoservice.domain.veiculo.Veiculo;
 import com.autoservice.domain.veiculo.VeiculoGateway;
 import com.autoservice.domain.veiculo.VeiculoID;
-import com.autoservice.domain.pessoa.PessoaID;
-import com.autoservice.domain.tipoveiculo.TipoVeiculoID;
 import com.autoservice.domain.veiculo.valueobject.Cor;
 import com.autoservice.domain.veiculo.valueobject.Kilometragem;
 import com.autoservice.domain.veiculo.valueobject.Placa;

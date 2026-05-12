@@ -7,12 +7,10 @@ import com.autoservice.validation.Validator;
 
 public class KilometragemValidator extends Validator {
 
-    private final Kilometragem kilometragem;
-
     private static final long KM_MINIMO = 0L;
-
     private static final String MSG_NULA = "Kilometragem não deve ser nula";
     private static final String MSG_NEGATIVA = "Kilometragem não pode ser negativa";
+    private final Kilometragem kilometragem;
 
     public KilometragemValidator(
             final Kilometragem kilometragem,

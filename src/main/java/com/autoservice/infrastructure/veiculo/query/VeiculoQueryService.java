@@ -1,16 +1,12 @@
 package com.autoservice.infrastructure.veiculo.query;
 
 import com.autoservice.application.PaginationOutput;
-import com.autoservice.application.veiculo.query.GetVeiculoByIdQuery;
-import com.autoservice.application.veiculo.query.GetVeiculoByPlacaQuery;
-import com.autoservice.application.veiculo.query.ListVeiculosByClienteQuery;
-import com.autoservice.application.veiculo.query.ListVeiculosQuery;
-import com.autoservice.application.veiculo.query.VeiculoOutput;
+import com.autoservice.application.veiculo.query.*;
 import com.autoservice.domain.cliente.Cliente;
 import com.autoservice.domain.cliente.ClienteID;
 import com.autoservice.domain.exceptions.DomainException;
-import com.autoservice.domain.pessoa.PessoaID;
 import com.autoservice.domain.pessoa.PessoaFisica;
+import com.autoservice.domain.pessoa.PessoaID;
 import com.autoservice.domain.pessoa.PessoaJuridica;
 import com.autoservice.domain.tipoveiculo.TipoVeiculo;
 import com.autoservice.domain.veiculo.Veiculo;

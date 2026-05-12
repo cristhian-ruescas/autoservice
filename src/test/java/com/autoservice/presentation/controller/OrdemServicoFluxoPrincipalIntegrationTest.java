@@ -1,7 +1,6 @@
 package com.autoservice.presentation.controller;
 
 import com.autoservice.AbstractIntegrationTest;
-import com.autoservice.application.ordemservico.orcamento.OrcamentoEmailSender;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -16,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static org.hamcrest.Matchers.notNullValue;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -38,6 +38,12 @@ class OrdemServicoFluxoPrincipalIntegrationTest extends AbstractIntegrationTest 
 
     @MockitoBean
     private OrcamentoEmailSender orcamentoEmailSender;
+  
+    private static String placaMercosulAleatoria() {
+        final int d = ThreadLocalRandom.current().nextInt(0, 10);
+        final int dd = ThreadLocalRandom.current().nextInt(10, 99);
+        return String.format("ZZZ%dK%02d", d, dd);
+    }
 
     @Test
     @DisplayName("Fluxo feliz completo até métrica de tempo médio")
@@ -62,6 +68,7 @@ class OrdemServicoFluxoPrincipalIntegrationTest extends AbstractIntegrationTest 
                 """.formatted(placa);
 
         final String json = mockMvc.perform(post("/atendimentos")
+                        .with(user("admin@autoservice.local").roles("ADMIN"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(atendimentoBody))
                 .andExpect(status().isCreated())
@@ -73,7 +80,8 @@ class OrdemServicoFluxoPrincipalIntegrationTest extends AbstractIntegrationTest 
         final JsonNode root = this.objectMapper.readTree(json);
         final String osId = root.get("ordemServicoId").asText();
 
-        mockMvc.perform(patch("/ordens-servico/" + osId + "/diagnostico"))
+        mockMvc.perform(patch("/ordens-servico/" + osId + "/diagnostico")
+                        .with(user("admin@autoservice.local").roles("ADMIN")))
                 .andExpect(status().isOk());
 
         final var itensBody = """
@@ -90,30 +98,29 @@ class OrdemServicoFluxoPrincipalIntegrationTest extends AbstractIntegrationTest 
                 """;
 
         mockMvc.perform(post("/ordens-servico/" + osId + "/itens")
+                        .with(user("admin@autoservice.local").roles("ADMIN"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(itensBody))
                 .andExpect(status().isCreated());
 
         mockMvc.perform(patch("/ordens-servico/" + osId + "/diagnostico/finalizar")
+                        .with(user("admin@autoservice.local").roles("ADMIN"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"tempoPrevistoExecucaoDias\":0,\"tempoPrevistoExecucaoHoras\":2}"))
                 .andExpect(status().isOk());
 
-        mockMvc.perform(patch("/ordens-servico/" + osId + "/aprovacao/aprovar"))
+        mockMvc.perform(patch("/ordens-servico/" + osId + "/aprovacao/aprovar")
+                        .with(user("admin@autoservice.local").roles("ADMIN")))
                 .andExpect(status().isOk());
 
-        mockMvc.perform(patch("/ordens-servico/" + osId + "/finalizar"))
+        mockMvc.perform(patch("/ordens-servico/" + osId + "/finalizar")
+                        .with(user("admin@autoservice.local").roles("ADMIN")))
                 .andExpect(status().isOk());
 
-        mockMvc.perform(get("/ordens-servico/metricas/tempo-medio-execucao"))
+        mockMvc.perform(get("/ordens-servico/metricas/tempo-medio-execucao")
+                        .with(user("admin@autoservice.local").roles("ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.tempoMedioGlobalSegundos").exists())
                 .andExpect(jsonPath("$.porDescricaoItemServico[0].descricaoItemServico").value("Troca de óleo integração"));
-    }
-
-    private static String placaMercosulAleatoria() {
-        final int d = ThreadLocalRandom.current().nextInt(0, 10);
-        final int dd = ThreadLocalRandom.current().nextInt(10, 99);
-        return String.format("ZZZ%dK%02d", d, dd);
     }
 }
