@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -34,6 +35,7 @@ class TipoVeiculoControllerIntegrationTest extends AbstractIntegrationTest {
                 """;
 
         mockMvc.perform(post("/tipos-veiculo")
+                        .with(user("admin@autoservice.local").roles("ADMIN"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isCreated())
@@ -50,6 +52,7 @@ class TipoVeiculoControllerIntegrationTest extends AbstractIntegrationTest {
 
         final String firstId = objectMapper.readTree(
                 mockMvc.perform(post("/tipos-veiculo")
+                                .with(user("admin@autoservice.local").roles("ADMIN"))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(body))
                         .andExpect(status().isCreated())
@@ -59,6 +62,7 @@ class TipoVeiculoControllerIntegrationTest extends AbstractIntegrationTest {
         ).get("id").asText();
 
         mockMvc.perform(post("/tipos-veiculo")
+                        .with(user("admin@autoservice.local").roles("ADMIN"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isCreated())
@@ -73,6 +77,7 @@ class TipoVeiculoControllerIntegrationTest extends AbstractIntegrationTest {
                 """;
 
         mockMvc.perform(post("/tipos-veiculo")
+                        .with(user("admin@autoservice.local").roles("ADMIN"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest())

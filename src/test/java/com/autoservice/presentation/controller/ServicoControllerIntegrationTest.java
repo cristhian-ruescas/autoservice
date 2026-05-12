@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -31,6 +32,7 @@ class ServicoControllerIntegrationTest extends AbstractIntegrationTest {
                 """;
 
         mockMvc.perform(post("/servicos")
+                        .with(user("admin@autoservice.local").roles("ADMIN"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isCreated())
@@ -44,11 +46,12 @@ class ServicoControllerIntegrationTest extends AbstractIntegrationTest {
     void getServicosLista() throws Exception {
         final String nome = "Revisão-" + System.nanoTime();
         mockMvc.perform(post("/servicos")
+                        .with(user("admin@autoservice.local").roles("ADMIN"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"nome\":\"" + nome + "\",\"valorReferencia\":350}"))
                 .andExpect(status().isCreated());
 
-        mockMvc.perform(get("/servicos").param("nome", nome))
+        mockMvc.perform(get("/servicos").with(user("admin@autoservice.local").roles("ADMIN")).param("nome", nome))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.items.length()", is(1)))
                 .andExpect(jsonPath("$.items[0].nome", is(nome)));
