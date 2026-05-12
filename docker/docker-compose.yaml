@@ -1,0 +1,99 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: autoservice-postgres
+    restart: always
+
+    environment:
+      POSTGRES_DB: autoservice
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - ./initdb.sql:/docker-entrypoint-initdb.d/01-init.sql
+      - ./populate.sql:/docker-entrypoint-initdb.d/02-populate.sql
+
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+    networks:
+      - autoservice-network
+
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: autoservice-app
+    restart: unless-stopped
+    env_file:
+      - ../local.variable.env
+    ports:
+      - "8088:8088"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/autoservice
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      APP_BASE_URL: http://localhost:8088
+      MAIL_HOST: localhost
+      MAIL_PORT: "1025"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - autoservice-network
+
+  sonar-postgres:
+    image: postgres:15
+    container_name: autoservice-sonar-postgres
+    profiles:
+      - quality
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: sonar
+      POSTGRES_USER: sonar
+      POSTGRES_PASSWORD: ${SONAR_DB_PASSWORD:-sonar}
+    volumes:
+      - sonar_postgres_data:/var/lib/postgresql/data
+    networks:
+      - autoservice-network
+
+  sonarqube:
+    image: sonarqube:community
+    container_name: autoservice-sonarqube
+    profiles:
+      - quality
+    restart: unless-stopped
+    depends_on:
+      - sonar-postgres
+    ports:
+      - "9000:9000"
+    environment:
+      SONAR_JDBC_URL: jdbc:postgresql://sonar-postgres:5432/sonar
+      SONAR_JDBC_USERNAME: sonar
+      SONAR_JDBC_PASSWORD: ${SONAR_DB_PASSWORD:-sonar}
+      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+    networks:
+      - autoservice-network
+
+volumes:
+  postgres_data:
+  sonar_postgres_data:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:
+
+networks:
+  autoservice-network:
+    driver: bridge
