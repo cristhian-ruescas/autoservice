@@ -21,7 +21,7 @@
         <sonar.host.url>http://localhost:9000</sonar.host.url>
         <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
         <sonar.exclusions>**/dto/**,**/*Config*,**/*Application*,**/reports/**,**/assets/**</sonar.exclusions>
-        <sonar.coverage.exclusions>**/dto/**,**/*Config*,**/*Application*,**/reports/**,**/assets/**</sonar.coverage.exclusions>
+        <sonar.coverage.exclusions>**/dto/**,**/*Config*,**/*Application*,**/infrastructure/**,**/presentation/**</sonar.coverage.exclusions>
     </properties>
     <dependencies>
         <dependency>
