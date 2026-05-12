@@ -1,4 +1,4 @@
 package com.autoservice.domain;
 
-public abstract class Identifier extends ValueObject{
+public abstract class Identifier extends ValueObject {
 }

@@ -4,7 +4,7 @@ import com.autoservice.validation.Error;
 
 import java.util.List;
 
-public class DomainException extends NoStackTraceException{
+public class DomainException extends NoStackTraceException {
 
     private final List<Error> errors;
 
@@ -18,7 +18,12 @@ public class DomainException extends NoStackTraceException{
     }
 
     public static DomainException with(final List<Error> anErrors) {
-        return new DomainException("", anErrors);
+        final var message = anErrors.stream()
+                .map(Error::message)
+                .reduce((current, next) -> current + "; " + next)
+                .orElse("");
+
+        return new DomainException(message, anErrors);
     }
 
     public List<Error> getErrors() {

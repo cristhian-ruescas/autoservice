@@ -1,136 +1,164 @@
-<h1>🚗 Autoservice API</h1>
+# Autoservice — API da oficina (MVP)
 
-<p>
-Backend para gerenciamento de oficina mecânica desenvolvido com
-<b>Java 21</b> e <b>Spring Boot</b>.
-</p>
+Back-end monolítico em camadas (**Spring Boot 3**, **Java 21**) para gestão de **ordens de serviço**, **clientes**, *
+*veículos**, **peças**, **estoque**, **ordens de compra**, **catálogo de serviços** e **métricas de tempo de execução**.
 
-<hr>
+Documentação interativa: **`/swagger-ui.html`** (OpenAPI em **`/v3/api-docs`**).
 
-<h2>📦 Tecnologias utilizadas</h2>
+## Objetivos do projeto
 
-<ul>
-<li>Java 21</li>
-<li>Spring Boot</li>
-<li>Maven</li>
-<li>Docker + Docker Compose</li>
-<li>PostgreSQL</li>
-<li>IntelliJ IDEA (recomendado)</li>
-</ul>
+- Formalizar o fluxo de **atendimento → diagnóstico → orçamento → aprovação → execução → entrega**.
+- Centralizar **cadastros** e **estoque** com rastreabilidade.
+- Oferecer **acompanhamento da OS** por API (`GET /ordens-servico/{id}/andamento`).
+- Dar suporte à disciplina de **DDD** (domínio, aplicação, infraestrutura, apresentação) e qualidade (testes, cobertura
+  nos pacotes de domínio/aplicação).
 
-<hr>
+## Por que PostgreSQL?
 
-<h2>✅ Pré-requisitos</h2>
+Foi adotado **PostgreSQL** por ser **open-source**, amplamente usado em produção, com forte suporte a **integridade
+referencial**, **transações ACID**, tipos numéricos/decimais para valores monetários e adequação a dados relacionais (
+clientes, veículos, OS, itens, estoque). O driver oficial integra-se bem com **Spring Data JPA** e com ambientes
+containerizados.
 
-<p>Verifique se você possui instalado:</p>
+## Como rodar localmente
 
-<pre>
-java -version
-docker -v
-docker-compose -v
-</pre>
+### Pré-requisitos
 
-<hr>
+- **JDK 21**
+- **Maven** (ou use o wrapper `./mvnw` na raiz do projeto)
+- **PostgreSQL** acessível (ou **Docker** — ver pasta `docker/`)
 
-<h2>🚀 Como executar o projeto</h2>
+### Variáveis e porta
 
-<h3>1️⃣ Subir o banco de dados</h3>
+Por padrão (`src/main/resources/application.yaml`):
 
-<pre>
-docker-compose up -d
-</pre>
+| Variável / propriedade       | Exemplo                                        | Descrição                                                      |
+|------------------------------|------------------------------------------------|----------------------------------------------------------------|
+| `server.port`                | `8088`                                         | Porta HTTP                                                     |
+| `SPRING_DATASOURCE_URL`      | `jdbc:postgresql://localhost:5432/autoservice` | JDBC                                                           |
+| `SPRING_DATASOURCE_USERNAME` | `postgres`                                     | Usuário                                                        |
+| `SPRING_DATASOURCE_PASSWORD` | `postgres`                                     | Senha                                                          |
+| `APP_BASE_URL`               | `http://localhost:8088`                        | Base URL nos links de orçamento                                |
+| `MAIL_*`                     | opcional                                       | SMTP para envio de orçamento (defaults apontam para localhost) |
 
-<h3>2️⃣ Criar os schemas necessários</h3>
+Crie o banco `autoservice` no Postgres ou use o `docker-compose` da pasta `docker/`.
 
-<pre>
-CREATE SCHEMA IF NOT EXISTS customer;
-CREATE SCHEMA IF NOT EXISTS catalog;
-CREATE SCHEMA IF NOT EXISTS workorder;
+### Build e execução
 
-SELECT schema_name
-FROM information_schema.schemata
-WHERE schema_name IN ('customer', 'catalog', 'workorder');
-</pre>
-
-<h3>3️⃣ Importar o projeto na IDE</h3>
-
-<p>Abrir como <b>Maven Project</b> no IntelliJ IDEA.</p>
-
-<h3>4️⃣ Configurar o application.yaml</h3>
-
-<p>Arquivo:</p>
-
-<pre>
-src/main/resources/application.yaml
-</pre>
-
-<p>Verifique:</p>
-
-<pre>
-spring:
-  datasource:
-    url:
-    username:
-    password:
-</pre>
-
-<h3>5️⃣ Executar a aplicação</h3>
-
-<pre>
+```bash
+./mvnw clean verify    # testes + relatório JaCoCo em target/site/jacoco
 ./mvnw spring-boot:run
-</pre>
+```
 
-<p>Ou execute a classe:</p>
+Abra o Swagger em: **http://localhost:8088/swagger-ui.html**
 
-<pre>
-Application.java
-</pre>
+### Docker (Postgres + aplicação)
 
-<hr>
+Na raiz do repositório:
 
-<h2>🧪 Executar testes</h2>
+```bash
+docker compose -f docker/docker-compose.yaml up --build
+```
 
-<pre>
-./mvnw test
-</pre>
+- **Postgres:** porta **5432**
+- **API:** porta **8088**
 
-<hr>
+O `Dockerfile` está em **`docker/Dockerfile`** (build multi-stage com Maven + JRE 21).
 
-<h2>🌐 Acesso à API</h2>
+## Testes e cobertura
 
-<pre>
-http://localhost:8080
-</pre>
+- **Unitários** e **integração** (Testcontainers + Postgres quando o Docker está disponível).
+- Testes de integração com `@EnabledIf` ignoram o ambiente sem Docker.
+- **JaCoCo** (`pom.xml`): relatório na fase `test`; regra de cobertura aplicada ao bundle configurado (exclui, entre
+  outros, `presentation` e `infrastructure` do relatório de verificação — alinhado ao foco em **domínio** e **casos de
+  uso**).
 
-<p>A porta pode variar conforme o <code>application.yaml</code>.</p>
+## Qualidade e vulnerabilidades com SonarQube
 
-<hr>
+O projeto possui SonarScanner for Maven configurado no `pom.xml` e um SonarQube local no Docker Compose via profile
+`quality`.
 
-<h2>📂 Estrutura de schemas</h2>
+Suba o SonarQube:
 
-<table>
-<tr>
-<th>Schema</th>
-<th>Responsabilidade</th>
-</tr>
-<tr>
-<td>customer</td>
-<td>Dados de clientes</td>
-</tr>
-<tr>
-<td>catalog</td>
-<td>Produtos e serviços</td>
-</tr>
-<tr>
-<td>workorder</td>
-<td>Ordens de serviço</td>
-</tr>
-</table>
+```bash
+docker compose -f docker/docker-compose.yaml --profile quality up -d sonarqube
+```
 
-<hr>
 
-<h2>🐳 Parar o banco Docker</h2>
 
-<pre>
-docker-compose down
-</pre>
+Acesse `http://localhost:9000`. Caso credenciais de acesso sejam solicitadas pelo Sonar, utilize o login padrão:
+```bash
+usuario: admin
+senha: admin
+```
+
+Crie um token de análise como na imagem abaixo. Clique no seu perfil e vá para **My Account > Security**:
+<img src="readme.assets/criando-sonar-token.png" width="400">
+
+Para publicar a análise no SonarQube, execute:
+
+```bash
+export SONAR_TOKEN=<token-gerado-no-sonarqube>
+./mvnw clean verify sonar:sonar
+```
+
+O projeto é publicado com a chave `com.autoservice:autoservice`.
+
+Para gerar o relatório de vulnerabilidades usado na entrega, utilize um **User Token** do SonarQube, pois tokens apenas
+de análise podem não ter permissão para consultar Security Hotspots pela API:
+
+```bash
+export SONAR_TOKEN=<user-token-gerado-no-sonarqube>
+./scripts/generate-sonar-security-report.sh
+```
+
+O relatório consolidado é gerado em:
+
+[docs/security/sonar-vulnerability-report.md](docs/security/sonar-vulnerability-report.md)
+
+O script responsável pela geração está em:
+
+[scripts/generate-sonar-security-report.sh](scripts/generate-sonar-security-report.sh)
+
+As respostas brutas da API do SonarQube são salvas em:
+
+```text
+target/sonar-security/
+```
+
+## Principais recursos da API
+
+| Área                               | Base path                                       |
+|------------------------------------|-------------------------------------------------|
+| Atendimento / abertura de OS       | `/atendimentos`                                 |
+| Ordens de serviço                  | `/ordens-servico`                               |
+| Métricas (tempo médio de execução) | `/ordens-servico/metricas/tempo-medio-execucao` |
+| Catálogo de serviços               | `/servicos`                                     |
+| Peças                              | `/pecas`                                        |
+| Estoque                            | `/estoques`                                     |
+| Ordens de compra                   | `/ordens-compra`                                |
+
+## Decisões de modelagem do MVP
+
+### Criação de cliente e veículo no fluxo de atendimento
+
+No MVP, a criação de cliente e veículo foi centralizada em `POST /atendimentos`, que já abre a OS inicial no status
+`RECEBIDO`.
+Essa decisão evita cadastros órfãos e mantém o primeiro registro do atendimento (cliente, veículo e relato inicial) de
+forma transacional.
+
+Os endpoints administrativos de clientes e veículos cobrem listagem, consulta, atualização e remoção (`GET`, `PUT`,
+`DELETE`), enquanto o `create` ocorre no fluxo principal de negócio.
+
+### Controle de estoque orientado a eventos de negócio
+
+O controle de estoque é atualizado automaticamente por eventos do domínio:
+
+- entrada ao realizar ordem de compra;
+- baixa ao finalizar execução da OS.
+
+Assim, o saldo de estoque permanece consistente com o ciclo operacional da oficina.
+
+## Licença / uso acadêmico
+
+Projeto desenvolvido no contexto do **Tech Challenge** (pós-graduação SOAT).

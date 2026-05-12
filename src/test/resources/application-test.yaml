@@ -1,0 +1,36 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/autoservice
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        hbm2ddl:
+          create_namespaces: true
+  mail:
+    host: 127.0.0.1
+    port: 3025
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+  main:
+    allow-bean-definition-overriding: true
+  sql:
+    init:
+      mode: never
+
+autoservice:
+  app:
+    base-url: http://localhost:0
+  jwt:
+    secret: Xip4obfk6W9Mzo+cA+gUDuevNOfULy8Q3yYEr8ByYU8=
