@@ -73,6 +73,24 @@ O `Dockerfile` está em **`docker/Dockerfile`** (build multi-stage com Maven + J
   outros, `presentation` e `infrastructure` do relatório de verificação — alinhado ao foco em **domínio** e **casos de
   uso**).
 
+## Qualidade e vulnerabilidades com SonarQube
+
+O projeto possui SonarScanner for Maven configurado no `pom.xml` e um SonarQube local no Docker Compose via profile
+`quality`.
+
+Suba o SonarQube:
+
+```bash
+docker compose -f docker/docker-compose.yaml --profile quality up -d sonarqube
+```
+
+Acesse `http://localhost:9000`, crie um token de análise e execute:
+
+```bash
+export SONAR_TOKEN=<token-gerado-no-sonarqube>
+./mvnw clean verify sonar:sonar
+```
+
 ## Principais recursos da API
 
 | Área                               | Base path                                       |
