@@ -8,7 +8,6 @@ import com.autoservice.validation.handler.NotificationValidationHandler;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
-import java.time.LocalDate;
 import java.util.Objects;
 
 @Embeddable
