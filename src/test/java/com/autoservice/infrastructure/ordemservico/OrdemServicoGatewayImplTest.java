@@ -33,7 +33,7 @@ class OrdemServicoGatewayImplTest {
                 veiculoId,
                 "Cliente relata barulho ao frear"
         );
-        
+
         when(repository.save(any(OrdemServico.class))).thenReturn(os);
 
         final OrdemServico saved = gateway.create(os);

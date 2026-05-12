@@ -1,10 +1,12 @@
 package com.autoservice.domain.veiculo;
 
+import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.pessoa.PessoaID;
 import com.autoservice.domain.tipoveiculo.TipoVeiculoID;
-import com.autoservice.domain.veiculo.valueobject.*;
+import com.autoservice.domain.veiculo.valueobject.Cor;
+import com.autoservice.domain.veiculo.valueobject.Kilometragem;
+import com.autoservice.domain.veiculo.valueobject.Placa;
 import com.autoservice.validation.handler.ThrowsValidationHandler;
-import com.autoservice.domain.exceptions.DomainException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

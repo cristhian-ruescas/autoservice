@@ -36,7 +36,7 @@ class DataCriacaoTest {
     void deveFalharAoValidarDataFutura() {
         final LocalDate dataFutura = LocalDate.now().plusDays(5);
         var exception = assertThrows(DomainException.class, () -> DataCriacao.from(dataFutura));
-        
+
         assertEquals("Data de criação não pode ser no futuro", exception.getErrors().getFirst().message());
     }
 
@@ -74,7 +74,7 @@ class DataCriacaoTest {
         assertTrue(d1.equals(d1));
         assertEquals(d1, d2);
         assertEquals(d1.hashCode(), d2.hashCode());
-        
+
         assertNotEquals(d1, d3);
         assertFalse(d1.equals(null));
         assertFalse(d1.equals("hoje"));

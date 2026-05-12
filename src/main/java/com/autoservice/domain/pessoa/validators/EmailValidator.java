@@ -7,13 +7,12 @@ import com.autoservice.validation.Validator;
 
 public class EmailValidator extends Validator {
 
-    private final Email email;
     private static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
     private static final int MAX_LENGTH = 255;
-
     private static final String EMAIL_NULO_MESSAGE = "Email não deve ser nulo ou vazio";
     private static final String EMAIL_TAMANHO_MESSAGE = "Email não deve exceder " + MAX_LENGTH + " caracteres";
     private static final String EMAIL_FORMATO_MESSAGE = "Email deve estar em formato válido (ex: usuario@dominio.com)";
+    private final Email email;
 
     public EmailValidator(final Email email, final ValidationHandler handler) {
         super(handler);

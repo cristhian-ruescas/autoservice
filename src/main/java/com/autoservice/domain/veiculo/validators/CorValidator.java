@@ -7,16 +7,14 @@ import com.autoservice.validation.Validator;
 
 public class CorValidator extends Validator {
 
-    private final Cor cor;
-
     private static final int MIN_LENGTH = 3;
     private static final int MAX_LENGTH = 30;
-
     private static final String MSG_NULA = "Cor do veículo não deve ser nula";
     private static final String MSG_VAZIA = "Cor do veículo não deve estar vazia";
     private static final String MSG_MIN_LENGTH = "Cor do veículo deve ter no mínimo %d caracteres";
     private static final String MSG_MAX_LENGTH = "Cor do veículo deve ter no máximo %d caracteres";
     private static final String MSG_CARACTER_INVALIDO = "Cor do veículo deve conter apenas letras e espaços";
+    private final Cor cor;
 
     public CorValidator(
             final Cor cor,

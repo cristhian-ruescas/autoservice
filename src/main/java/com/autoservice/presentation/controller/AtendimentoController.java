@@ -1,8 +1,8 @@
 package com.autoservice.presentation.controller;
 
 import com.autoservice.application.atendimento.create.AbrirAtendimentoCommand;
-import com.autoservice.application.atendimento.create.enums.TipoPessoaAtendimento;
 import com.autoservice.application.atendimento.create.AbrirAtendimentoUseCase;
+import com.autoservice.application.atendimento.create.enums.TipoPessoaAtendimento;
 import com.autoservice.presentation.dto.atendimento.AbrirAtendimentoRequest;
 import com.autoservice.presentation.dto.atendimento.AbrirAtendimentoResponse;
 import io.swagger.v3.oas.annotations.Operation;

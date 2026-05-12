@@ -9,46 +9,11 @@ import com.autoservice.validation.handler.ThrowsValidationHandler;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DisplayName("PessoaValidator")
 class PessoaValidatorTest {
-
-    private static class PessoaFake extends Pessoa {
-
-        protected PessoaFake(
-                final PessoaID id,
-                final Email email,
-                final Telefone telefone
-        ) {
-            super(id, email, telefone);
-        }
-
-        @Override
-        public void validate(final ValidationHandler handler) {
-        }
-    }
-
-    private static class PessoaValidatorFake extends PessoaValidator {
-
-        private boolean validacaoEspecificaExecutada = false;
-
-        protected PessoaValidatorFake(
-                final Pessoa pessoa,
-                final ValidationHandler handler
-        ) {
-            super(pessoa, handler);
-        }
-
-        @Override
-        protected void validateSpecificFields() {
-            validacaoEspecificaExecutada = true;
-        }
-
-        public boolean foiExecutadaValidacaoEspecifica() {
-            return validacaoEspecificaExecutada;
-        }
-    }
 
     @Test
     @DisplayName("Deve executar validação de campos específicos")
@@ -136,5 +101,41 @@ class PessoaValidatorTest {
         assertTrue(
                 validator.foiExecutadaValidacaoEspecifica()
         );
+    }
+
+    private static class PessoaFake extends Pessoa {
+
+        protected PessoaFake(
+                final PessoaID id,
+                final Email email,
+                final Telefone telefone
+        ) {
+            super(id, email, telefone);
+        }
+
+        @Override
+        public void validate(final ValidationHandler handler) {
+        }
+    }
+
+    private static class PessoaValidatorFake extends PessoaValidator {
+
+        private boolean validacaoEspecificaExecutada = false;
+
+        protected PessoaValidatorFake(
+                final Pessoa pessoa,
+                final ValidationHandler handler
+        ) {
+            super(pessoa, handler);
+        }
+
+        @Override
+        protected void validateSpecificFields() {
+            validacaoEspecificaExecutada = true;
+        }
+
+        public boolean foiExecutadaValidacaoEspecifica() {
+            return validacaoEspecificaExecutada;
+        }
     }
 }

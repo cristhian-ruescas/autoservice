@@ -1,12 +1,12 @@
 package com.autoservice.application.ordemservico.diagnostico;
 
 import com.autoservice.application.UseCase;
+import com.autoservice.application.ordemservico.status.OrdemServicoStatusOutput;
 import com.autoservice.domain.events.DomainEventPublisher;
 import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.itemservico.ItemServicoGateway;
 import com.autoservice.domain.ordemservico.OrdemServicoGateway;
 import com.autoservice.domain.ordemservico.OrdemServicoID;
-import com.autoservice.application.ordemservico.status.OrdemServicoStatusOutput;
 import com.autoservice.validation.Error;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

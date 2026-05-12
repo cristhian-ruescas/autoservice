@@ -10,26 +10,21 @@ import java.util.regex.Pattern;
 
 public class CNPJValidator extends Validator {
 
-    private final CNPJ cnpj;
-
     private static final int TAMANHO_CNPJ_SEM_DV = 12;
     private static final int VALOR_BASE = '0';
-
     private static final String RAW_REGEX = "[A-Za-z0-9]{14}";
     private static final String FORMATTED_REGEX =
             "[A-Za-z0-9]{2}\\.[A-Za-z0-9]{3}\\.[A-Za-z0-9]{3}/[A-Za-z0-9]{4}-\\d{2}";
-
     private static final String CNPJ_NULO_MESSAGE = "CNPJ não deve ser nulo ou vazio";
     private static final String CNPJ_FORMATO_MESSAGE = "CNPJ deve estar no formato válido (XX.XXX.XXX/XXXX-XX ou XXXXXXXXXXXXXX)";
     private static final String CNPJ_INVALIDO_MESSAGE = "CNPJ inválido";
-
     private static final int[] PESOS_DV =
             {6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2};
-
     private static final List<String> ALL_CNPJ_REGEX = List.of(
             RAW_REGEX,
             FORMATTED_REGEX
     );
+    private final CNPJ cnpj;
 
     public CNPJValidator(
             final ValidationHandler aHandler,
@@ -37,32 +32,6 @@ public class CNPJValidator extends Validator {
     ) {
         super(aHandler);
         this.cnpj = cnpj;
-    }
-
-    @Override
-    public void validate() {
-        checkConstraints();
-    }
-
-    private void checkConstraints() {
-        final String value = this.cnpj.getValue();
-
-        if (value == null || value.isBlank()) {
-            this.validationHandler()
-                    .append(new Error(CNPJ_NULO_MESSAGE));
-            return;
-        }
-
-        if (!isCnpj(value)) {
-            this.validationHandler()
-                    .append(new Error(CNPJ_FORMATO_MESSAGE));
-            return;
-        }
-
-        if (!isValidCnpj(value)) {
-            this.validationHandler()
-                    .append(new Error(CNPJ_INVALIDO_MESSAGE));
-        }
     }
 
     public static boolean isCnpj(String input) {
@@ -122,5 +91,31 @@ public class CNPJValidator extends Validator {
         return (soma % 11 < 2)
                 ? 0
                 : 11 - (soma % 11);
+    }
+
+    @Override
+    public void validate() {
+        checkConstraints();
+    }
+
+    private void checkConstraints() {
+        final String value = this.cnpj.getValue();
+
+        if (value == null || value.isBlank()) {
+            this.validationHandler()
+                    .append(new Error(CNPJ_NULO_MESSAGE));
+            return;
+        }
+
+        if (!isCnpj(value)) {
+            this.validationHandler()
+                    .append(new Error(CNPJ_FORMATO_MESSAGE));
+            return;
+        }
+
+        if (!isValidCnpj(value)) {
+            this.validationHandler()
+                    .append(new Error(CNPJ_INVALIDO_MESSAGE));
+        }
     }
 }

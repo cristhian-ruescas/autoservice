@@ -1,10 +1,6 @@
 package com.autoservice.infrastructure.pessoa;
 
-import com.autoservice.domain.pessoa.Pessoa;
-import com.autoservice.domain.pessoa.PessoaFisica;
-import com.autoservice.domain.pessoa.PessoaGateway;
-import com.autoservice.domain.pessoa.PessoaID;
-import com.autoservice.domain.pessoa.PessoaJuridica;
+import com.autoservice.domain.pessoa.*;
 import com.autoservice.domain.pessoa.valueobject.CNPJ;
 import com.autoservice.domain.pessoa.valueobject.CPF;
 import com.autoservice.infrastructure.pessoa.persistence.PessoaJpaRepository;
