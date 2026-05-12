@@ -15,6 +15,12 @@
 
     <properties>
         <java.version>21</java.version>
+        <mockito.version>5.17.0</mockito.version>
+        <sonar.projectKey>com.autoservice:autoservice</sonar.projectKey>
+        <sonar.projectName>autoservice</sonar.projectName>
+        <sonar.host.url>http://localhost:9000</sonar.host.url>
+        <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.exclusions>**/dto/**,**/*Config*,**/*Application*,**/reports/**,**/assets/**</sonar.exclusions>
     </properties>
     <dependencies>
         <dependency>
@@ -88,12 +94,6 @@
             <version>6.21.5</version>
         </dependency>
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-inline</artifactId>
-            <version>5.2.0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
@@ -150,6 +150,7 @@
                         <configuration>
                             <formats>
                                 <format>HTML</format>
+                                <format>XML</format>
                                 <format>CSV</format>
                             </formats>
                         </configuration>
@@ -182,7 +183,8 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.5</version>
                 <configuration>
-                    <argLine>
+                    <argLine>@{argLine}
+                        -javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar
                         -Xmx512M -Xms128M
                     </argLine>
                 </configuration>
@@ -192,10 +194,16 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>3.2.5</version>
                 <configuration>
-                    <argLine>
+                    <argLine>@{argLine}
+                        -javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar
                         -Xmx512M -Xms128M
                     </argLine>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>5.5.0.6356</version>
             </plugin>
         </plugins>
     </build>
