@@ -9,6 +9,7 @@ import org.junit.jupiter.api.condition.EnabledIf;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -35,6 +36,9 @@ class OrdemServicoFluxoPrincipalIntegrationTest extends AbstractIntegrationTest 
     @Autowired
     private ObjectMapper objectMapper;
 
+    @MockitoBean
+    private OrcamentoEmailSender orcamentoEmailSender;
+  
     private static String placaMercosulAleatoria() {
         final int d = ThreadLocalRandom.current().nextInt(0, 10);
         final int dd = ThreadLocalRandom.current().nextInt(10, 99);
