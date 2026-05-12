@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -22,7 +23,8 @@ class OrdemServicoMetricasIntegrationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("GET /ordens-servico/metricas/tempo-medio-execucao retorna estrutura")
     void tempoMedioExecucacaoSemDados() throws Exception {
-        mockMvc.perform(get("/ordens-servico/metricas/tempo-medio-execucao"))
+        mockMvc.perform(get("/ordens-servico/metricas/tempo-medio-execucao")
+                        .with(user("admin@autoservice.local").roles("ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.porDescricaoItemServico").isArray());
     }
