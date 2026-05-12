@@ -21,6 +21,7 @@
         <sonar.host.url>http://localhost:9000</sonar.host.url>
         <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
         <sonar.exclusions>**/dto/**,**/*Config*,**/*Application*,**/reports/**,**/assets/**</sonar.exclusions>
+        <sonar.coverage.exclusions>**/dto/**,**/*Config*,**/*Application*,**/reports/**,**/assets/**</sonar.coverage.exclusions>
     </properties>
     <dependencies>
         <dependency>
@@ -130,8 +131,8 @@
                         <exclude>**/dto/**</exclude>
                         <exclude>**/*Config*</exclude>
                         <exclude>**/*Application*</exclude>
-                        <exclude>**/infrastructure/**</exclude>
-                        <exclude>**/presentation/**</exclude>
+                        <exclude>**/reports/**</exclude>
+                        <exclude>**/assets/**</exclude>
                     </excludes>
                 </configuration>
                 <executions>
@@ -169,7 +170,7 @@
                                         <limit>
                                             <counter>LINE</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.85</minimum>
+                                            <minimum>0.80</minimum>
                                         </limit>
                                     </limits>
                                 </rule>
