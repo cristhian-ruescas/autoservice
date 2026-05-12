@@ -1,25 +1,14 @@
 package com.autoservice.presentation.controller;
 
 import com.autoservice.application.PaginationOutput;
-import com.autoservice.application.cliente.query.ClienteDetailOutput;
-import com.autoservice.application.cliente.query.ClienteOutput;
-import com.autoservice.application.cliente.query.GetClienteByIdQuery;
-import com.autoservice.application.cliente.query.GetClienteByCpfQuery;
-import com.autoservice.application.cliente.query.ListClientesQuery;
 import com.autoservice.application.cliente.delete.RemoverClienteCommand;
 import com.autoservice.application.cliente.delete.RemoverClienteUseCase;
+import com.autoservice.application.cliente.query.*;
 import com.autoservice.application.cliente.update.AtualizarClienteCommand;
 import com.autoservice.application.cliente.update.AtualizarClienteUseCase;
 import com.autoservice.presentation.dto.cliente.AtualizarClienteRequest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 

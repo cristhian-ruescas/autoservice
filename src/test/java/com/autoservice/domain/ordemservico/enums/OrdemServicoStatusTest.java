@@ -28,7 +28,7 @@ class OrdemServicoStatusTest {
     void deveGarantirValores() {
         OrdemServicoStatus[] values = OrdemServicoStatus.values();
         assertEquals(9, values.length);
-        
+
         assertNotNull(OrdemServicoStatus.valueOf("RECEBIDO"));
         assertNotNull(OrdemServicoStatus.valueOf("EM_DIAGNOSTICO"));
     }

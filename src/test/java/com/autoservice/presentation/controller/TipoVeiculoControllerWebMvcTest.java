@@ -11,13 +11,15 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -28,19 +30,19 @@ class TipoVeiculoControllerWebMvcTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private CadastrarTipoVeiculoUseCase cadastrarTipoVeiculoUseCase;
 
-    @MockBean
+    @MockitoBean
     private ListTipoVeiculoQuery listTipoVeiculoQuery;
 
-    @MockBean
+    @MockitoBean
     private GetTipoVeiculoByIdQuery getTipoVeiculoByIdQuery;
 
-    @MockBean
+    @MockitoBean
     private AtualizarTipoVeiculoUseCase atualizarTipoVeiculoUseCase;
 
-    @MockBean
+    @MockitoBean
     private RemoverTipoVeiculoUseCase removerTipoVeiculoUseCase;
 
     @Test
@@ -50,6 +52,8 @@ class TipoVeiculoControllerWebMvcTest {
                 .thenReturn(new CadastrarTipoVeiculoOutput("id-1", "Fiat", "Uno", 2015));
 
         mockMvc.perform(post("/tipos-veiculo")
+                        .with(user("admin@autoservice.local").roles("ADMIN"))
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"marca\":\"Fiat\",\"modelo\":\"Uno\",\"ano\":2015}"))
                 .andExpect(status().isCreated())

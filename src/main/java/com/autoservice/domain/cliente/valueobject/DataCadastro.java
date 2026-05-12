@@ -65,7 +65,7 @@ public class DataCadastro extends ValueObject {
 
     @Override
     public String toString() {
-        if (value == null)  return "null";
+        if (value == null) return "null";
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         return value.format(formatter);
     }

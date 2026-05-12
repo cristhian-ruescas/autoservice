@@ -55,15 +55,12 @@ class EntityTest {
         DummyEntity e2 = new DummyEntity(id1);
         DummyEntity e3 = new DummyEntity(id2);
         DummyEntity e4 = new DummyEntity();
-        
 
         Exception exception = assertThrows(NullPointerException.class, () -> new DummyEntity(null));
         assertEquals("ID cannot be null", exception.getMessage());
 
-
         assertEquals(id1, e1.getId());
         assertNull(e4.getId());
-
 
         assertEquals(e1, e1);
         assertEquals(e1, e2);
@@ -71,7 +68,6 @@ class EntityTest {
         assertNotEquals(e1, "Outro Objeto");
         assertNotEquals(e1, e3);
         assertNotEquals(e1, e4);
-        
 
         assertEquals(e1.hashCode(), e2.hashCode());
         assertNotEquals(e1.hashCode(), e3.hashCode());

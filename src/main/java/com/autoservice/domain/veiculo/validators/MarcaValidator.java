@@ -7,16 +7,14 @@ import com.autoservice.validation.Validator;
 
 public class MarcaValidator extends Validator {
 
-    private final Marca marca;
-
     private static final int MIN_LENGTH = 2;
     private static final int MAX_LENGTH = 50;
-
     private static final String MSG_NULA = "Marca não deve ser nula";
     private static final String MSG_VAZIA = "Marca não deve estar vazia";
     private static final String MSG_MIN_LENGTH = "Marca deve ter no mínimo %d caracteres";
     private static final String MSG_MAX_LENGTH = "Marca deve ter no máximo %d caracteres";
     private static final String MSG_CARACTERES_INVALIDOS = "Marca deve conter apenas letras e espaços";
+    private final Marca marca;
 
     public MarcaValidator(
             final Marca marca,

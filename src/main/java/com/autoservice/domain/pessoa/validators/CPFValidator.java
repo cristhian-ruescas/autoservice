@@ -11,27 +11,22 @@ import java.util.stream.Collectors;
 
 public class CPFValidator extends Validator {
 
-    private final CPF cpf;
-
     private static final String RAW_REGEX = "\\d{11}";
     private static final String FORMATTED_REGEX = "\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}";
-
     private static final String CPF_NULO_MESSAGE = "CPF não deve ser nulo ou vazio";
     private static final String CPF_FORMATO_MESSAGE = "CPF deve estar no formato válido (XXX.XXX.XXX-XX ou XXXXXXXXXXX)";
     private static final String CPF_INVALIDO_MESSAGE = "CPF inválido";
-
     private static final List<String> ALL_CPF_REGEX = List.of(
             RAW_REGEX,
             FORMATTED_REGEX
     );
-
     private static final List<Integer> WEIGHTS_FIRST_CHECK_DIGIT = List.of(
             10, 9, 8, 7, 6, 5, 4, 3, 2
     );
-
     private static final List<Integer> WEIGHTS_SECOND_CHECK_DIGIT = List.of(
             11, 10, 9, 8, 7, 6, 5, 4, 3, 2
     );
+    private final CPF cpf;
 
     public CPFValidator(
             final CPF aCpf,
@@ -39,32 +34,6 @@ public class CPFValidator extends Validator {
     ) {
         super(handler);
         this.cpf = aCpf;
-    }
-
-    @Override
-    public void validate() {
-        checkConstraints();
-    }
-
-    private void checkConstraints() {
-        final String value = this.cpf.getValue();
-
-        if (value == null || value.isBlank()) {
-            this.validationHandler()
-                    .append(new Error(CPF_NULO_MESSAGE));
-            return;
-        }
-
-        if (!isCpf(value)) {
-            this.validationHandler()
-                    .append(new Error(CPF_FORMATO_MESSAGE));
-            return;
-        }
-
-        if (!isValidCpf(value)) {
-            this.validationHandler()
-                    .append(new Error(CPF_INVALIDO_MESSAGE));
-        }
     }
 
     public static boolean isCpf(String input) {
@@ -159,5 +128,31 @@ public class CPFValidator extends Validator {
         }
 
         return sum;
+    }
+
+    @Override
+    public void validate() {
+        checkConstraints();
+    }
+
+    private void checkConstraints() {
+        final String value = this.cpf.getValue();
+
+        if (value == null || value.isBlank()) {
+            this.validationHandler()
+                    .append(new Error(CPF_NULO_MESSAGE));
+            return;
+        }
+
+        if (!isCpf(value)) {
+            this.validationHandler()
+                    .append(new Error(CPF_FORMATO_MESSAGE));
+            return;
+        }
+
+        if (!isValidCpf(value)) {
+            this.validationHandler()
+                    .append(new Error(CPF_INVALIDO_MESSAGE));
+        }
     }
 }

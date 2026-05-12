@@ -85,8 +85,8 @@ class OrdemServicoTest {
     void deveFalharVeiculoNuloAoReconstruir() {
         final OrdemServicoID osID = OrdemServicoID.unique();
         final DataCriacao dataCriacao = DataCriacao.from(LocalDate.now());
-        
-        var exception = assertThrows(DomainException.class, () -> 
+
+        var exception = assertThrows(DomainException.class, () ->
                 OrdemServico.with(
                         osID,
                         null,
@@ -104,8 +104,8 @@ class OrdemServicoTest {
         final OrdemServicoID osID = OrdemServicoID.unique();
         final VeiculoID veiculoId = VeiculoID.unique();
         final DataCriacao dataCriacao = DataCriacao.from(LocalDate.now());
-        
-        var exception = assertThrows(DomainException.class, () -> 
+
+        var exception = assertThrows(DomainException.class, () ->
                 OrdemServico.with(
                         osID,
                         veiculoId,
@@ -122,8 +122,8 @@ class OrdemServicoTest {
     void deveFalharDataCriacaoNulaAoReconstruir() {
         final OrdemServicoID osID = OrdemServicoID.unique();
         final VeiculoID veiculoId = VeiculoID.unique();
-        
-        var exception = assertThrows(DomainException.class, () -> 
+
+        var exception = assertThrows(DomainException.class, () ->
                 OrdemServico.with(
                         osID,
                         veiculoId,

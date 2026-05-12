@@ -3,16 +3,12 @@ package com.autoservice.domain.ordemservico;
 import com.autoservice.domain.AggregateRoot;
 import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.ordemservico.enums.OrdemServicoStatus;
-import com.autoservice.domain.ordemservico.events.OrdemServicoCriadaEvent;
-import com.autoservice.domain.ordemservico.events.OrdemServicoDiagnosticoFinalizadoEvent;
-import com.autoservice.domain.ordemservico.events.OrdemServicoDiagnosticoIniciadoEvent;
-import com.autoservice.domain.ordemservico.events.OrdemServicoFinalizadaEvent;
-import com.autoservice.domain.ordemservico.events.OrdemServicoOrcamentoAprovadoEvent;
+import com.autoservice.domain.ordemservico.events.*;
 import com.autoservice.domain.ordemservico.validators.OrdemServicoValidator;
 import com.autoservice.domain.ordemservico.valueobject.DataCriacao;
 import com.autoservice.domain.veiculo.VeiculoID;
-import com.autoservice.validation.ValidationHandler;
 import com.autoservice.validation.Error;
+import com.autoservice.validation.ValidationHandler;
 import com.autoservice.validation.handler.NotificationValidationHandler;
 import jakarta.persistence.*;
 
@@ -62,9 +58,9 @@ public class OrdemServico extends AggregateRoot<OrdemServicoID> {
     }
 
     private OrdemServico(
-            final OrdemServicoID id, 
-            final VeiculoID veiculoId, 
-            final OrdemServicoStatus status, 
+            final OrdemServicoID id,
+            final VeiculoID veiculoId,
+            final OrdemServicoStatus status,
             final DataCriacao dataCriacao,
             final String relato,
             final Integer tempoPrevistoExecucaoDias,
@@ -86,9 +82,9 @@ public class OrdemServico extends AggregateRoot<OrdemServicoID> {
 
     public static OrdemServico newOrdemServico(final VeiculoID veiculoId, final String relato) {
         final OrdemServico ordemServico = new OrdemServico(
-                OrdemServicoID.unique(), 
-                veiculoId, 
-                OrdemServicoStatus.RECEBIDO, 
+                OrdemServicoID.unique(),
+                veiculoId,
+                OrdemServicoStatus.RECEBIDO,
                 DataCriacao.from(LocalDate.now()),
                 relato,
                 null,
@@ -96,16 +92,16 @@ public class OrdemServico extends AggregateRoot<OrdemServicoID> {
                 null,
                 null
         );
-        
+
         final NotificationValidationHandler handler = new NotificationValidationHandler();
         ordemServico.validate(handler);
-        
+
         if (handler.hasError()) {
             throw DomainException.with(handler.getErrors());
         }
 
         ordemServico.registerEvent(new OrdemServicoCriadaEvent(ordemServico.getId(), ordemServico.getVeiculoId()));
-        
+
         return ordemServico;
     }
 
@@ -120,9 +116,9 @@ public class OrdemServico extends AggregateRoot<OrdemServicoID> {
     }
 
     public static OrdemServico with(
-            final OrdemServicoID id, 
-            final VeiculoID veiculoId, 
-            final OrdemServicoStatus status, 
+            final OrdemServicoID id,
+            final VeiculoID veiculoId,
+            final OrdemServicoStatus status,
             final DataCriacao dataCriacao,
             final String relato,
             final Integer tempoPrevistoExecucaoDias,
@@ -141,14 +137,14 @@ public class OrdemServico extends AggregateRoot<OrdemServicoID> {
                 iniciadoEm,
                 finalizadoEm
         );
-        
+
         final NotificationValidationHandler handler = new NotificationValidationHandler();
         ordemServico.validate(handler);
-        
+
         if (handler.hasError()) {
             throw DomainException.with(handler.getErrors());
         }
-        
+
         return ordemServico;
     }
 

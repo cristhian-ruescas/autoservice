@@ -38,16 +38,16 @@ class AggregateRootTest {
             @Override
             public void validate(ValidationHandler handler) {
             }
-            
+
             @Override
             public Identifier getId() {
                 return this.id;
             }
         }
-        
+
         DummyAggregateRoot aggregate = new DummyAggregateRoot(id);
         DummyAggregateRoot aggregateEmpty = new DummyAggregateRoot();
-        
+
         assertNotNull(aggregate);
         assertNotNull(aggregateEmpty);
     }

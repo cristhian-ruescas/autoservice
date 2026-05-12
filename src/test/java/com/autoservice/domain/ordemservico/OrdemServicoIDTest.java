@@ -65,7 +65,7 @@ class OrdemServicoIDTest {
         assertEquals(id1, id2);
         assertTrue(id1.equals(id1));
         assertEquals(id1.hashCode(), id2.hashCode());
-        
+
         assertNotEquals(id1, id3);
         assertFalse(id1.equals(null));
         assertFalse(id1.equals("123"));

@@ -1,12 +1,14 @@
 package com.autoservice.domain.veiculo.validators;
 
+import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.pessoa.PessoaID;
 import com.autoservice.domain.tipoveiculo.TipoVeiculoID;
 import com.autoservice.domain.veiculo.Veiculo;
 import com.autoservice.domain.veiculo.VeiculoID;
-import com.autoservice.domain.veiculo.valueobject.*;
+import com.autoservice.domain.veiculo.valueobject.Cor;
+import com.autoservice.domain.veiculo.valueobject.Kilometragem;
+import com.autoservice.domain.veiculo.valueobject.Placa;
 import com.autoservice.validation.handler.ThrowsValidationHandler;
-import com.autoservice.domain.exceptions.DomainException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -55,7 +57,7 @@ class VeiculoValidatorTest {
             var validator = new VeiculoValidator(veiculo, handler);
             validator.validate();
         });
-        
+
         assertEquals("Proprietário ID não deve ser nulo", error.getErrors().getFirst().message());
     }
 
@@ -83,7 +85,7 @@ class VeiculoValidatorTest {
             var validator = new VeiculoValidator(veiculo, handler);
             validator.validate();
         });
-        
+
         assertEquals("Placa não deve ser nula", error.getErrors().getFirst().message());
     }
 
@@ -97,7 +99,7 @@ class VeiculoValidatorTest {
             var validator = new VeiculoValidator(veiculo, handler);
             validator.validate();
         });
-        
+
         assertEquals("Cor do veículo não deve ser nula", error.getErrors().getFirst().message());
     }
 
@@ -111,7 +113,7 @@ class VeiculoValidatorTest {
             var validator = new VeiculoValidator(veiculo, handler);
             validator.validate();
         });
-        
+
         assertEquals("Kilometragem não deve ser nula", error.getErrors().getFirst().message());
     }
 
