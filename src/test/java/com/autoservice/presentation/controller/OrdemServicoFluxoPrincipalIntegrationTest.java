@@ -1,6 +1,7 @@
 package com.autoservice.presentation.controller;
 
 import com.autoservice.AbstractIntegrationTest;
+import com.autoservice.application.ordemservico.orcamento.OrcamentoEmailSender;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
