@@ -1,7 +1,6 @@
 package com.autoservice.application.ordemservico.create;
 
 import com.autoservice.domain.ordemservico.OrdemServico;
-import com.autoservice.domain.ordemservico.OrdemServicoID;
 
 public record CreateOrdemServicoOutput(
         String id
