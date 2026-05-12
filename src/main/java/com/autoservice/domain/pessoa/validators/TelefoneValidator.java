@@ -7,15 +7,12 @@ import com.autoservice.validation.Validator;
 
 public class TelefoneValidator extends Validator {
 
-    private final Telefone telefone;
-
     private static final String TELEFONE_PATTERN = "\\d{10,11}";
-
     private static final String TELEFONE_NULO_MESSAGE =
             "Telefone não deve ser nulo ou vazio";
-
     private static final String TELEFONE_FORMATO_MESSAGE =
             "Telefone deve conter DDD válido e 10 ou 11 dígitos";
+    private final Telefone telefone;
 
     public TelefoneValidator(
             final Telefone telefone,

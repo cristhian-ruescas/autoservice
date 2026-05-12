@@ -1,9 +1,9 @@
 package com.autoservice.domain.veiculo.validators;
 
 import com.autoservice.domain.veiculo.valueobject.Placa;
+import com.autoservice.validation.Error;
 import com.autoservice.validation.ValidationHandler;
 import com.autoservice.validation.Validator;
-import com.autoservice.validation.Error;
 
 import static java.util.Objects.isNull;
 

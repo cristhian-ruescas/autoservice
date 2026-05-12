@@ -15,9 +15,9 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("PessoaJuridica")
 class PessoaJuridicaTest {
 
-    private static final String CNPJ_VALIDO        = "11222333000181";
-    private static final String EMAIL_VALIDO       = "contato@empresa.com";
-    private static final String TELEFONE_VALIDO    = "11999999999";
+    private static final String CNPJ_VALIDO = "11222333000181";
+    private static final String EMAIL_VALIDO = "contato@empresa.com";
+    private static final String TELEFONE_VALIDO = "11999999999";
     private static final String RAZAO_SOCIAL_VALIDA = "Empresa Teste Ltda";
 
     @Test
@@ -194,7 +194,7 @@ class PessoaJuridicaTest {
     @DisplayName("Deve registrar erro quando razão social for maior que 255 caracteres")
     void deveRegistrarErroQuandoRazaoSocialForLonga() {
         final String razaoSocialLonga = "A".repeat(256);
-        
+
         var erro = assertThrows(DomainException.class, () -> PessoaJuridica.newPessoaJuridica(
                 Email.from(EMAIL_VALIDO),
                 Telefone.from(TELEFONE_VALIDO),

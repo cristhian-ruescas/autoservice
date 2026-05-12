@@ -26,7 +26,7 @@ class OrdemServicoValidatorTest {
     void deveValidarOrdemServicoValida() {
         VeiculoID veiculoId = VeiculoID.unique();
         OrdemServico os = OrdemServico.newOrdemServico(veiculoId, "Cliente relata barulho no motor");
-        
+
         assertEquals(veiculoId, os.getVeiculoId());
     }
 

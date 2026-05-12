@@ -1,25 +1,14 @@
 package com.autoservice.presentation.controller;
 
 import com.autoservice.application.PaginationOutput;
-import com.autoservice.application.veiculo.query.GetVeiculoByIdQuery;
-import com.autoservice.application.veiculo.query.GetVeiculoByPlacaQuery;
-import com.autoservice.application.veiculo.query.ListVeiculosByClienteQuery;
-import com.autoservice.application.veiculo.query.ListVeiculosQuery;
-import com.autoservice.application.veiculo.query.VeiculoOutput;
 import com.autoservice.application.veiculo.delete.RemoverVeiculoCommand;
 import com.autoservice.application.veiculo.delete.RemoverVeiculoUseCase;
+import com.autoservice.application.veiculo.query.*;
 import com.autoservice.application.veiculo.update.AtualizarVeiculoCommand;
 import com.autoservice.application.veiculo.update.AtualizarVeiculoUseCase;
 import com.autoservice.presentation.dto.veiculo.AtualizarVeiculoRequest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;

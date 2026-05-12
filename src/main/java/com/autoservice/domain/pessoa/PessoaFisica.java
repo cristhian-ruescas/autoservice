@@ -13,7 +13,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "pessoa_fisica", schema = "cadastro")
-public class PessoaFisica extends Pessoa{
+public class PessoaFisica extends Pessoa {
 
     @Column(name = "nome", nullable = false)
     private String nome;
@@ -30,7 +30,7 @@ public class PessoaFisica extends Pessoa{
         this.cpf = cpf;
     }
 
-    public static PessoaFisica newPessoaFisica(Email email, Telefone telefone, String nome, CPF cpf){
+    public static PessoaFisica newPessoaFisica(Email email, Telefone telefone, String nome, CPF cpf) {
         PessoaFisica newPessoaFisica =
                 new PessoaFisica(PessoaID.unique(), email, telefone, nome, cpf);
         final NotificationValidationHandler handler =
@@ -42,7 +42,7 @@ public class PessoaFisica extends Pessoa{
         return newPessoaFisica;
     }
 
-    public static PessoaFisica withId(PessoaID id,Email email, Telefone telefone, String nome, CPF cpf){
+    public static PessoaFisica withId(PessoaID id, Email email, Telefone telefone, String nome, CPF cpf) {
         return new PessoaFisica(id, email, telefone, nome, cpf);
     }
 
