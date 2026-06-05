@@ -8,36 +8,23 @@ import com.autoservice.domain.peca.PecaID;
 import com.autoservice.validation.Error;
 import com.autoservice.validation.ValidationHandler;
 import com.autoservice.validation.handler.NotificationValidationHandler;
-import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 
-@Entity
-@Table(name = "item_servico", schema = "servico")
 public class ItemServico extends AggregateRoot<ItemServicoID> {
 
-    @EmbeddedId
     private ItemServicoID id;
 
-    @Embedded
-    @AttributeOverride(name = "valor", column = @Column(name = "ordem_servico_id", nullable = false))
     private OrdemServicoID ordemServicoId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "tipo", nullable = false)
     private ItemServicoTipo tipo;
 
-    @Column(name = "descricao", nullable = false, length = 180)
     private String descricao;
 
-    @Embedded
-    @AttributeOverride(name = "valor", column = @Column(name = "peca_id"))
     private PecaID pecaId;
 
-    @Column(name = "quantidade", nullable = false)
     private Integer quantidade;
 
-    @Column(name = "valor_unitario", nullable = false, precision = 10, scale = 2)
     private BigDecimal valorUnitario;
 
     protected ItemServico() {

@@ -2,6 +2,8 @@ package com.autoservice.infrastructure.tipoveiculo.query;
 
 import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.tipoveiculo.TipoVeiculo;
+import com.autoservice.infrastructure.persistence.entity.TipoVeiculoJpaEntity;
+import com.autoservice.infrastructure.persistence.mapper.TipoVeiculoMapper;
 import com.autoservice.domain.tipoveiculo.TipoVeiculoID;
 import com.autoservice.domain.veiculo.valueobject.Ano;
 import com.autoservice.domain.veiculo.valueobject.Marca;
@@ -33,10 +35,11 @@ class TipoVeiculoQueryServiceTest {
     void listaComFiltrosEPaginacao() {
         final var service = new TipoVeiculoQueryService(entityManager);
         final var tipo = tipoVeiculo();
-        final var listQuery = typedQuery(List.of(tipo));
+        final var tipoEntity = TipoVeiculoMapper.toEntity(tipo);
+        final var listQuery = typedQuery(List.of(tipoEntity));
         final var countQuery = typedQuery(1L);
 
-        when(entityManager.createQuery(anyString(), eq(TipoVeiculo.class))).thenReturn(listQuery);
+        when(entityManager.createQuery(anyString(), eq(TipoVeiculoJpaEntity.class))).thenReturn(listQuery);
         when(entityManager.createQuery(anyString(), eq(Long.class))).thenReturn(countQuery);
 
         final var output = service.listar(1, 10, " Fiat ", " Uno ", 2015);
@@ -61,8 +64,8 @@ class TipoVeiculoQueryServiceTest {
     void buscaPorId() {
         final var service = new TipoVeiculoQueryService(entityManager);
         final var tipo = tipoVeiculo();
-        final var query = typedQuery(List.of(tipo));
-        when(entityManager.createQuery(anyString(), eq(TipoVeiculo.class))).thenReturn(query);
+        final var query = typedQuery(List.of(TipoVeiculoMapper.toEntity(tipo)));
+        when(entityManager.createQuery(anyString(), eq(TipoVeiculoJpaEntity.class))).thenReturn(query);
 
         final var output = service.buscarPorId(UUID.randomUUID());
 
@@ -76,8 +79,8 @@ class TipoVeiculoQueryServiceTest {
     @DisplayName("Falha quando tipo de veículo não é encontrado")
     void falhaQuandoNaoEncontrado() {
         final var service = new TipoVeiculoQueryService(entityManager);
-        final var query = typedQuery(List.<TipoVeiculo>of());
-        when(entityManager.createQuery(anyString(), eq(TipoVeiculo.class))).thenReturn(query);
+        final var query = typedQuery(List.<TipoVeiculoJpaEntity>of());
+        when(entityManager.createQuery(anyString(), eq(TipoVeiculoJpaEntity.class))).thenReturn(query);
 
         final var id = UUID.randomUUID();
 

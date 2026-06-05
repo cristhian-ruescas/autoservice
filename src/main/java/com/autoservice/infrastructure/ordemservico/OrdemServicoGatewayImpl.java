@@ -4,6 +4,7 @@ import com.autoservice.domain.ordemservico.OrdemServico;
 import com.autoservice.domain.ordemservico.OrdemServicoGateway;
 import com.autoservice.domain.ordemservico.OrdemServicoID;
 import com.autoservice.infrastructure.ordemservico.persistence.OrdemServicoRepository;
+import com.autoservice.infrastructure.persistence.mapper.OrdemServicoMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,18 +23,20 @@ public class OrdemServicoGatewayImpl implements OrdemServicoGateway {
     @Override
     @Transactional
     public OrdemServico create(final OrdemServico ordemServico) {
-        return this.repository.save(ordemServico);
+        this.repository.save(OrdemServicoMapper.toEntity(ordemServico));
+        return ordemServico;
     }
 
     @Override
     @Transactional
     public OrdemServico update(final OrdemServico ordemServico) {
-        return this.repository.save(ordemServico);
+        this.repository.save(OrdemServicoMapper.toEntity(ordemServico));
+        return ordemServico;
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<OrdemServico> findById(final OrdemServicoID id) {
-        return this.repository.findById(id);
+        return this.repository.findById(id).map(OrdemServicoMapper::toDomain);
     }
 }

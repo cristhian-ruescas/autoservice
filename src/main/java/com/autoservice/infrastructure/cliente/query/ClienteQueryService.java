@@ -39,10 +39,10 @@ public class ClienteQueryService implements ListClientesQuery, GetClienteByCpfQu
 
         final var query = """
                 select c, pf, pj, representante
-                from Cliente c
-                left join PessoaFisica pf on pf.id = c.pessoaId
-                left join PessoaJuridica pj on pj.id = c.pessoaId
-                left join PessoaFisica representante on representante.id = pj.representanteLegalId
+                from ClienteJpaEntity c
+                left join PessoaFisicaJpaEntity pf on pf.id = c.pessoaId
+                left join PessoaJuridicaJpaEntity pj on pj.id = c.pessoaId
+                left join PessoaFisicaJpaEntity representante on representante.id = pj.representanteLegalId
                 where (:tipoPessoa is null
                     or (:tipoPessoa = 'FISICA' and pf is not null)
                     or (:tipoPessoa = 'JURIDICA' and pj is not null))
@@ -67,10 +67,10 @@ public class ClienteQueryService implements ListClientesQuery, GetClienteByCpfQu
         final var cpfNormalizado = CPF.from(cpf);
         final var query = """
                 select c, pf, pj, representante
-                from Cliente c
-                join PessoaFisica pf on pf.id = c.pessoaId
-                left join PessoaJuridica pj on pj.id = c.pessoaId
-                left join PessoaFisica representante on representante.id = pj.representanteLegalId
+                from ClienteJpaEntity c
+                join PessoaFisicaJpaEntity pf on pf.id = c.pessoaId
+                left join PessoaJuridicaJpaEntity pj on pj.id = c.pessoaId
+                left join PessoaFisicaJpaEntity representante on representante.id = pj.representanteLegalId
                 where pf.cpf = :cpf
                 """;
 
@@ -94,10 +94,10 @@ public class ClienteQueryService implements ListClientesQuery, GetClienteByCpfQu
 
         final var query = """
                 select c, pf, pj, representante
-                from Cliente c
-                left join PessoaFisica pf on pf.id = c.pessoaId
-                left join PessoaJuridica pj on pj.id = c.pessoaId
-                left join PessoaFisica representante on representante.id = pj.representanteLegalId
+                from ClienteJpaEntity c
+                left join PessoaFisicaJpaEntity pf on pf.id = c.pessoaId
+                left join PessoaJuridicaJpaEntity pj on pj.id = c.pessoaId
+                left join PessoaFisicaJpaEntity representante on representante.id = pj.representanteLegalId
                 where c.id = :id
                 """;
 
@@ -118,8 +118,8 @@ public class ClienteQueryService implements ListClientesQuery, GetClienteByCpfQu
     private List<ClienteDetailOutput.VeiculoOutput> buscarVeiculos(final Cliente cliente) {
         final var query = """
                 select v, tipoVeiculo
-                from Veiculo v
-                join TipoVeiculo tipoVeiculo on tipoVeiculo.id = v.tipoVeiculoId
+                from VeiculoJpaEntity v
+                join TipoVeiculoJpaEntity tipoVeiculo on tipoVeiculo.id = v.tipoVeiculoId
                 where v.proprietarioId = :proprietarioId
                 order by tipoVeiculo.marca.value asc, tipoVeiculo.modelo.value asc, v.placa.value asc
                 """;
@@ -189,9 +189,9 @@ public class ClienteQueryService implements ListClientesQuery, GetClienteByCpfQu
     private long totalClientes(final String tipoPessoa) {
         final var query = """
                 select count(c)
-                from Cliente c
-                left join PessoaFisica pf on pf.id = c.pessoaId
-                left join PessoaJuridica pj on pj.id = c.pessoaId
+                from ClienteJpaEntity c
+                left join PessoaFisicaJpaEntity pf on pf.id = c.pessoaId
+                left join PessoaJuridicaJpaEntity pj on pj.id = c.pessoaId
                 where (:tipoPessoa is null
                     or (:tipoPessoa = 'FISICA' and pf is not null)
                     or (:tipoPessoa = 'JURIDICA' and pj is not null))

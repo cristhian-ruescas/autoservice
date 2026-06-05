@@ -10,47 +10,29 @@ import com.autoservice.domain.veiculo.VeiculoID;
 import com.autoservice.validation.Error;
 import com.autoservice.validation.ValidationHandler;
 import com.autoservice.validation.handler.NotificationValidationHandler;
-import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Entity
-@Table(name = "ordem_servico", schema = "servico")
 public class OrdemServico extends AggregateRoot<OrdemServicoID> {
 
-    @EmbeddedId
     private OrdemServicoID id;
 
-    @Embedded
-    @AttributeOverride(
-            name = "valor",
-            column = @Column(name = "veiculo_id")
-    )
     private VeiculoID veiculoId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
     private OrdemServicoStatus status;
 
-    @Embedded
-    @Column(name = "data_criacao", nullable = false)
     private DataCriacao dataCriacao;
 
-    @Column(name = "relato", nullable = false, length = 1000)
     private String relato;
 
-    @Column(name = "tempo_previsto_execucao_dias")
     private Integer tempoPrevistoExecucaoDias;
 
-    @Column(name = "tempo_previsto_execucao_horas")
     private Integer tempoPrevistoExecucaoHoras;
 
-    @Column(name = "iniciado_em")
     private LocalDateTime iniciadoEm;
 
-    @Column(name = "finalizado_em")
     private LocalDateTime finalizadoEm;
 
     protected OrdemServico() {

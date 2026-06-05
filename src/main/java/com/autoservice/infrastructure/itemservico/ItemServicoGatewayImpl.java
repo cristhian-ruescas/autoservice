@@ -7,6 +7,7 @@ import com.autoservice.domain.ordemservico.OrdemServicoID;
 import com.autoservice.domain.ordemservico.enums.OrdemServicoStatus;
 import com.autoservice.domain.peca.PecaID;
 import com.autoservice.infrastructure.itemservico.persistence.ItemServicoRepository;
+import com.autoservice.infrastructure.persistence.mapper.ItemServicoMapper;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -25,17 +26,19 @@ public class ItemServicoGatewayImpl implements ItemServicoGateway {
 
     @Override
     public ItemServico create(final ItemServico itemServico) {
-        return this.repository.save(itemServico);
+        this.repository.save(ItemServicoMapper.toEntity(itemServico));
+        return itemServico;
     }
 
     @Override
     public ItemServico update(final ItemServico itemServico) {
-        return this.repository.save(itemServico);
+        this.repository.save(ItemServicoMapper.toEntity(itemServico));
+        return itemServico;
     }
 
     @Override
     public Optional<ItemServico> findById(final ItemServicoID id) {
-        return this.repository.findById(id);
+        return this.repository.findById(id).map(ItemServicoMapper::toDomain);
     }
 
     @Override
@@ -50,7 +53,9 @@ public class ItemServicoGatewayImpl implements ItemServicoGateway {
 
     @Override
     public List<ItemServico> findByOrdemServicoId(final OrdemServicoID ordemServicoId) {
-        return this.repository.findByOrdemServicoId(ordemServicoId);
+        return this.repository.findByOrdemServicoId(ordemServicoId).stream()
+                .map(ItemServicoMapper::toDomain)
+                .toList();
     }
 
     @Override

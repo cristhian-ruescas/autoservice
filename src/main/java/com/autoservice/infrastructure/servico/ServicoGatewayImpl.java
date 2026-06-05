@@ -3,6 +3,7 @@ package com.autoservice.infrastructure.servico;
 import com.autoservice.domain.servico.Servico;
 import com.autoservice.domain.servico.ServicoGateway;
 import com.autoservice.domain.servico.ServicoID;
+import com.autoservice.infrastructure.persistence.mapper.ServicoMapper;
 import com.autoservice.infrastructure.servico.persistence.ServicoRepository;
 import org.springframework.stereotype.Service;
 
@@ -20,17 +21,19 @@ public class ServicoGatewayImpl implements ServicoGateway {
 
     @Override
     public Servico create(final Servico servico) {
-        return this.repository.save(servico);
+        this.repository.save(ServicoMapper.toEntity(servico));
+        return servico;
     }
 
     @Override
     public Servico update(final Servico servico) {
-        return this.repository.save(servico);
+        this.repository.save(ServicoMapper.toEntity(servico));
+        return servico;
     }
 
     @Override
     public Optional<Servico> findById(final ServicoID id) {
-        return this.repository.findById(id);
+        return this.repository.findById(id).map(ServicoMapper::toDomain);
     }
 
     @Override
