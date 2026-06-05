@@ -5,18 +5,11 @@ import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.veiculo.validators.ModeloValidator;
 import com.autoservice.validation.ValidationHandler;
 import com.autoservice.validation.handler.NotificationValidationHandler;
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
 
 import java.util.Objects;
 
-@Embeddable
 public class Modelo extends ValueObject {
 
-    @Column(
-            name = "modelo",
-            nullable = false
-    )
     private final String value;
 
     protected Modelo() {

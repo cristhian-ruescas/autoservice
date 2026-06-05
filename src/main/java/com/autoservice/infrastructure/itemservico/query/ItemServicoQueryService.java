@@ -24,7 +24,7 @@ public class ItemServicoQueryService implements ListItensServicoQuery {
     public List<AdicionarItemServicoOutput> execute(final UUID ordemServicoId) {
         final var query = """
                 select item
-                from ItemServico item
+                from ItemServicoJpaEntity item
                 where item.ordemServicoId = :ordemServicoId
                 order by item.tipo asc, item.descricao asc
                 """;

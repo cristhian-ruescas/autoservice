@@ -3,6 +3,7 @@ package com.autoservice.infrastructure.tipoveiculo;
 import com.autoservice.domain.tipoveiculo.TipoVeiculo;
 import com.autoservice.domain.tipoveiculo.TipoVeiculoGateway;
 import com.autoservice.domain.tipoveiculo.TipoVeiculoID;
+import com.autoservice.infrastructure.persistence.mapper.TipoVeiculoMapper;
 import com.autoservice.infrastructure.tipoveiculo.persistence.TipoVeiculoRepository;
 import org.springframework.stereotype.Service;
 
@@ -20,22 +21,25 @@ public class TipoVeiculoGatewayImpl implements TipoVeiculoGateway {
 
     @Override
     public TipoVeiculo create(final TipoVeiculo tipoVeiculo) {
-        return this.repository.save(tipoVeiculo);
+        this.repository.save(TipoVeiculoMapper.toEntity(tipoVeiculo));
+        return tipoVeiculo;
     }
 
     @Override
     public TipoVeiculo update(final TipoVeiculo tipoVeiculo) {
-        return this.repository.save(tipoVeiculo);
+        this.repository.save(TipoVeiculoMapper.toEntity(tipoVeiculo));
+        return tipoVeiculo;
     }
 
     @Override
     public Optional<TipoVeiculo> findById(final TipoVeiculoID id) {
-        return this.repository.findById(id);
+        return this.repository.findById(id).map(TipoVeiculoMapper::toDomain);
     }
 
     @Override
     public Optional<TipoVeiculo> findByMarcaModeloAno(final String marca, final String modelo, final Integer ano) {
-        return this.repository.findByMarcaModeloAno(marca, modelo, ano);
+        return this.repository.findByMarcaModeloAno(marca, modelo, ano)
+                .map(TipoVeiculoMapper::toDomain);
     }
 
     @Override

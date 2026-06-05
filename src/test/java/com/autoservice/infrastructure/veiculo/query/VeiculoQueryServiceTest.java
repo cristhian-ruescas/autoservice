@@ -1,6 +1,8 @@
 package com.autoservice.infrastructure.veiculo.query;
 
 import com.autoservice.domain.cliente.Cliente;
+import com.autoservice.infrastructure.persistence.entity.ClienteJpaEntity;
+import com.autoservice.infrastructure.persistence.mapper.ClienteMapper;
 import com.autoservice.domain.cliente.ClienteID;
 import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.pessoa.PessoaFisica;
@@ -116,10 +118,10 @@ class VeiculoQueryServiceTest {
         final var cliente = Cliente.with(ClienteID.unique(), pessoa, LocalDate.of(2024, 1, 10));
         final var tipoVeiculo = tipoVeiculo();
         final var veiculo = veiculo(pessoa, tipoVeiculo.getId());
-        final var clienteQuery = typedQuery(List.of(cliente));
+        final var clienteQuery = typedQuery(List.of(ClienteMapper.toEntity(cliente)));
         final var veiculoQuery = typedQuery(List.<Object[]>of(new Object[]{veiculo, tipoVeiculo, null, null}));
 
-        when(entityManager.createQuery(anyString(), eq(Cliente.class))).thenReturn(clienteQuery);
+        when(entityManager.createQuery(anyString(), eq(ClienteJpaEntity.class))).thenReturn(clienteQuery);
         when(entityManager.createQuery(anyString(), eq(Object[].class))).thenReturn(veiculoQuery);
 
         final var output = service.listarPorCliente(UUID.randomUUID());
@@ -147,10 +149,10 @@ class VeiculoQueryServiceTest {
     void falhaQuandoNaoEncontrado() {
         final var service = new VeiculoQueryService(entityManager);
         final var emptyObjectQuery = typedQuery(List.<Object[]>of());
-        final var emptyClienteQuery = typedQuery(List.<Cliente>of());
+        final var emptyClienteQuery = typedQuery(List.<ClienteJpaEntity>of());
 
         when(entityManager.createQuery(anyString(), eq(Object[].class))).thenReturn(emptyObjectQuery);
-        when(entityManager.createQuery(anyString(), eq(Cliente.class))).thenReturn(emptyClienteQuery);
+        when(entityManager.createQuery(anyString(), eq(ClienteJpaEntity.class))).thenReturn(emptyClienteQuery);
 
         final var placaException = assertThrows(DomainException.class, () -> service.buscarPorPlaca("ABC1A23"));
         assertEquals("Veículo não encontrado para a placa informada", placaException.getErrors().getFirst().message());

@@ -5,18 +5,11 @@ import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.veiculo.validators.KilometragemValidator;
 import com.autoservice.validation.ValidationHandler;
 import com.autoservice.validation.handler.NotificationValidationHandler;
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
 
 import java.util.Objects;
 
-@Embeddable
 public class Kilometragem extends ValueObject {
 
-    @Column(
-            name = "kilometragem",
-            nullable = false
-    )
     private final Integer value;
 
     protected Kilometragem() {

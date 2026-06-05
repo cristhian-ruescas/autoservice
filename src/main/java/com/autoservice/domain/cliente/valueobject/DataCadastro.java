@@ -5,21 +5,13 @@ import com.autoservice.domain.cliente.validators.DataCadastroValidator;
 import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.validation.ValidationHandler;
 import com.autoservice.validation.handler.NotificationValidationHandler;
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
-@Embeddable
 public class DataCadastro extends ValueObject {
 
-
-    @Column(
-            name = "data_cadastro",
-            nullable = false
-    )
     private final LocalDate value;
 
     protected DataCadastro() {

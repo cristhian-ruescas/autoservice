@@ -3,6 +3,7 @@ package com.autoservice.infrastructure.veiculo;
 import com.autoservice.domain.veiculo.Veiculo;
 import com.autoservice.domain.veiculo.VeiculoGateway;
 import com.autoservice.domain.veiculo.VeiculoID;
+import com.autoservice.infrastructure.persistence.mapper.VeiculoMapper;
 import com.autoservice.infrastructure.veiculo.persistence.VeiculoRepository;
 import org.springframework.stereotype.Service;
 
@@ -20,17 +21,19 @@ public class VeiculoGatewayImpl implements VeiculoGateway {
 
     @Override
     public Veiculo create(final Veiculo veiculo) {
-        return this.repository.save(veiculo);
+        this.repository.save(VeiculoMapper.toEntity(veiculo));
+        return veiculo;
     }
 
     @Override
     public Veiculo update(final Veiculo veiculo) {
-        return this.repository.save(veiculo);
+        this.repository.save(VeiculoMapper.toEntity(veiculo));
+        return veiculo;
     }
 
     @Override
     public Optional<Veiculo> findById(final VeiculoID id) {
-        return this.repository.findById(id);
+        return this.repository.findById(id).map(VeiculoMapper::toDomain);
     }
 
     @Override

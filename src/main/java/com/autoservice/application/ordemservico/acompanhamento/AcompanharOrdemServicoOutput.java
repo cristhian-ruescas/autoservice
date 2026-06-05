@@ -71,7 +71,7 @@ public record AcompanharOrdemServicoOutput(
         return switch (status) {
             case RECEBIDO -> 10;
             case EM_DIAGNOSTICO -> 30;
-            case AGUARDANDO_APROVACAO, APROVADO -> 50;
+            case AGUARDANDO_APROVACAO -> 50;
             case EM_EXECUCAO -> 75;
             case FINALIZADA -> 90;
             case ENTREGUE, REPROVADO, CANCELADO -> 100;
@@ -79,9 +79,6 @@ public record AcompanharOrdemServicoOutput(
     }
 
     private static Etapa etapaAtual(final OrdemServicoStatus status) {
-        if (status == OrdemServicoStatus.APROVADO) {
-            return etapaByStatus(OrdemServicoStatus.AGUARDANDO_APROVACAO);
-        }
         if (status == OrdemServicoStatus.REPROVADO || status == OrdemServicoStatus.CANCELADO) {
             return new Etapa(status, status.getDescricao(), 100);
         }
@@ -118,8 +115,7 @@ public record AcompanharOrdemServicoOutput(
             final OrdemServicoStatus status,
             final int percentualAtual
     ) {
-        if (etapa.status() == status || status == OrdemServicoStatus.APROVADO
-                && etapa.status() == OrdemServicoStatus.AGUARDANDO_APROVACAO) {
+        if (etapa.status() == status) {
             return "ATUAL";
         }
         if (etapa.percentual() < percentualAtual) {

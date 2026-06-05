@@ -4,15 +4,11 @@ import com.autoservice.domain.ValueObject;
 import com.autoservice.domain.pessoa.validators.TelefoneValidator;
 import com.autoservice.validation.ValidationHandler;
 import com.autoservice.validation.handler.NotificationValidationHandler;
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
 
 import java.util.Objects;
 
-@Embeddable
 public class Telefone extends ValueObject {
 
-    @Column(name = "phone_number")
     private final String valor;
 
     protected Telefone() {

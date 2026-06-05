@@ -5,18 +5,11 @@ import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.veiculo.validators.MarcaValidator;
 import com.autoservice.validation.ValidationHandler;
 import com.autoservice.validation.handler.NotificationValidationHandler;
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
 
 import java.util.Objects;
 
-@Embeddable
 public class Marca extends ValueObject {
 
-    @Column(
-            name = "marca",
-            nullable = false
-    )
     private final String value;
 
     protected Marca() {

@@ -5,18 +5,11 @@ import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.veiculo.validators.AnoValidator;
 import com.autoservice.validation.ValidationHandler;
 import com.autoservice.validation.handler.NotificationValidationHandler;
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
 
 import java.util.Objects;
 
-@Embeddable
 public class Ano extends ValueObject {
 
-    @Column(
-            name = "ano",
-            nullable = false
-    )
     private final Integer value;
 
     protected Ano() {

@@ -3,6 +3,7 @@ package com.autoservice.infrastructure.veiculo.query;
 import com.autoservice.application.PaginationOutput;
 import com.autoservice.application.veiculo.query.*;
 import com.autoservice.domain.cliente.Cliente;
+import com.autoservice.infrastructure.persistence.entity.ClienteJpaEntity;
 import com.autoservice.domain.cliente.ClienteID;
 import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.pessoa.PessoaFisica;
@@ -50,10 +51,10 @@ public class VeiculoQueryService implements
 
         final var query = """
                 select v, tipoVeiculo, pf, pj
-                from Veiculo v
-                join TipoVeiculo tipoVeiculo on tipoVeiculo.id = v.tipoVeiculoId
-                left join PessoaFisica pf on pf.id = v.proprietarioId
-                left join PessoaJuridica pj on pj.id = v.proprietarioId
+                from VeiculoJpaEntity v
+                join TipoVeiculoJpaEntity tipoVeiculo on tipoVeiculo.id = v.tipoVeiculoId
+                left join PessoaFisicaJpaEntity pf on pf.id = v.proprietarioId
+                left join PessoaJuridicaJpaEntity pj on pj.id = v.proprietarioId
                 where (:marca is null or lower(tipoVeiculo.marca.value) like :marca)
                   and (:modelo is null or lower(tipoVeiculo.modelo.value) like :modelo)
                   and (:ano is null or tipoVeiculo.ano.value = :ano)
@@ -87,10 +88,10 @@ public class VeiculoQueryService implements
         final var placaNormalizada = Placa.from(placa);
         final var query = """
                 select v, tipoVeiculo, pf, pj
-                from Veiculo v
-                join TipoVeiculo tipoVeiculo on tipoVeiculo.id = v.tipoVeiculoId
-                left join PessoaFisica pf on pf.id = v.proprietarioId
-                left join PessoaJuridica pj on pj.id = v.proprietarioId
+                from VeiculoJpaEntity v
+                join TipoVeiculoJpaEntity tipoVeiculo on tipoVeiculo.id = v.tipoVeiculoId
+                left join PessoaFisicaJpaEntity pf on pf.id = v.proprietarioId
+                left join PessoaJuridicaJpaEntity pj on pj.id = v.proprietarioId
                 where v.placa = :placa
                 """;
 
@@ -114,10 +115,10 @@ public class VeiculoQueryService implements
 
         final var query = """
                 select v, tipoVeiculo, pf, pj
-                from Veiculo v
-                join TipoVeiculo tipoVeiculo on tipoVeiculo.id = v.tipoVeiculoId
-                left join PessoaFisica pf on pf.id = v.proprietarioId
-                left join PessoaJuridica pj on pj.id = v.proprietarioId
+                from VeiculoJpaEntity v
+                join TipoVeiculoJpaEntity tipoVeiculo on tipoVeiculo.id = v.tipoVeiculoId
+                left join PessoaFisicaJpaEntity pf on pf.id = v.proprietarioId
+                left join PessoaJuridicaJpaEntity pj on pj.id = v.proprietarioId
                 where v.id = :id
                 """;
 
@@ -147,11 +148,11 @@ public class VeiculoQueryService implements
     private Cliente buscarCliente(final ClienteID clienteId) {
         final var query = """
                 select c
-                from Cliente c
+                from ClienteJpaEntity c
                 where c.id = :id
                 """;
 
-        final var rows = this.entityManager.createQuery(query, Cliente.class)
+        final var rows = this.entityManager.createQuery(query, ClienteJpaEntity.class)
                 .setParameter("id", clienteId)
                 .getResultList();
 
@@ -159,16 +160,16 @@ public class VeiculoQueryService implements
             throw DomainException.with(new Error("Cliente não encontrado"));
         }
 
-        return rows.getFirst();
+        return com.autoservice.infrastructure.persistence.mapper.ClienteMapper.toDomain(rows.getFirst());
     }
 
     private List<VeiculoOutput> buscarVeiculosPorProprietario(final PessoaID proprietarioId) {
         final var query = """
                 select v, tipoVeiculo, pf, pj
-                from Veiculo v
-                join TipoVeiculo tipoVeiculo on tipoVeiculo.id = v.tipoVeiculoId
-                left join PessoaFisica pf on pf.id = v.proprietarioId
-                left join PessoaJuridica pj on pj.id = v.proprietarioId
+                from VeiculoJpaEntity v
+                join TipoVeiculoJpaEntity tipoVeiculo on tipoVeiculo.id = v.tipoVeiculoId
+                left join PessoaFisicaJpaEntity pf on pf.id = v.proprietarioId
+                left join PessoaJuridicaJpaEntity pj on pj.id = v.proprietarioId
                 where v.proprietarioId = :proprietarioId
                 order by tipoVeiculo.marca.value asc, tipoVeiculo.modelo.value asc, v.placa.value asc
                 """;
@@ -237,8 +238,8 @@ public class VeiculoQueryService implements
     ) {
         final var query = """
                 select count(v)
-                from Veiculo v
-                join TipoVeiculo tipoVeiculo on tipoVeiculo.id = v.tipoVeiculoId
+                from VeiculoJpaEntity v
+                join TipoVeiculoJpaEntity tipoVeiculo on tipoVeiculo.id = v.tipoVeiculoId
                 where (:marca is null or lower(tipoVeiculo.marca.value) like :marca)
                   and (:modelo is null or lower(tipoVeiculo.modelo.value) like :modelo)
                   and (:ano is null or tipoVeiculo.ano.value = :ano)

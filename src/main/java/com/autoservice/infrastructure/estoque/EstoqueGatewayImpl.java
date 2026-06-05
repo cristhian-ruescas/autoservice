@@ -4,6 +4,7 @@ import com.autoservice.domain.estoque.Estoque;
 import com.autoservice.domain.estoque.EstoqueGateway;
 import com.autoservice.domain.estoque.EstoqueID;
 import com.autoservice.infrastructure.estoque.persistence.EstoqueRepository;
+import com.autoservice.infrastructure.persistence.mapper.EstoqueMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,18 +23,20 @@ public class EstoqueGatewayImpl implements EstoqueGateway {
     @Override
     @Transactional
     public Estoque create(final Estoque estoque) {
-        return this.repository.save(estoque);
+        this.repository.save(EstoqueMapper.toEntity(estoque));
+        return estoque;
     }
 
     @Override
     @Transactional
     public Estoque update(final Estoque estoque) {
-        return this.repository.save(estoque);
+        this.repository.save(EstoqueMapper.toEntity(estoque));
+        return estoque;
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<Estoque> findById(final EstoqueID id) {
-        return this.repository.findById(id);
+        return this.repository.findById(id).map(EstoqueMapper::toDomain);
     }
 }

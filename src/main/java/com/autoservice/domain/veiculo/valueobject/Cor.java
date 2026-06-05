@@ -5,18 +5,11 @@ import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.veiculo.validators.CorValidator;
 import com.autoservice.validation.ValidationHandler;
 import com.autoservice.validation.handler.NotificationValidationHandler;
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
 
 import java.util.Objects;
 
-@Embeddable
 public class Cor extends ValueObject {
 
-    @Column(
-            name = "cor",
-            nullable = false
-    )
     private final String value;
 
     protected Cor() {
@@ -40,7 +33,6 @@ public class Cor extends ValueObject {
     public void validate(final ValidationHandler handler) {
         new CorValidator(this, handler).validate();
     }
-
 
     public String getValue() {
         return value;

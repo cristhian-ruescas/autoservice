@@ -18,6 +18,21 @@ import com.autoservice.domain.pessoa.PessoaFisica;
 import com.autoservice.domain.pessoa.PessoaJuridica;
 import com.autoservice.domain.tipoveiculo.TipoVeiculo;
 import com.autoservice.domain.veiculo.Veiculo;
+import com.autoservice.infrastructure.persistence.entity.ClienteJpaEntity;
+import com.autoservice.infrastructure.persistence.entity.ItemServicoJpaEntity;
+import com.autoservice.infrastructure.persistence.entity.OrdemServicoJpaEntity;
+import com.autoservice.infrastructure.persistence.entity.PecaJpaEntity;
+import com.autoservice.infrastructure.persistence.entity.PessoaFisicaJpaEntity;
+import com.autoservice.infrastructure.persistence.entity.PessoaJuridicaJpaEntity;
+import com.autoservice.infrastructure.persistence.entity.TipoVeiculoJpaEntity;
+import com.autoservice.infrastructure.persistence.entity.VeiculoJpaEntity;
+import com.autoservice.infrastructure.persistence.mapper.ClienteMapper;
+import com.autoservice.infrastructure.persistence.mapper.ItemServicoMapper;
+import com.autoservice.infrastructure.persistence.mapper.OrdemServicoMapper;
+import com.autoservice.infrastructure.persistence.mapper.PecaMapper;
+import com.autoservice.infrastructure.persistence.mapper.PessoaMapper;
+import com.autoservice.infrastructure.persistence.mapper.TipoVeiculoMapper;
+import com.autoservice.infrastructure.persistence.mapper.VeiculoMapper;
 import com.autoservice.validation.Error;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
@@ -47,15 +62,15 @@ public class OrdemServicoQueryService implements ListOrdemServicoQuery, DetailOr
 
         final var query = """
                 select os, v, tipoVeiculo, c, pf, pj, representante
-                from OrdemServico os
-                join Veiculo v on v.id = os.veiculoId
-                join TipoVeiculo tipoVeiculo on tipoVeiculo.id = v.tipoVeiculoId
-                join Cliente c on c.pessoaId = v.proprietarioId
-                left join PessoaFisica pf on pf.id = c.pessoaId
-                left join PessoaJuridica pj on pj.id = c.pessoaId
-                left join PessoaFisica representante on representante.id = pj.representanteLegalId
+                from OrdemServicoJpaEntity os
+                join VeiculoJpaEntity v on v.id = os.veiculoId
+                join TipoVeiculoJpaEntity tipoVeiculo on tipoVeiculo.id = v.tipoVeiculoId
+                join ClienteJpaEntity c on c.pessoaId = v.proprietarioId
+                left join PessoaFisicaJpaEntity pf on pf.id = c.pessoaId
+                left join PessoaJuridicaJpaEntity pj on pj.id = c.pessoaId
+                left join PessoaFisicaJpaEntity representante on representante.id = pj.representanteLegalId
                 where (:status is null or os.status = :status)
-                order by os.dataCriacao.value desc
+                order by os.dataCriacao desc
                 """;
 
         final var items = this.entityManager.createQuery(query, Object[].class)
@@ -92,13 +107,13 @@ public class OrdemServicoQueryService implements ListOrdemServicoQuery, DetailOr
     private ListOrdemServicoOutput buscarResumo(final OrdemServicoID id) {
         final var query = """
                 select os, v, tipoVeiculo, c, pf, pj, representante
-                from OrdemServico os
-                join Veiculo v on v.id = os.veiculoId
-                join TipoVeiculo tipoVeiculo on tipoVeiculo.id = v.tipoVeiculoId
-                join Cliente c on c.pessoaId = v.proprietarioId
-                left join PessoaFisica pf on pf.id = c.pessoaId
-                left join PessoaJuridica pj on pj.id = c.pessoaId
-                left join PessoaFisica representante on representante.id = pj.representanteLegalId
+                from OrdemServicoJpaEntity os
+                join VeiculoJpaEntity v on v.id = os.veiculoId
+                join TipoVeiculoJpaEntity tipoVeiculo on tipoVeiculo.id = v.tipoVeiculoId
+                join ClienteJpaEntity c on c.pessoaId = v.proprietarioId
+                left join PessoaFisicaJpaEntity pf on pf.id = c.pessoaId
+                left join PessoaJuridicaJpaEntity pj on pj.id = c.pessoaId
+                left join PessoaFisicaJpaEntity representante on representante.id = pj.representanteLegalId
                 where os.id = :id
                 """;
 
@@ -116,8 +131,8 @@ public class OrdemServicoQueryService implements ListOrdemServicoQuery, DetailOr
     private List<DetailOrdemServicoOutput.ItemOutput> buscarItens(final OrdemServicoID id) {
         final var query = """
                 select item, peca
-                from ItemServico item
-                left join Peca peca on peca.id = item.pecaId
+                from ItemServicoJpaEntity item
+                left join PecaJpaEntity peca on peca.id = item.pecaId
                 where item.ordemServicoId = :id
                 order by item.tipo asc, item.descricao asc
                 """;
@@ -131,8 +146,8 @@ public class OrdemServicoQueryService implements ListOrdemServicoQuery, DetailOr
     }
 
     private DetailOrdemServicoOutput.ItemOutput mapItem(final Object[] row) {
-        final var item = (ItemServico) row[0];
-        final var peca = (Peca) row[1];
+        final var item = ItemServicoMapper.toDomain((ItemServicoJpaEntity) row[0]);
+        final var peca = row[1] == null ? null : PecaMapper.toDomain((PecaJpaEntity) row[1]);
 
         return new DetailOrdemServicoOutput.ItemOutput(
                 item.getId().getValue(),
@@ -160,13 +175,13 @@ public class OrdemServicoQueryService implements ListOrdemServicoQuery, DetailOr
     }
 
     private ListOrdemServicoOutput mapToOutput(final Object[] row) {
-        final var ordemServico = (OrdemServico) row[0];
-        final var veiculo = (Veiculo) row[1];
-        final var tipoVeiculo = (TipoVeiculo) row[2];
-        final var cliente = (Cliente) row[3];
-        final var pessoaFisica = (PessoaFisica) row[4];
-        final var pessoaJuridica = (PessoaJuridica) row[5];
-        final var representante = (PessoaFisica) row[6];
+        final var ordemServico = OrdemServicoMapper.toDomain((OrdemServicoJpaEntity) row[0]);
+        final var veiculo = VeiculoMapper.toDomain((VeiculoJpaEntity) row[1]);
+        final var tipoVeiculo = TipoVeiculoMapper.toDomain((TipoVeiculoJpaEntity) row[2]);
+        final var cliente = ClienteMapper.toDomain((ClienteJpaEntity) row[3]);
+        final var pessoaFisica = row[4] == null ? null : (PessoaFisica) PessoaMapper.toDomain((PessoaFisicaJpaEntity) row[4]);
+        final var pessoaJuridica = row[5] == null ? null : (PessoaJuridica) PessoaMapper.toDomain((PessoaJuridicaJpaEntity) row[5]);
+        final var representante = row[6] == null ? null : (PessoaFisica) PessoaMapper.toDomain((PessoaFisicaJpaEntity) row[6]);
 
         return new ListOrdemServicoOutput(
                 ordemServico.getId().getValue(),
@@ -185,7 +200,7 @@ public class OrdemServicoQueryService implements ListOrdemServicoQuery, DetailOr
     private long totalOrdensServico(final OrdemServicoStatus status) {
         final var query = """
                 select count(os)
-                from OrdemServico os
+                from OrdemServicoJpaEntity os
                 where (:status is null or os.status = :status)
                 """;
 

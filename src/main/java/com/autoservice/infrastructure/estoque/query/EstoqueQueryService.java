@@ -30,8 +30,8 @@ public class EstoqueQueryService implements EstoqueQuery {
 
         final var query = """
                 select estoque, peca
-                from Estoque estoque
-                left join Peca peca on peca.estoqueId = estoque.id
+                from EstoqueJpaEntity estoque
+                left join PecaJpaEntity peca on peca.estoqueId = estoque.id
                 order by peca.descricao asc
                 """;
 
@@ -51,8 +51,8 @@ public class EstoqueQueryService implements EstoqueQuery {
     public EstoqueOutput detalhar(final UUID id) {
         final var query = """
                 select estoque, peca
-                from Estoque estoque
-                left join Peca peca on peca.estoqueId = estoque.id
+                from EstoqueJpaEntity estoque
+                left join PecaJpaEntity peca on peca.estoqueId = estoque.id
                 where estoque.id = :id
                 """;
 
@@ -96,7 +96,7 @@ public class EstoqueQueryService implements EstoqueQuery {
     private long totalEstoques() {
         final var query = """
                 select count(estoque)
-                from Estoque estoque
+                from EstoqueJpaEntity estoque
                 """;
 
         return this.entityManager.createQuery(query, Long.class).getSingleResult();

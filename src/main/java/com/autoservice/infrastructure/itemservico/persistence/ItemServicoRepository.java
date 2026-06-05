@@ -1,10 +1,10 @@
 package com.autoservice.infrastructure.itemservico.persistence;
 
-import com.autoservice.domain.itemservico.ItemServico;
 import com.autoservice.domain.itemservico.ItemServicoID;
 import com.autoservice.domain.ordemservico.OrdemServicoID;
 import com.autoservice.domain.ordemservico.enums.OrdemServicoStatus;
 import com.autoservice.domain.peca.PecaID;
+import com.autoservice.infrastructure.persistence.entity.ItemServicoJpaEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,21 +14,21 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Repository
-public interface ItemServicoRepository extends JpaRepository<ItemServico, ItemServicoID> {
+public interface ItemServicoRepository extends JpaRepository<ItemServicoJpaEntity, ItemServicoID> {
 
     @Query("""
             select coalesce(sum(item.valorUnitario * item.quantidade), 0)
-            from ItemServico item
+            from ItemServicoJpaEntity item
             where item.ordemServicoId = :ordemServicoId
             """)
     BigDecimal totalByOrdemServicoId(@Param("ordemServicoId") OrdemServicoID ordemServicoId);
 
-    List<ItemServico> findByOrdemServicoId(OrdemServicoID ordemServicoId);
+    List<ItemServicoJpaEntity> findByOrdemServicoId(OrdemServicoID ordemServicoId);
 
     @Query("""
             select count(item) > 0
-            from ItemServico item
-            join OrdemServico ordemServico on ordemServico.id = item.ordemServicoId
+            from ItemServicoJpaEntity item
+            join OrdemServicoJpaEntity ordemServico on ordemServico.id = item.ordemServicoId
             where item.pecaId = :pecaId
               and ordemServico.status <> :status
             """)

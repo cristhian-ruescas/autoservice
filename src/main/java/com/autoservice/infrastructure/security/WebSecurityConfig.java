@@ -33,9 +33,22 @@ public class WebSecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
-                        .requestMatchers("/ordens-servico/**", "/clientes/**", "/pecas/**", "/servicos/**", "/estoque/**").hasRole("ADMIN")
-                        .anyRequest().permitAll()
+                        .requestMatchers("/auth/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/ordens-servico/*/andamento").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/ordens-servico/*/aprovacao/aprovar").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/ordens-servico/*/aprovacao/reprovar").permitAll()
+                        .requestMatchers(
+                                "/atendimentos/**",
+                                "/ordens-servico/**",
+                                "/ordens-compra/**",
+                                "/clientes/**",
+                                "/veiculos/**",
+                                "/pecas/**",
+                                "/servicos/**",
+                                "/tipos-veiculo/**",
+                                "/estoques/**"
+                        ).hasRole("ADMIN")
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
