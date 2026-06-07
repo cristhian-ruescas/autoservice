@@ -8,6 +8,8 @@ import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.peca.PecaID;
 import com.autoservice.infrastructure.persistence.entity.PecaJpaEntity;
 import com.autoservice.infrastructure.persistence.mapper.PecaMapper;
+import com.autoservice.infrastructure.query.PaginacaoValidator;
+import com.autoservice.infrastructure.query.QueryFilterNormalizer;
 import com.autoservice.validation.Error;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
@@ -32,9 +34,9 @@ public class PecaQueryService implements ListPecasQuery, GetPecaByIdQuery {
             final String marca,
             final String codigo
     ) {
-        validarPaginacao(page, size);
-        final var marcaNormalizada = normalize(marca);
-        final var codigoNormalizado = normalize(codigo);
+        PaginacaoValidator.validar(page, size);
+        final var marcaNormalizada = QueryFilterNormalizer.buscaParcial(marca);
+        final var codigoNormalizado = QueryFilterNormalizer.buscaParcial(codigo);
 
         final var query = """
                 select peca
@@ -93,25 +95,5 @@ public class PecaQueryService implements ListPecasQuery, GetPecaByIdQuery {
                 .setParameter("marca", marca)
                 .setParameter("codigo", codigo)
                 .getSingleResult();
-    }
-
-    private String normalize(final String value) {
-        if (value == null || value.isBlank()) {
-            return null;
-        }
-
-        return "%" + value.trim().toLowerCase() + "%";
-    }
-
-    private void validarPaginacao(final int page, final int size) {
-        if (page < 0) {
-            throw DomainException.with(new Error("Página não deve ser menor que zero"));
-        }
-        if (size <= 0) {
-            throw DomainException.with(new Error("Tamanho da página deve ser maior que zero"));
-        }
-        if (size > 100) {
-            throw DomainException.with(new Error("Tamanho da página não deve ser maior que 100"));
-        }
     }
 }

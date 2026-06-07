@@ -8,6 +8,8 @@ import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.servico.ServicoID;
 import com.autoservice.infrastructure.persistence.entity.ServicoJpaEntity;
 import com.autoservice.infrastructure.persistence.mapper.ServicoMapper;
+import com.autoservice.infrastructure.query.PaginacaoValidator;
+import com.autoservice.infrastructure.query.QueryFilterNormalizer;
 import com.autoservice.validation.Error;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
@@ -27,8 +29,8 @@ public class ServicoQueryService implements ListServicosQuery, GetServicoByIdQue
     @Override
     @Transactional(readOnly = true)
     public PaginationOutput<ServicoOutput> listar(final int page, final int size, final String nome) {
-        validarPaginacao(page, size);
-        final var nomeNormalizado = normalize(nome);
+        PaginacaoValidator.validar(page, size);
+        final var nomeNormalizado = QueryFilterNormalizer.buscaParcial(nome);
 
         final var query = """
                 select s
@@ -83,25 +85,5 @@ public class ServicoQueryService implements ListServicosQuery, GetServicoByIdQue
         return this.entityManager.createQuery(query, Long.class)
                 .setParameter("nome", nome)
                 .getSingleResult();
-    }
-
-    private String normalize(final String value) {
-        if (value == null || value.isBlank()) {
-            return null;
-        }
-
-        return "%" + value.trim().toLowerCase() + "%";
-    }
-
-    private void validarPaginacao(final int page, final int size) {
-        if (page < 0) {
-            throw DomainException.with(new Error("Página não deve ser menor que zero"));
-        }
-        if (size <= 0) {
-            throw DomainException.with(new Error("Tamanho da página deve ser maior que zero"));
-        }
-        if (size > 100) {
-            throw DomainException.with(new Error("Tamanho da página não deve ser maior que 100"));
-        }
     }
 }
