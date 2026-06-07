@@ -1,59 +1,25 @@
 package com.autoservice.domain.veiculo.valueobject;
 
-import com.autoservice.domain.ValueObject;
-import com.autoservice.domain.exceptions.DomainException;
+import com.autoservice.domain.ValidatedStringValueObject;
 import com.autoservice.domain.veiculo.validators.MarcaValidator;
 import com.autoservice.validation.ValidationHandler;
-import com.autoservice.validation.handler.NotificationValidationHandler;
 
-import java.util.Objects;
-
-public class Marca extends ValueObject {
-
-    private final String value;
+public class Marca extends ValidatedStringValueObject {
 
     protected Marca() {
-        this.value = null;
+        super();
     }
 
     private Marca(final String value) {
-        this.value = value;
+        super(value);
     }
 
     public static Marca from(final String value) {
-        Marca newMarca = new Marca(value);
-        final NotificationValidationHandler handler =
-                new NotificationValidationHandler();
-        newMarca.validate(handler);
-        if (handler.hasError()) {
-            throw DomainException.with(handler.getErrors());
-        }
-        return newMarca;
+        return validated(value, Marca::new);
     }
 
-    public void validate(ValidationHandler handler) {
+    @Override
+    public void validate(final ValidationHandler handler) {
         new MarcaValidator(this, handler).validate();
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Marca marca = (Marca) o;
-        return Objects.equals(value, marca.value);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(value);
-    }
-
-    @Override
-    public String toString() {
-        return value;
     }
 }

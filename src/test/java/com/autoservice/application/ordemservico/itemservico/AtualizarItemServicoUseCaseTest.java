@@ -16,9 +16,9 @@ import com.autoservice.domain.peca.PecaGateway;
 import com.autoservice.domain.peca.PecaID;
 import com.autoservice.domain.tipoveiculo.TipoVeiculoID;
 import com.autoservice.domain.veiculo.VeiculoID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -46,8 +46,14 @@ class AtualizarItemServicoUseCaseTest {
     @Mock
     private PecaGateway pecaGateway;
 
-    @InjectMocks
+    private ItemServicoOrchestrator itemServicoOrchestrator;
     private AtualizarItemServicoUseCase useCase;
+
+    @BeforeEach
+    void setUp() {
+        itemServicoOrchestrator = new ItemServicoOrchestrator(ordemServicoGateway, pecaGateway);
+        useCase = new AtualizarItemServicoUseCase(itemServicoOrchestrator, itemServicoGateway);
+    }
 
     @Test
     void atualizaItemServico() {

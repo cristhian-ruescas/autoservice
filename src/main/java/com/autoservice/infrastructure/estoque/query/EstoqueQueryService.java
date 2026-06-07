@@ -7,6 +7,8 @@ import com.autoservice.domain.estoque.Estoque;
 import com.autoservice.domain.estoque.EstoqueID;
 import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.peca.Peca;
+import com.autoservice.infrastructure.query.PaginacaoValidator;
+import com.autoservice.infrastructure.query.mapper.QueryRowMapperSupport;
 import com.autoservice.validation.Error;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
@@ -26,7 +28,7 @@ public class EstoqueQueryService implements EstoqueQuery {
     @Override
     @Transactional(readOnly = true)
     public PaginationOutput<EstoqueOutput> listar(final int page, final int size) {
-        validarPaginacao(page, size);
+        PaginacaoValidator.validar(page, size);
 
         final var query = """
                 select estoque, peca
@@ -68,8 +70,8 @@ public class EstoqueQueryService implements EstoqueQuery {
     }
 
     private EstoqueOutput map(final Object[] row) {
-        final var estoque = (Estoque) row[0];
-        final var peca = (Peca) row[1];
+        final Estoque estoque = QueryRowMapperSupport.toEstoque(row[0]);
+        final Peca peca = QueryRowMapperSupport.toPeca(row[1]);
 
         return new EstoqueOutput(
                 estoque.getId().getValue(),
@@ -100,17 +102,5 @@ public class EstoqueQueryService implements EstoqueQuery {
                 """;
 
         return this.entityManager.createQuery(query, Long.class).getSingleResult();
-    }
-
-    private void validarPaginacao(final int page, final int size) {
-        if (page < 0) {
-            throw DomainException.with(new Error("Página não deve ser menor que zero"));
-        }
-        if (size <= 0) {
-            throw DomainException.with(new Error("Tamanho da página deve ser maior que zero"));
-        }
-        if (size > 100) {
-            throw DomainException.with(new Error("Tamanho da página não deve ser maior que 100"));
-        }
     }
 }

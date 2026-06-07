@@ -2,6 +2,7 @@ package com.autoservice.application.cliente.update;
 
 import com.autoservice.application.UseCase;
 import com.autoservice.application.cliente.query.ClienteOutput;
+import com.autoservice.application.pessoa.RepresentanteLegalOrchestrator;
 import com.autoservice.domain.cliente.Cliente;
 import com.autoservice.domain.cliente.ClienteGateway;
 import com.autoservice.domain.cliente.ClienteID;
@@ -10,6 +11,7 @@ import com.autoservice.domain.pessoa.*;
 import com.autoservice.domain.pessoa.valueobject.CPF;
 import com.autoservice.domain.pessoa.valueobject.Email;
 import com.autoservice.domain.pessoa.valueobject.Telefone;
+import com.autoservice.infrastructure.query.mapper.ClienteReadModelMapper;
 import com.autoservice.validation.Error;
 import com.autoservice.validation.handler.NotificationValidationHandler;
 import org.springframework.stereotype.Service;
@@ -22,13 +24,16 @@ public class AtualizarClienteUseCase extends UseCase<AtualizarClienteCommand, Cl
 
     private final ClienteGateway clienteGateway;
     private final PessoaGateway pessoaGateway;
+    private final RepresentanteLegalOrchestrator representanteLegalOrchestrator;
 
     public AtualizarClienteUseCase(
             final ClienteGateway clienteGateway,
-            final PessoaGateway pessoaGateway
+            final PessoaGateway pessoaGateway,
+            final RepresentanteLegalOrchestrator representanteLegalOrchestrator
     ) {
         this.clienteGateway = Objects.requireNonNull(clienteGateway);
         this.pessoaGateway = Objects.requireNonNull(pessoaGateway);
+        this.representanteLegalOrchestrator = Objects.requireNonNull(representanteLegalOrchestrator);
     }
 
     @Override
@@ -73,7 +78,12 @@ public class AtualizarClienteUseCase extends UseCase<AtualizarClienteCommand, Cl
         );
         validate(pessoaAtualizada);
 
-        return mapPessoaFisica(cliente, (PessoaFisica) this.pessoaGateway.update(pessoaAtualizada));
+        return ClienteReadModelMapper.toClienteOutput(
+                cliente,
+                (PessoaFisica) this.pessoaGateway.update(pessoaAtualizada),
+                null,
+                null
+        );
     }
 
     private ClienteOutput atualizarPessoaJuridica(
@@ -102,7 +112,7 @@ public class AtualizarClienteUseCase extends UseCase<AtualizarClienteCommand, Cl
                   .map(PessoaFisica.class::cast)
                   .orElse(null);
 
-        return mapPessoaJuridica(cliente, pessoaSalva, representante);
+        return ClienteReadModelMapper.toClienteOutput(cliente, null, pessoaSalva, representante);
     }
 
     private PessoaID obterRepresentanteLegalId(
@@ -113,39 +123,23 @@ public class AtualizarClienteUseCase extends UseCase<AtualizarClienteCommand, Cl
             return pessoaJuridica.getRepresentanteLegalId();
         }
 
-        validarRepresentanteLegal(command);
-
         final var cpf = CPF.from(command.representanteCpf());
         return this.pessoaGateway.findPessoaFisicaByCpf(cpf)
-                .map(representante -> atualizarRepresentanteLegal(representante, command).getId())
-                .orElseGet(() -> criarRepresentanteLegal(command, cpf).getId());
-    }
-
-    private PessoaFisica atualizarRepresentanteLegal(
-            final PessoaFisica representante,
-            final AtualizarClienteCommand command
-    ) {
-        final var pessoaAtualizada = PessoaFisica.withId(
-                representante.getId(),
-                Email.from(command.representanteEmail()),
-                Telefone.from(command.representanteTelefone()),
-                command.representanteNome(),
-                CPF.from(command.representanteCpf())
-        );
-        validate(pessoaAtualizada);
-        return (PessoaFisica) this.pessoaGateway.update(pessoaAtualizada);
-    }
-
-    private PessoaFisica criarRepresentanteLegal(
-            final AtualizarClienteCommand command,
-            final CPF cpf
-    ) {
-        return (PessoaFisica) this.pessoaGateway.create(PessoaFisica.newPessoaFisica(
-                Email.from(command.representanteEmail()),
-                Telefone.from(command.representanteTelefone()),
-                command.representanteNome(),
-                cpf
-        ));
+                .map(representante -> this.representanteLegalOrchestrator
+                        .atualizar(
+                                representante,
+                                command.representanteNome(),
+                                command.representanteCpf(),
+                                command.representanteEmail(),
+                                command.representanteTelefone()
+                        )
+                        .getId())
+                .orElseGet(() -> this.representanteLegalOrchestrator.obterOuCriar(
+                        command.representanteNome(),
+                        command.representanteCpf(),
+                        command.representanteEmail(),
+                        command.representanteTelefone()
+                ).pessoa().getId());
     }
 
     private void validarPessoaFisica(final AtualizarClienteCommand command) {
@@ -160,18 +154,6 @@ public class AtualizarClienteUseCase extends UseCase<AtualizarClienteCommand, Cl
             throw DomainException.with(new Error("Razão social é obrigatória para pessoa jurídica"));
         }
         validarContato(command.email(), command.telefone());
-    }
-
-    private void validarRepresentanteLegal(final AtualizarClienteCommand command) {
-        if (isBlank(command.representanteNome())) {
-            throw DomainException.with(new Error("Nome do representante legal é obrigatório para pessoa jurídica"));
-        }
-        if (isBlank(command.representanteEmail())) {
-            throw DomainException.with(new Error("Email do representante legal é obrigatório para pessoa jurídica"));
-        }
-        if (isBlank(command.representanteTelefone())) {
-            throw DomainException.with(new Error("Telefone do representante legal é obrigatório para pessoa jurídica"));
-        }
     }
 
     private void validarContato(final String email, final String telefone) {
@@ -190,63 +172,6 @@ public class AtualizarClienteUseCase extends UseCase<AtualizarClienteCommand, Cl
         if (handler.hasError()) {
             throw DomainException.with(handler.getErrors());
         }
-    }
-
-    private ClienteOutput mapPessoaFisica(
-            final Cliente cliente,
-            final PessoaFisica pessoaFisica
-    ) {
-        return new ClienteOutput(
-                cliente.getId().getValue(),
-                "FISICA",
-                cliente.getDataCadastro().getValue(),
-                pessoaFisica.getNome(),
-                pessoaFisica.getCpf().getValue(),
-                null,
-                null,
-                valueOf(pessoaFisica.getEmail()),
-                valueOf(pessoaFisica.getTelefone()),
-                null
-        );
-    }
-
-    private ClienteOutput mapPessoaJuridica(
-            final Cliente cliente,
-            final PessoaJuridica pessoaJuridica,
-            final PessoaFisica representante
-    ) {
-        return new ClienteOutput(
-                cliente.getId().getValue(),
-                "JURIDICA",
-                cliente.getDataCadastro().getValue(),
-                null,
-                null,
-                pessoaJuridica.getRazaoSocial(),
-                pessoaJuridica.getCnpj().getValue(),
-                valueOf(pessoaJuridica.getEmail()),
-                valueOf(pessoaJuridica.getTelefone()),
-                mapRepresentanteLegal(representante)
-        );
-    }
-
-    private ClienteOutput.RepresentanteLegalOutput mapRepresentanteLegal(
-            final PessoaFisica representante
-    ) {
-        if (representante == null) {
-            return null;
-        }
-
-        return new ClienteOutput.RepresentanteLegalOutput(
-                representante.getId().getValue(),
-                representante.getNome(),
-                representante.getCpf().getValue(),
-                valueOf(representante.getEmail()),
-                valueOf(representante.getTelefone())
-        );
-    }
-
-    private String valueOf(final Object valueObject) {
-        return valueObject == null ? null : valueObject.toString();
     }
 
     private boolean isBlank(final String value) {

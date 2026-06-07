@@ -2,17 +2,16 @@ package com.autoservice.infrastructure.veiculo.query;
 
 import com.autoservice.application.PaginationOutput;
 import com.autoservice.application.veiculo.query.*;
-import com.autoservice.domain.cliente.Cliente;
-import com.autoservice.infrastructure.persistence.entity.ClienteJpaEntity;
 import com.autoservice.domain.cliente.ClienteID;
 import com.autoservice.domain.exceptions.DomainException;
-import com.autoservice.domain.pessoa.PessoaFisica;
 import com.autoservice.domain.pessoa.PessoaID;
-import com.autoservice.domain.pessoa.PessoaJuridica;
-import com.autoservice.domain.tipoveiculo.TipoVeiculo;
-import com.autoservice.domain.veiculo.Veiculo;
 import com.autoservice.domain.veiculo.VeiculoID;
 import com.autoservice.domain.veiculo.valueobject.Placa;
+import com.autoservice.infrastructure.persistence.entity.ClienteJpaEntity;
+import com.autoservice.infrastructure.persistence.mapper.ClienteMapper;
+import com.autoservice.infrastructure.query.PaginacaoValidator;
+import com.autoservice.infrastructure.query.QueryFilterNormalizer;
+import com.autoservice.infrastructure.query.mapper.VeiculoReadModelMapper;
 import com.autoservice.validation.Error;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
@@ -27,6 +26,14 @@ public class VeiculoQueryService implements
         GetVeiculoByIdQuery,
         GetVeiculoByPlacaQuery,
         ListVeiculosByClienteQuery {
+
+    private static final String VEICULO_QUERY = """
+            select v, tipoVeiculo, pf, pj
+            from VeiculoJpaEntity v
+            join TipoVeiculoJpaEntity tipoVeiculo on tipoVeiculo.id = v.tipoVeiculoId
+            left join PessoaFisicaJpaEntity pf on pf.id = v.proprietarioId
+            left join PessoaJuridicaJpaEntity pj on pj.id = v.proprietarioId
+            """;
 
     private final EntityManager entityManager;
 
@@ -44,17 +51,12 @@ public class VeiculoQueryService implements
             final Integer ano,
             final UUID proprietarioId
     ) {
-        validarPaginacao(page, size);
-        final var marcaNormalizada = normalize(marca);
-        final var modeloNormalizado = normalize(modelo);
+        PaginacaoValidator.validar(page, size);
+        final var marcaNormalizada = QueryFilterNormalizer.buscaParcial(marca);
+        final var modeloNormalizado = QueryFilterNormalizer.buscaParcial(modelo);
         final var proprietario = proprietarioId == null ? null : PessoaID.from(proprietarioId);
 
-        final var query = """
-                select v, tipoVeiculo, pf, pj
-                from VeiculoJpaEntity v
-                join TipoVeiculoJpaEntity tipoVeiculo on tipoVeiculo.id = v.tipoVeiculoId
-                left join PessoaFisicaJpaEntity pf on pf.id = v.proprietarioId
-                left join PessoaJuridicaJpaEntity pj on pj.id = v.proprietarioId
+        final var query = VEICULO_QUERY + """
                 where (:marca is null or lower(tipoVeiculo.marca.value) like :marca)
                   and (:modelo is null or lower(tipoVeiculo.modelo.value) like :modelo)
                   and (:ano is null or tipoVeiculo.ano.value = :ano)
@@ -71,7 +73,7 @@ public class VeiculoQueryService implements
                 .setMaxResults(size)
                 .getResultList()
                 .stream()
-                .map(this::mapToOutput)
+                .map(VeiculoReadModelMapper::fromQueryRow)
                 .toList();
 
         return PaginationOutput.from(
@@ -86,14 +88,7 @@ public class VeiculoQueryService implements
     @Transactional(readOnly = true)
     public VeiculoOutput buscarPorPlaca(final String placa) {
         final var placaNormalizada = Placa.from(placa);
-        final var query = """
-                select v, tipoVeiculo, pf, pj
-                from VeiculoJpaEntity v
-                join TipoVeiculoJpaEntity tipoVeiculo on tipoVeiculo.id = v.tipoVeiculoId
-                left join PessoaFisicaJpaEntity pf on pf.id = v.proprietarioId
-                left join PessoaJuridicaJpaEntity pj on pj.id = v.proprietarioId
-                where v.placa = :placa
-                """;
+        final var query = VEICULO_QUERY + " where v.placa = :placa";
 
         final var rows = this.entityManager.createQuery(query, Object[].class)
                 .setParameter("placa", placaNormalizada)
@@ -103,7 +98,7 @@ public class VeiculoQueryService implements
             throw DomainException.with(new Error("Veículo não encontrado para a placa informada"));
         }
 
-        return this.mapToOutput(rows.getFirst());
+        return VeiculoReadModelMapper.fromQueryRow(rows.getFirst());
     }
 
     @Override
@@ -113,14 +108,7 @@ public class VeiculoQueryService implements
             throw DomainException.with(new Error("Veículo é obrigatório para consulta"));
         }
 
-        final var query = """
-                select v, tipoVeiculo, pf, pj
-                from VeiculoJpaEntity v
-                join TipoVeiculoJpaEntity tipoVeiculo on tipoVeiculo.id = v.tipoVeiculoId
-                left join PessoaFisicaJpaEntity pf on pf.id = v.proprietarioId
-                left join PessoaJuridicaJpaEntity pj on pj.id = v.proprietarioId
-                where v.id = :id
-                """;
+        final var query = VEICULO_QUERY + " where v.id = :id";
 
         final var rows = this.entityManager.createQuery(query, Object[].class)
                 .setParameter("id", VeiculoID.from(id))
@@ -130,7 +118,7 @@ public class VeiculoQueryService implements
             throw DomainException.with(new Error("Veículo não encontrado"));
         }
 
-        return this.mapToOutput(rows.getFirst());
+        return VeiculoReadModelMapper.fromQueryRow(rows.getFirst());
     }
 
     @Override
@@ -145,7 +133,7 @@ public class VeiculoQueryService implements
         return buscarVeiculosPorProprietario(cliente.getPessoaId());
     }
 
-    private Cliente buscarCliente(final ClienteID clienteId) {
+    private com.autoservice.domain.cliente.Cliente buscarCliente(final ClienteID clienteId) {
         final var query = """
                 select c
                 from ClienteJpaEntity c
@@ -160,16 +148,11 @@ public class VeiculoQueryService implements
             throw DomainException.with(new Error("Cliente não encontrado"));
         }
 
-        return com.autoservice.infrastructure.persistence.mapper.ClienteMapper.toDomain(rows.getFirst());
+        return ClienteMapper.toDomain(rows.getFirst());
     }
 
     private List<VeiculoOutput> buscarVeiculosPorProprietario(final PessoaID proprietarioId) {
-        final var query = """
-                select v, tipoVeiculo, pf, pj
-                from VeiculoJpaEntity v
-                join TipoVeiculoJpaEntity tipoVeiculo on tipoVeiculo.id = v.tipoVeiculoId
-                left join PessoaFisicaJpaEntity pf on pf.id = v.proprietarioId
-                left join PessoaJuridicaJpaEntity pj on pj.id = v.proprietarioId
+        final var query = VEICULO_QUERY + """
                 where v.proprietarioId = :proprietarioId
                 order by tipoVeiculo.marca.value asc, tipoVeiculo.modelo.value asc, v.placa.value asc
                 """;
@@ -178,56 +161,8 @@ public class VeiculoQueryService implements
                 .setParameter("proprietarioId", proprietarioId)
                 .getResultList()
                 .stream()
-                .map(this::mapToOutput)
+                .map(VeiculoReadModelMapper::fromQueryRow)
                 .toList();
-    }
-
-    private VeiculoOutput mapToOutput(final Object[] row) {
-        final var veiculo = (Veiculo) row[0];
-        final var tipoVeiculo = (TipoVeiculo) row[1];
-        final var pessoaFisica = (PessoaFisica) row[2];
-        final var pessoaJuridica = (PessoaJuridica) row[3];
-
-        return new VeiculoOutput(
-                veiculo.getId().getValue(),
-                veiculo.getPlaca().getValue(),
-                tipoVeiculo.getMarca().getValue(),
-                tipoVeiculo.getModelo().getValue(),
-                tipoVeiculo.getAno().getValue(),
-                veiculo.getCor().getValue(),
-                veiculo.getKilometragem().getValue(),
-                mapProprietario(pessoaFisica, pessoaJuridica)
-        );
-    }
-
-    private VeiculoOutput.ProprietarioOutput mapProprietario(
-            final PessoaFisica pessoaFisica,
-            final PessoaJuridica pessoaJuridica
-    ) {
-        if (pessoaJuridica != null) {
-            return new VeiculoOutput.ProprietarioOutput(
-                    "JURIDICA",
-                    null,
-                    null,
-                    pessoaJuridica.getRazaoSocial(),
-                    pessoaJuridica.getCnpj().getValue(),
-                    valueOf(pessoaJuridica.getEmail()),
-                    valueOf(pessoaJuridica.getTelefone())
-            );
-        }
-        if (pessoaFisica != null) {
-            return new VeiculoOutput.ProprietarioOutput(
-                    "FISICA",
-                    pessoaFisica.getNome(),
-                    pessoaFisica.getCpf().getValue(),
-                    null,
-                    null,
-                    valueOf(pessoaFisica.getEmail()),
-                    valueOf(pessoaFisica.getTelefone())
-            );
-        }
-
-        return null;
     }
 
     private long totalVeiculos(
@@ -252,29 +187,5 @@ public class VeiculoQueryService implements
                 .setParameter("ano", ano)
                 .setParameter("proprietarioId", proprietarioId)
                 .getSingleResult();
-    }
-
-    private String normalize(final String value) {
-        if (value == null || value.isBlank()) {
-            return null;
-        }
-
-        return "%" + value.trim().toLowerCase() + "%";
-    }
-
-    private void validarPaginacao(final int page, final int size) {
-        if (page < 0) {
-            throw DomainException.with(new Error("Página não deve ser menor que zero"));
-        }
-        if (size <= 0) {
-            throw DomainException.with(new Error("Tamanho da página deve ser maior que zero"));
-        }
-        if (size > 100) {
-            throw DomainException.with(new Error("Tamanho da página não deve ser maior que 100"));
-        }
-    }
-
-    private String valueOf(final Object valueObject) {
-        return valueObject == null ? null : valueObject.toString();
     }
 }
