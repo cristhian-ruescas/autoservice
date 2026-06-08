@@ -33,11 +33,11 @@ public class ServicoGatewayImpl implements ServicoGateway {
 
     @Override
     public Optional<Servico> findById(final ServicoID id) {
-        return this.repository.findById(id).map(ServicoMapper::toDomain);
+        return this.repository.findById(id.getValue()).map(ServicoMapper::toDomain);
     }
 
     @Override
     public void deleteById(final ServicoID id) {
-        this.repository.deleteById(id);
+        this.repository.deleteById(id.getValue());
     }
 }

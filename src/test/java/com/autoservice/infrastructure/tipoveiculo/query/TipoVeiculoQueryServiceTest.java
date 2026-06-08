@@ -72,7 +72,7 @@ class TipoVeiculoQueryServiceTest {
         assertEquals("Fiat", output.marca());
         assertEquals("Uno", output.modelo());
         assertEquals(2015, output.ano());
-        verify(query).setParameter(eq("id"), any(TipoVeiculoID.class));
+        verify(query).setParameter(eq("id"), anyString());
     }
 
     @Test

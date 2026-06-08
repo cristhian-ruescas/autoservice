@@ -59,7 +59,7 @@ public class EstoqueQueryService implements EstoqueQuery {
                 """;
 
         final var rows = this.entityManager.createQuery(query, Object[].class)
-                .setParameter("id", EstoqueID.from(id))
+                .setParameter("id", EstoqueID.from(id).getValue())
                 .getResultList();
 
         if (rows.isEmpty()) {

@@ -99,7 +99,7 @@ public class OrdemServicoQueryService implements ListOrdemServicoQuery, DetailOr
         final var query = RESUMO_ORDEM_SERVICO_QUERY + " where os.id = :id";
 
         final var rows = this.entityManager.createQuery(query, Object[].class)
-                .setParameter("id", id)
+                .setParameter("id", id.getValue())
                 .getResultList();
 
         if (rows.isEmpty()) {
@@ -119,7 +119,7 @@ public class OrdemServicoQueryService implements ListOrdemServicoQuery, DetailOr
                 """;
 
         return this.entityManager.createQuery(query, Object[].class)
-                .setParameter("id", id)
+                .setParameter("id", id.getValue())
                 .getResultList()
                 .stream()
                 .map(this::mapItem)

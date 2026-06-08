@@ -1,17 +1,11 @@
 package com.autoservice.infrastructure.persistence.entity;
 
-import com.autoservice.domain.pessoa.PessoaID;
-import com.autoservice.domain.tipoveiculo.TipoVeiculoID;
-import com.autoservice.domain.veiculo.VeiculoID;
 import com.autoservice.domain.veiculo.valueobject.Cor;
 import com.autoservice.domain.veiculo.valueobject.Kilometragem;
 import com.autoservice.domain.veiculo.valueobject.Placa;
 import com.autoservice.infrastructure.persistence.converter.CorConverter;
 import com.autoservice.infrastructure.persistence.converter.KilometragemConverter;
 import com.autoservice.infrastructure.persistence.converter.PlacaConverter;
-import com.autoservice.infrastructure.persistence.converter.PessoaIdConverter;
-import com.autoservice.infrastructure.persistence.converter.TipoVeiculoIdConverter;
-import com.autoservice.infrastructure.persistence.converter.VeiculoIdConverter;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
@@ -24,16 +18,13 @@ public class VeiculoJpaEntity {
 
     @Id
     @Column(name = "id", nullable = false, updatable = false)
-    @Convert(converter = VeiculoIdConverter.class)
-    private VeiculoID id;
+    private String id;
 
     @Column(name = "proprietario_id", nullable = false)
-    @Convert(converter = PessoaIdConverter.class)
-    private PessoaID proprietarioId;
+    private String proprietarioId;
 
     @Column(name = "tipo_veiculo_id", nullable = false)
-    @Convert(converter = TipoVeiculoIdConverter.class)
-    private TipoVeiculoID tipoVeiculoId;
+    private String tipoVeiculoId;
 
     @Column(name = "placa", nullable = false)
     @Convert(converter = PlacaConverter.class)
@@ -50,12 +41,12 @@ public class VeiculoJpaEntity {
     public VeiculoJpaEntity() {
     }
 
-    public VeiculoID getId() { return id; }
-    public void setId(VeiculoID id) { this.id = id; }
-    public PessoaID getProprietarioId() { return proprietarioId; }
-    public void setProprietarioId(PessoaID proprietarioId) { this.proprietarioId = proprietarioId; }
-    public TipoVeiculoID getTipoVeiculoId() { return tipoVeiculoId; }
-    public void setTipoVeiculoId(TipoVeiculoID tipoVeiculoId) { this.tipoVeiculoId = tipoVeiculoId; }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+    public String getProprietarioId() { return proprietarioId; }
+    public void setProprietarioId(String proprietarioId) { this.proprietarioId = proprietarioId; }
+    public String getTipoVeiculoId() { return tipoVeiculoId; }
+    public void setTipoVeiculoId(String tipoVeiculoId) { this.tipoVeiculoId = tipoVeiculoId; }
     public Placa getPlaca() { return placa; }
     public void setPlaca(Placa placa) { this.placa = placa; }
     public Cor getCor() { return cor; }

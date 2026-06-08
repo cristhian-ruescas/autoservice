@@ -1,13 +1,6 @@
 package com.autoservice.infrastructure.persistence.entity;
 
-import com.autoservice.domain.estoque.EstoqueID;
-import com.autoservice.domain.peca.PecaID;
-import com.autoservice.domain.tipoveiculo.TipoVeiculoID;
-import com.autoservice.infrastructure.persistence.converter.EstoqueIdConverter;
-import com.autoservice.infrastructure.persistence.converter.PecaIdConverter;
-import com.autoservice.infrastructure.persistence.converter.TipoVeiculoIdConverter;
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -19,8 +12,7 @@ public class PecaJpaEntity {
 
     @Id
     @Column(name = "id", nullable = false, updatable = false)
-    @Convert(converter = PecaIdConverter.class)
-    private PecaID id;
+    private String id;
 
     @Column(name = "descricao", nullable = false, length = 180)
     private String descricao;
@@ -35,18 +27,16 @@ public class PecaJpaEntity {
     private BigDecimal valorUnitario;
 
     @Column(name = "estoque_id")
-    @Convert(converter = EstoqueIdConverter.class)
-    private EstoqueID estoqueId;
+    private String estoqueId;
 
     @Column(name = "tipo_veiculo_id")
-    @Convert(converter = TipoVeiculoIdConverter.class)
-    private TipoVeiculoID tipoVeiculoId;
+    private String tipoVeiculoId;
 
     public PecaJpaEntity() {
     }
 
-    public PecaID getId() { return id; }
-    public void setId(PecaID id) { this.id = id; }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
     public String getDescricao() { return descricao; }
     public void setDescricao(String descricao) { this.descricao = descricao; }
     public String getCodigo() { return codigo; }
@@ -55,8 +45,8 @@ public class PecaJpaEntity {
     public void setMarca(String marca) { this.marca = marca; }
     public BigDecimal getValorUnitario() { return valorUnitario; }
     public void setValorUnitario(BigDecimal valorUnitario) { this.valorUnitario = valorUnitario; }
-    public EstoqueID getEstoqueId() { return estoqueId; }
-    public void setEstoqueId(EstoqueID estoqueId) { this.estoqueId = estoqueId; }
-    public TipoVeiculoID getTipoVeiculoId() { return tipoVeiculoId; }
-    public void setTipoVeiculoId(TipoVeiculoID tipoVeiculoId) { this.tipoVeiculoId = tipoVeiculoId; }
+    public String getEstoqueId() { return estoqueId; }
+    public void setEstoqueId(String estoqueId) { this.estoqueId = estoqueId; }
+    public String getTipoVeiculoId() { return tipoVeiculoId; }
+    public void setTipoVeiculoId(String tipoVeiculoId) { this.tipoVeiculoId = tipoVeiculoId; }
 }

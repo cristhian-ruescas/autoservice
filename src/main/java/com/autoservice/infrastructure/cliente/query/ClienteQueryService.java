@@ -51,7 +51,7 @@ public class ClienteQueryService implements ListClientesQuery, GetClienteByCpfQu
                 where (:tipoPessoa is null
                     or (:tipoPessoa = 'FISICA' and pf is not null)
                     or (:tipoPessoa = 'JURIDICA' and pj is not null))
-                order by c.dataCadastro.value desc
+                order by c.dataCadastro desc
                 """;
 
         final var items = this.entityManager.createQuery(query, Object[].class)
@@ -100,7 +100,7 @@ public class ClienteQueryService implements ListClientesQuery, GetClienteByCpfQu
         final var query = CLIENTE_PESSOA_QUERY + " where c.id = :id";
 
         final var rows = this.entityManager.createQuery(query, Object[].class)
-                .setParameter("id", ClienteID.from(id))
+                .setParameter("id", ClienteID.from(id).getValue())
                 .getResultList();
 
         if (rows.isEmpty()) {
@@ -119,11 +119,11 @@ public class ClienteQueryService implements ListClientesQuery, GetClienteByCpfQu
                 from VeiculoJpaEntity v
                 join TipoVeiculoJpaEntity tipoVeiculo on tipoVeiculo.id = v.tipoVeiculoId
                 where v.proprietarioId = :proprietarioId
-                order by tipoVeiculo.marca.value asc, tipoVeiculo.modelo.value asc, v.placa.value asc
+                order by cast(tipoVeiculo.marca as string) asc, cast(tipoVeiculo.modelo as string) asc, cast(v.placa as string) asc
                 """;
 
         return this.entityManager.createQuery(query, Object[].class)
-                .setParameter("proprietarioId", cliente.getPessoaId())
+                .setParameter("proprietarioId", cliente.getPessoaId().getValue())
                 .getResultList()
                 .stream()
                 .map(VeiculoReadModelMapper::fromClienteVeiculoQueryRow)

@@ -7,6 +7,7 @@ spring:
     hikari:
       maximum-pool-size: 5
   jpa:
+    defer-datasource-initialization: false
     hibernate:
       ddl-auto: create-drop
     show-sql: false
@@ -33,4 +34,4 @@ autoservice:
   app:
     base-url: http://localhost:0
   jwt:
-    secret: Xip4obfk6W9Mzo+cA+gUDuevNOfULy8Q3yYEr8ByYU8=
+    secret: "Xip4obfk6W9Mzo+cA+gUDuevNOfULy8Q3yYEr8ByYU8="

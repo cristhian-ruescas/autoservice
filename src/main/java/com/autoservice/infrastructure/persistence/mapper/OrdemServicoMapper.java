@@ -1,6 +1,8 @@
 package com.autoservice.infrastructure.persistence.mapper;
 
 import com.autoservice.domain.ordemservico.OrdemServico;
+import com.autoservice.domain.ordemservico.OrdemServicoID;
+import com.autoservice.domain.veiculo.VeiculoID;
 import com.autoservice.infrastructure.persistence.entity.OrdemServicoJpaEntity;
 
 public final class OrdemServicoMapper {
@@ -13,8 +15,8 @@ public final class OrdemServicoMapper {
             return null;
         }
         return OrdemServico.with(
-                entity.getId(),
-                entity.getVeiculoId(),
+                OrdemServicoID.from(entity.getId()),
+                VeiculoID.from(entity.getVeiculoId()),
                 entity.getStatus(),
                 entity.getDataCriacao(),
                 entity.getRelato(),
@@ -30,8 +32,8 @@ public final class OrdemServicoMapper {
             return null;
         }
         final var entity = new OrdemServicoJpaEntity();
-        entity.setId(domain.getId());
-        entity.setVeiculoId(domain.getVeiculoId());
+        entity.setId(domain.getId().getValue());
+        entity.setVeiculoId(domain.getVeiculoId().getValue());
         entity.setStatus(domain.getStatus());
         entity.setDataCriacao(domain.getDataCriacao());
         entity.setRelato(domain.getRelato());

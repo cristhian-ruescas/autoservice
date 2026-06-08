@@ -30,7 +30,7 @@ public class ItemOrdemCompraGatewayImpl implements ItemOrdemCompraGateway {
     @Override
     @Transactional(readOnly = true)
     public List<ItemOrdemCompra> findByOrdemCompraId(final OrdemCompraID ordemCompraId) {
-        return this.repository.findByOrdemCompraId(ordemCompraId).stream()
+        return this.repository.findByOrdemCompraId(ordemCompraId.getValue()).stream()
                 .map(ItemOrdemCompraMapper::toDomain)
                 .toList();
     }

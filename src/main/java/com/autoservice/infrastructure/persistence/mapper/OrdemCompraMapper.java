@@ -1,6 +1,7 @@
 package com.autoservice.infrastructure.persistence.mapper;
 
 import com.autoservice.domain.ordemcompra.OrdemCompra;
+import com.autoservice.domain.ordemcompra.OrdemCompraID;
 import com.autoservice.infrastructure.persistence.entity.OrdemCompraJpaEntity;
 
 public final class OrdemCompraMapper {
@@ -12,7 +13,7 @@ public final class OrdemCompraMapper {
         if (entity == null) {
             return null;
         }
-        return OrdemCompra.with(entity.getId(), entity.getStatus(), entity.getDataCompra());
+        return OrdemCompra.with(OrdemCompraID.from(entity.getId()), entity.getStatus(), entity.getDataCompra());
     }
 
     public static OrdemCompraJpaEntity toEntity(final OrdemCompra domain) {
@@ -20,7 +21,7 @@ public final class OrdemCompraMapper {
             return null;
         }
         final var entity = new OrdemCompraJpaEntity();
-        entity.setId(domain.getId());
+        entity.setId(domain.getId().getValue());
         entity.setStatus(domain.getStatus());
         entity.setDataCompra(domain.getDataCompra());
         return entity;

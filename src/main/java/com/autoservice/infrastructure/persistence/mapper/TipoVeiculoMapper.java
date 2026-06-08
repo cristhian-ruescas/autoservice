@@ -1,6 +1,7 @@
 package com.autoservice.infrastructure.persistence.mapper;
 
 import com.autoservice.domain.tipoveiculo.TipoVeiculo;
+import com.autoservice.domain.tipoveiculo.TipoVeiculoID;
 import com.autoservice.infrastructure.persistence.entity.TipoVeiculoJpaEntity;
 
 public final class TipoVeiculoMapper {
@@ -12,7 +13,7 @@ public final class TipoVeiculoMapper {
         if (entity == null) {
             return null;
         }
-        return TipoVeiculo.with(entity.getId(), entity.getMarca(), entity.getModelo(), entity.getAno());
+        return TipoVeiculo.with(TipoVeiculoID.from(entity.getId()), entity.getMarca(), entity.getModelo(), entity.getAno());
     }
 
     public static TipoVeiculoJpaEntity toEntity(final TipoVeiculo domain) {
@@ -20,7 +21,7 @@ public final class TipoVeiculoMapper {
             return null;
         }
         final var entity = new TipoVeiculoJpaEntity();
-        entity.setId(domain.getId());
+        entity.setId(domain.getId().getValue());
         entity.setMarca(domain.getMarca());
         entity.setModelo(domain.getModelo());
         entity.setAno(domain.getAno());

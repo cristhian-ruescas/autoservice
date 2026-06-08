@@ -33,11 +33,11 @@ public class VeiculoGatewayImpl implements VeiculoGateway {
 
     @Override
     public Optional<Veiculo> findById(final VeiculoID id) {
-        return this.repository.findById(id).map(VeiculoMapper::toDomain);
+        return this.repository.findById(id.getValue()).map(VeiculoMapper::toDomain);
     }
 
     @Override
     public void deleteById(final VeiculoID id) {
-        this.repository.deleteById(id);
+        this.repository.deleteById(id.getValue());
     }
 }
