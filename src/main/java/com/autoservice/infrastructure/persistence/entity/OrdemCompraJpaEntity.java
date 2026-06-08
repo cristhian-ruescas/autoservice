@@ -1,10 +1,8 @@
 package com.autoservice.infrastructure.persistence.entity;
 
-import com.autoservice.domain.ordemcompra.OrdemCompraID;
 import com.autoservice.domain.ordemcompra.enums.OrdemCompraStatus;
 import com.autoservice.domain.ordemcompra.valueobject.DataCompra;
 import com.autoservice.infrastructure.persistence.converter.DataCompraConverter;
-import com.autoservice.infrastructure.persistence.converter.OrdemCompraIdConverter;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
@@ -19,8 +17,7 @@ public class OrdemCompraJpaEntity {
 
     @Id
     @Column(name = "id", nullable = false, updatable = false)
-    @Convert(converter = OrdemCompraIdConverter.class)
-    private OrdemCompraID id;
+    private String id;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
@@ -33,8 +30,8 @@ public class OrdemCompraJpaEntity {
     public OrdemCompraJpaEntity() {
     }
 
-    public OrdemCompraID getId() { return id; }
-    public void setId(OrdemCompraID id) { this.id = id; }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
     public OrdemCompraStatus getStatus() { return status; }
     public void setStatus(OrdemCompraStatus status) { this.status = status; }
     public DataCompra getDataCompra() { return dataCompra; }

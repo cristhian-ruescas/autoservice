@@ -1,14 +1,7 @@
 package com.autoservice.infrastructure.persistence.entity;
 
-import com.autoservice.domain.itemservico.ItemServicoID;
 import com.autoservice.domain.itemservico.enums.ItemServicoTipo;
-import com.autoservice.domain.ordemservico.OrdemServicoID;
-import com.autoservice.domain.peca.PecaID;
-import com.autoservice.infrastructure.persistence.converter.ItemServicoIdConverter;
-import com.autoservice.infrastructure.persistence.converter.OrdemServicoIdConverter;
-import com.autoservice.infrastructure.persistence.converter.PecaIdConverter;
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -22,12 +15,10 @@ public class ItemServicoJpaEntity {
 
     @Id
     @Column(name = "id", nullable = false, updatable = false)
-    @Convert(converter = ItemServicoIdConverter.class)
-    private ItemServicoID id;
+    private String id;
 
     @Column(name = "ordem_servico_id", nullable = false)
-    @Convert(converter = OrdemServicoIdConverter.class)
-    private OrdemServicoID ordemServicoId;
+    private String ordemServicoId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo", nullable = false)
@@ -37,8 +28,7 @@ public class ItemServicoJpaEntity {
     private String descricao;
 
     @Column(name = "peca_id")
-    @Convert(converter = PecaIdConverter.class)
-    private PecaID pecaId;
+    private String pecaId;
 
     @Column(name = "quantidade", nullable = false)
     private Integer quantidade;
@@ -49,16 +39,16 @@ public class ItemServicoJpaEntity {
     public ItemServicoJpaEntity() {
     }
 
-    public ItemServicoID getId() { return id; }
-    public void setId(ItemServicoID id) { this.id = id; }
-    public OrdemServicoID getOrdemServicoId() { return ordemServicoId; }
-    public void setOrdemServicoId(OrdemServicoID ordemServicoId) { this.ordemServicoId = ordemServicoId; }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+    public String getOrdemServicoId() { return ordemServicoId; }
+    public void setOrdemServicoId(String ordemServicoId) { this.ordemServicoId = ordemServicoId; }
     public ItemServicoTipo getTipo() { return tipo; }
     public void setTipo(ItemServicoTipo tipo) { this.tipo = tipo; }
     public String getDescricao() { return descricao; }
     public void setDescricao(String descricao) { this.descricao = descricao; }
-    public PecaID getPecaId() { return pecaId; }
-    public void setPecaId(PecaID pecaId) { this.pecaId = pecaId; }
+    public String getPecaId() { return pecaId; }
+    public void setPecaId(String pecaId) { this.pecaId = pecaId; }
     public Integer getQuantidade() { return quantidade; }
     public void setQuantidade(Integer quantidade) { this.quantidade = quantidade; }
     public BigDecimal getValorUnitario() { return valorUnitario; }

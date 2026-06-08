@@ -2,6 +2,7 @@ package com.autoservice.infrastructure.persistence.mapper;
 
 import com.autoservice.domain.pessoa.Pessoa;
 import com.autoservice.domain.pessoa.PessoaFisica;
+import com.autoservice.domain.pessoa.PessoaID;
 import com.autoservice.domain.pessoa.PessoaJuridica;
 import com.autoservice.infrastructure.persistence.entity.PessoaFisicaJpaEntity;
 import com.autoservice.infrastructure.persistence.entity.PessoaJpaEntity;
@@ -17,16 +18,16 @@ public final class PessoaMapper {
             return null;
         }
         if (entity instanceof PessoaFisicaJpaEntity pf) {
-            return PessoaFisica.withId(pf.getId(), pf.getEmail(), pf.getTelefone(), pf.getNome(), pf.getCpf());
+            return PessoaFisica.withId(PessoaID.from(pf.getId()), pf.getEmail(), pf.getTelefone(), pf.getNome(), pf.getCpf());
         }
         if (entity instanceof PessoaJuridicaJpaEntity pj) {
             return PessoaJuridica.withId(
-                    pj.getId(),
+                    PessoaID.from(pj.getId()),
                     pj.getEmail(),
                     pj.getTelefone(),
                     pj.getRazaoSocial(),
                     pj.getCnpj(),
-                    pj.getRepresentanteLegalId()
+                    pj.getRepresentanteLegalId() == null ? null : PessoaID.from(pj.getRepresentanteLegalId())
             );
         }
         throw new IllegalArgumentException("Tipo de pessoa JPA desconhecido: " + entity.getClass().getName());
@@ -38,7 +39,7 @@ public final class PessoaMapper {
         }
         if (domain instanceof PessoaFisica pf) {
             final var entity = new PessoaFisicaJpaEntity();
-            entity.setId(pf.getId());
+            entity.setId(pf.getId().getValue());
             entity.setEmail(pf.getEmail());
             entity.setTelefone(pf.getTelefone());
             entity.setNome(pf.getNome());
@@ -47,12 +48,14 @@ public final class PessoaMapper {
         }
         if (domain instanceof PessoaJuridica pj) {
             final var entity = new PessoaJuridicaJpaEntity();
-            entity.setId(pj.getId());
+            entity.setId(pj.getId().getValue());
             entity.setEmail(pj.getEmail());
             entity.setTelefone(pj.getTelefone());
             entity.setRazaoSocial(pj.getRazaoSocial());
             entity.setCnpj(pj.getCnpj());
-            entity.setRepresentanteLegalId(pj.getRepresentanteLegalId());
+            entity.setRepresentanteLegalId(
+                    pj.getRepresentanteLegalId() == null ? null : pj.getRepresentanteLegalId().getValue()
+            );
             return entity;
         }
         throw new IllegalArgumentException("Tipo de pessoa desconhecido: " + domain.getClass().getName());

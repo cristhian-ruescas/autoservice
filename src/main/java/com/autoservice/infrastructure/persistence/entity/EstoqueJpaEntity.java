@@ -1,9 +1,6 @@
 package com.autoservice.infrastructure.persistence.entity;
 
-import com.autoservice.domain.estoque.EstoqueID;
-import com.autoservice.infrastructure.persistence.converter.EstoqueIdConverter;
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -14,8 +11,7 @@ public class EstoqueJpaEntity {
 
     @Id
     @Column(name = "id", nullable = false, updatable = false)
-    @Convert(converter = EstoqueIdConverter.class)
-    private EstoqueID id;
+    private String id;
 
     @Column(name = "quantidade_disponivel", nullable = false)
     private Integer quantidadeDisponivel;
@@ -29,8 +25,8 @@ public class EstoqueJpaEntity {
     public EstoqueJpaEntity() {
     }
 
-    public EstoqueID getId() { return id; }
-    public void setId(EstoqueID id) { this.id = id; }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
     public Integer getQuantidadeDisponivel() { return quantidadeDisponivel; }
     public void setQuantidadeDisponivel(Integer quantidadeDisponivel) { this.quantidadeDisponivel = quantidadeDisponivel; }
     public Integer getQuantidadeMinima() { return quantidadeMinima; }

@@ -30,7 +30,7 @@ public class ItemServicoQueryService implements ListItensServicoQuery {
                 """;
 
         return this.entityManager.createQuery(query, com.autoservice.domain.itemservico.ItemServico.class)
-                .setParameter("ordemServicoId", OrdemServicoID.from(ordemServicoId))
+                .setParameter("ordemServicoId", OrdemServicoID.from(ordemServicoId).getValue())
                 .getResultList()
                 .stream()
                 .map(AdicionarItemServicoOutput::from)

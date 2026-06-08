@@ -1,9 +1,6 @@
 package com.autoservice.infrastructure.persistence.entity;
 
-import com.autoservice.domain.servico.ServicoID;
-import com.autoservice.infrastructure.persistence.converter.ServicoIdConverter;
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -15,8 +12,7 @@ public class ServicoJpaEntity {
 
     @Id
     @Column(name = "id", nullable = false, updatable = false)
-    @Convert(converter = ServicoIdConverter.class)
-    private ServicoID id;
+    private String id;
 
     @Column(name = "nome", nullable = false, length = 120)
     private String nome;
@@ -30,8 +26,8 @@ public class ServicoJpaEntity {
     public ServicoJpaEntity() {
     }
 
-    public ServicoID getId() { return id; }
-    public void setId(ServicoID id) { this.id = id; }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
     public String getNome() { return nome; }
     public void setNome(String nome) { this.nome = nome; }
     public String getDescricao() { return descricao; }

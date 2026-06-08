@@ -1,13 +1,11 @@
 package com.autoservice.infrastructure.persistence.entity;
 
-import com.autoservice.domain.tipoveiculo.TipoVeiculoID;
 import com.autoservice.domain.veiculo.valueobject.Ano;
 import com.autoservice.domain.veiculo.valueobject.Marca;
 import com.autoservice.domain.veiculo.valueobject.Modelo;
 import com.autoservice.infrastructure.persistence.converter.AnoConverter;
 import com.autoservice.infrastructure.persistence.converter.MarcaConverter;
 import com.autoservice.infrastructure.persistence.converter.ModeloConverter;
-import com.autoservice.infrastructure.persistence.converter.TipoVeiculoIdConverter;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
@@ -20,8 +18,7 @@ public class TipoVeiculoJpaEntity {
 
     @Id
     @Column(name = "id", nullable = false, updatable = false)
-    @Convert(converter = TipoVeiculoIdConverter.class)
-    private TipoVeiculoID id;
+    private String id;
 
     @Column(name = "marca", nullable = false)
     @Convert(converter = MarcaConverter.class)
@@ -38,8 +35,8 @@ public class TipoVeiculoJpaEntity {
     public TipoVeiculoJpaEntity() {
     }
 
-    public TipoVeiculoID getId() { return id; }
-    public void setId(TipoVeiculoID id) { this.id = id; }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
     public Marca getMarca() { return marca; }
     public void setMarca(Marca marca) { this.marca = marca; }
     public Modelo getModelo() { return modelo; }

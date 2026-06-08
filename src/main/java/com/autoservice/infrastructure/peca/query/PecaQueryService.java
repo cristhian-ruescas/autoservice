@@ -73,7 +73,7 @@ public class PecaQueryService implements ListPecasQuery, GetPecaByIdQuery {
                 """;
 
         final var rows = this.entityManager.createQuery(query, PecaJpaEntity.class)
-                .setParameter("id", PecaID.from(id))
+                .setParameter("id", PecaID.from(id).getValue())
                 .getResultList();
 
         if (rows.isEmpty()) {

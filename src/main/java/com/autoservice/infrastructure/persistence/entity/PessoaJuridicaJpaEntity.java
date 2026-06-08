@@ -1,9 +1,7 @@
 package com.autoservice.infrastructure.persistence.entity;
 
-import com.autoservice.domain.pessoa.PessoaID;
 import com.autoservice.domain.pessoa.valueobject.CNPJ;
 import com.autoservice.infrastructure.persistence.converter.CNPJConverter;
-import com.autoservice.infrastructure.persistence.converter.PessoaIdConverter;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
@@ -21,8 +19,7 @@ public class PessoaJuridicaJpaEntity extends PessoaJpaEntity {
     private CNPJ cnpj;
 
     @Column(name = "representante_legal_id")
-    @Convert(converter = PessoaIdConverter.class)
-    private PessoaID representanteLegalId;
+    private String representanteLegalId;
 
     public PessoaJuridicaJpaEntity() {
     }
@@ -31,6 +28,6 @@ public class PessoaJuridicaJpaEntity extends PessoaJpaEntity {
     public void setRazaoSocial(String razaoSocial) { this.razaoSocial = razaoSocial; }
     public CNPJ getCnpj() { return cnpj; }
     public void setCnpj(CNPJ cnpj) { this.cnpj = cnpj; }
-    public PessoaID getRepresentanteLegalId() { return representanteLegalId; }
-    public void setRepresentanteLegalId(PessoaID representanteLegalId) { this.representanteLegalId = representanteLegalId; }
+    public String getRepresentanteLegalId() { return representanteLegalId; }
+    public void setRepresentanteLegalId(String representanteLegalId) { this.representanteLegalId = representanteLegalId; }
 }

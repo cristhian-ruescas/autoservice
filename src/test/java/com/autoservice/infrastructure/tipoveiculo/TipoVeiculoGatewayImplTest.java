@@ -52,23 +52,23 @@ class TipoVeiculoGatewayImplTest {
     void findByIdDelega() {
         final var id = TipoVeiculoID.unique();
         final var tipo = TipoVeiculo.with(id, Marca.from("Honda"), Modelo.from("Fit"), Ano.from(2012));
-        when(repository.findById(id)).thenReturn(Optional.of(TipoVeiculoMapper.toEntity(tipo)));
+        when(repository.findById(id.getValue())).thenReturn(Optional.of(TipoVeiculoMapper.toEntity(tipo)));
 
         final Optional<TipoVeiculo> result = gateway.findById(id);
 
         assertTrue(result.isPresent());
         assertEquals(id, result.get().getId());
-        verify(repository).findById(id);
+        verify(repository).findById(id.getValue());
     }
 
     @Test
     @DisplayName("findByMarcaModeloAno delega para o reposit�rio")
     void findByMarcaModeloAnoDelega() {
-        when(repository.findByMarcaModeloAno("a", "b", 2000)).thenReturn(Optional.empty());
+        when(repository.findByMarcaModeloAno("a", "b", Ano.from(2000))).thenReturn(Optional.empty());
 
         final Optional<TipoVeiculo> result = gateway.findByMarcaModeloAno("a", "b", 2000);
 
         assertTrue(result.isEmpty());
-        verify(repository).findByMarcaModeloAno("a", "b", 2000);
+        verify(repository).findByMarcaModeloAno("a", "b", Ano.from(2000));
     }
 }

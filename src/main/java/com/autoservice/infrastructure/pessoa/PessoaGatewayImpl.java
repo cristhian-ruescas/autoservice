@@ -35,7 +35,7 @@ public class PessoaGatewayImpl implements PessoaGateway {
 
     @Override
     public Optional<Pessoa> findById(final PessoaID id) {
-        return this.repository.findById(id).map(PessoaMapper::toDomain);
+        return this.repository.findById(id.getValue()).map(PessoaMapper::toDomain);
     }
 
     @Override

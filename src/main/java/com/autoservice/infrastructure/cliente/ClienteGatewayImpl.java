@@ -27,11 +27,11 @@ public class ClienteGatewayImpl implements ClienteGateway {
 
     @Override
     public Optional<Cliente> findById(final ClienteID id) {
-        return this.repository.findById(id).map(ClienteMapper::toDomain);
+        return this.repository.findById(id.getValue()).map(ClienteMapper::toDomain);
     }
 
     @Override
     public void deleteById(final ClienteID id) {
-        this.repository.deleteById(id);
+        this.repository.deleteById(id.getValue());
     }
 }

@@ -69,7 +69,8 @@ class VeiculoQueryServiceTest {
 
         verify(listQuery).setParameter("marca", "%fiat%");
         verify(listQuery).setParameter("modelo", "%uno%");
-        verify(listQuery).setParameter("ano", 2015);
+        verify(listQuery).setParameter("ano", Ano.from(2015));
+        verify(listQuery).setParameter("proprietarioId", proprietario.getId().getValue());
         verify(listQuery).setFirstResult(0);
         verify(listQuery).setMaxResults(10);
     }
@@ -107,7 +108,7 @@ class VeiculoQueryServiceTest {
 
         assertEquals("ABC1A23", output.placa());
         assertNull(output.proprietario());
-        verify(query).setParameter(eq("id"), any(VeiculoID.class));
+        verify(query).setParameter(eq("id"), anyString());
     }
 
     @Test
@@ -128,8 +129,8 @@ class VeiculoQueryServiceTest {
 
         assertEquals(1, output.size());
         assertEquals("ABC1A23", output.getFirst().placa());
-        verify(clienteQuery).setParameter(eq("id"), any(ClienteID.class));
-        verify(veiculoQuery).setParameter("proprietarioId", pessoa);
+        verify(clienteQuery).setParameter(eq("id"), anyString());
+        verify(veiculoQuery).setParameter("proprietarioId", pessoa.getValue());
     }
 
     @Test
