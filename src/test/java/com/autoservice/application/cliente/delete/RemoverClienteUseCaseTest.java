@@ -44,7 +44,6 @@ class RemoverClienteUseCaseTest {
     void clienteNaoEncontrado() {
         final var cid = ClienteID.unique();
         when(clienteGateway.findById(cid)).thenReturn(Optional.empty());
-
         assertThrows(DomainException.class, () -> useCase.execute(RemoverClienteCommand.with(UUID.fromString(cid.getValue()))));
     }
 }
