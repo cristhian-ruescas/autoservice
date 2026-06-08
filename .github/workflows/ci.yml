@@ -41,6 +41,7 @@ jobs:
         run: ./mvnw --batch-mode clean verify
         env:
           AUTOSERVICE_JWT_SECRET: ci-jwt-secret-with-enough-length-for-hmac-sha256
+          TESTCONTAINERS_RYUK_DISABLED: true
 
       - name: Upload JaCoCo report
         if: always()
