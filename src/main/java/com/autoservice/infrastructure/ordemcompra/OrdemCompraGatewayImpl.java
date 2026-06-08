@@ -37,6 +37,6 @@ public class OrdemCompraGatewayImpl implements OrdemCompraGateway {
     @Override
     @Transactional(readOnly = true)
     public Optional<OrdemCompra> findById(final OrdemCompraID id) {
-        return this.repository.findById(id).map(OrdemCompraMapper::toDomain);
+        return this.repository.findById(id.getValue()).map(OrdemCompraMapper::toDomain);
     }
 }

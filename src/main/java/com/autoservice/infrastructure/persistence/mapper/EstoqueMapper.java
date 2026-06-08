@@ -1,6 +1,7 @@
 package com.autoservice.infrastructure.persistence.mapper;
 
 import com.autoservice.domain.estoque.Estoque;
+import com.autoservice.domain.estoque.EstoqueID;
 import com.autoservice.infrastructure.persistence.entity.EstoqueJpaEntity;
 
 public final class EstoqueMapper {
@@ -13,7 +14,7 @@ public final class EstoqueMapper {
             return null;
         }
         return Estoque.with(
-                entity.getId(),
+                EstoqueID.from(entity.getId()),
                 entity.getQuantidadeDisponivel(),
                 entity.getQuantidadeMinima(),
                 entity.getLocalizacao()
@@ -25,7 +26,7 @@ public final class EstoqueMapper {
             return null;
         }
         final var entity = new EstoqueJpaEntity();
-        entity.setId(domain.getId());
+        entity.setId(domain.getId().getValue());
         entity.setQuantidadeDisponivel(domain.getQuantidadeDisponivel());
         entity.setQuantidadeMinima(domain.getQuantidadeMinima());
         entity.setLocalizacao(domain.getLocalizacao());

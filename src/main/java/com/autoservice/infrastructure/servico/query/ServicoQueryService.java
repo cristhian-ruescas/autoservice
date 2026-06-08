@@ -65,7 +65,7 @@ public class ServicoQueryService implements ListServicosQuery, GetServicoByIdQue
                 """;
 
         final var rows = this.entityManager.createQuery(query, ServicoJpaEntity.class)
-                .setParameter("id", ServicoID.from(id))
+                .setParameter("id", ServicoID.from(id).getValue())
                 .getResultList();
 
         if (rows.isEmpty()) {

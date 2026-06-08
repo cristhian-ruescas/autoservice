@@ -62,7 +62,7 @@ docker compose -f docker/docker-compose.yaml up --build
 
 | Problema | Ação |
 |----------|------|
-| CI falha no JaCoCo | Docker deve estar ativo — testes Testcontainers skipped reduzem cobertura |
+| CI falha ApplicationContext nos ITs | `application.yaml` usa host `postgres` — ITs dependem de `@DynamicPropertySource` em `AbstractIntegrationTest` + Docker no runner |
 | Testes skipped | `@EnabledIf(dockerAvailable)` — normal sem Docker local |
 | Smoke Docker falha | Verifique `docker/Dockerfile` e contexto na raiz do repo |
 | Dependency review | Não usado — exige GitHub Advanced Security (pago/org) |

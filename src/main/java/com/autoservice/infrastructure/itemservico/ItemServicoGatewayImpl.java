@@ -38,28 +38,28 @@ public class ItemServicoGatewayImpl implements ItemServicoGateway {
 
     @Override
     public Optional<ItemServico> findById(final ItemServicoID id) {
-        return this.repository.findById(id).map(ItemServicoMapper::toDomain);
+        return this.repository.findById(id.getValue()).map(ItemServicoMapper::toDomain);
     }
 
     @Override
     public void deleteById(final ItemServicoID id) {
-        this.repository.deleteById(id);
+        this.repository.deleteById(id.getValue());
     }
 
     @Override
     public BigDecimal totalByOrdemServicoId(final OrdemServicoID ordemServicoId) {
-        return this.repository.totalByOrdemServicoId(ordemServicoId);
+        return this.repository.totalByOrdemServicoId(ordemServicoId.getValue());
     }
 
     @Override
     public List<ItemServico> findByOrdemServicoId(final OrdemServicoID ordemServicoId) {
-        return this.repository.findByOrdemServicoId(ordemServicoId).stream()
+        return this.repository.findByOrdemServicoId(ordemServicoId.getValue()).stream()
                 .map(ItemServicoMapper::toDomain)
                 .toList();
     }
 
     @Override
     public boolean existsByPecaIdAndOrdemServicoStatusNot(final PecaID pecaId, final OrdemServicoStatus status) {
-        return this.repository.existsByPecaIdAndOrdemServicoStatusNot(pecaId, status);
+        return this.repository.existsByPecaIdAndOrdemServicoStatusNot(pecaId.getValue(), status);
     }
 }

@@ -37,6 +37,6 @@ public class OrdemServicoGatewayImpl implements OrdemServicoGateway {
     @Override
     @Transactional(readOnly = true)
     public Optional<OrdemServico> findById(final OrdemServicoID id) {
-        return this.repository.findById(id).map(OrdemServicoMapper::toDomain);
+        return this.repository.findById(id.getValue()).map(OrdemServicoMapper::toDomain);
     }
 }

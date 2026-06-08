@@ -49,7 +49,7 @@ public class OrdemCompraQueryService implements OrdemCompraQuery {
     public OrdemCompraOutput detalhar(final UUID id) {
         final var ordemCompraId = OrdemCompraID.from(id);
 
-        final var ordemCompra = this.entityManager.find(OrdemCompraJpaEntity.class, ordemCompraId);
+        final var ordemCompra = this.entityManager.find(OrdemCompraJpaEntity.class, ordemCompraId.getValue());
 
         if (ordemCompra == null) {
             throw DomainException.with(new Error("Ordem de compra não encontrada"));
@@ -77,7 +77,7 @@ public class OrdemCompraQueryService implements OrdemCompraQuery {
                 """;
 
         return this.entityManager.createQuery(query, Object[].class)
-                .setParameter("ordemCompraId", ordemCompraId)
+                .setParameter("ordemCompraId", ordemCompraId.getValue())
                 .getResultList()
                 .stream()
                 .map(this::mapItem)
