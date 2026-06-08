@@ -65,6 +65,14 @@ docker compose -f docker/docker-compose.yaml up --build
 
 O `Dockerfile` está em **`docker/Dockerfile`** (build multi-stage com Maven + JRE 21).
 
+## CI (GitHub Actions)
+
+| Workflow | Quando roda | Descrição |
+|----------|-------------|-----------|
+| **CI** (`.github/workflows/ci.yml`) | PR e push / manual | Java 21, cache Maven, `./mvnw clean verify`, JaCoCo, dependency review em PRs, smoke build Docker (sem push) |
+
+Detalhes: **[docs/cicd/README.md](docs/cicd/README.md)**.
+
 ## Testes e cobertura
 
 - **Unitários** e **integração** (Testcontainers + Postgres quando o Docker está disponível).
