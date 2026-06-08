@@ -1,8 +1,9 @@
 name: CI
 
 on:
-  push:
   pull_request:
+    branches: [main, develop]
+  push:
     branches: [main, develop]
   workflow_dispatch:
 
@@ -67,16 +68,6 @@ jobs:
           name: autoservice-jar
           path: target/autoservice-*.jar
           retention-days: 7
-
-  dependency-review:
-    name: Dependency review
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/dependency-review-action@v4
-        with:
-          fail-on-severity: high
 
   docker-build-smoke:
     name: Docker build (smoke)

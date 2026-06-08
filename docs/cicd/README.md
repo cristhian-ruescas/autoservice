@@ -10,7 +10,7 @@ Deploy em registry / Kubernetes / Terraform ficam **fora deste escopo** (outros 
 
 | Arquivo | Gatilho | O que faz |
 |---------|---------|-----------|
-| [`ci.yml`](../../.github/workflows/ci.yml) | PR, push, manual | Java 21, cache Maven, `mvn clean verify`, JaCoCo, dependency review (PR), smoke Docker build |
+| [`ci.yml`](../../.github/workflows/ci.yml) | PR para `main`/`develop`, push nessas branches, manual | Java 21, cache Maven, `mvn clean verify`, JaCoCo, smoke Docker build |
 
 ```mermaid
 flowchart LR
@@ -19,7 +19,6 @@ flowchart LR
 ```
 
 ---
-
 ## Jobs
 
 ### `build-and-test`
@@ -33,11 +32,7 @@ flowchart LR
 | Upload Surefire | Só se falhar (7 dias) |
 | Upload JAR | `autoservice-*.jar` (7 dias) |
 
-Variável de ambiente: `AUTOSERVICE_JWT_SECRET` (valor fixo só para CI).
-
-### `dependency-review` (somente PR)
-
-Falha se dependência nova tiver vulnerabilidade **high**.
+Variáveis de ambiente: `AUTOSERVICE_JWT_SECRET`, `TESTCONTAINERS_RYUK_DISABLED`.
 
 ### `docker-build-smoke`
 
@@ -70,6 +65,7 @@ docker compose -f docker/docker-compose.yaml up --build
 | CI falha no JaCoCo | Docker deve estar ativo — testes Testcontainers skipped reduzem cobertura |
 | Testes skipped | `@EnabledIf(dockerAvailable)` — normal sem Docker local |
 | Smoke Docker falha | Verifique `docker/Dockerfile` e contexto na raiz do repo |
+| Dependency review | Não usado — exige GitHub Advanced Security (pago/org) |
 
 ---
 
