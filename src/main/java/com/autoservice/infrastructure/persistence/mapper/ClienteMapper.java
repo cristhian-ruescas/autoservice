@@ -1,6 +1,8 @@
 package com.autoservice.infrastructure.persistence.mapper;
 
 import com.autoservice.domain.cliente.Cliente;
+import com.autoservice.domain.cliente.ClienteID;
+import com.autoservice.domain.pessoa.PessoaID;
 import com.autoservice.infrastructure.persistence.entity.ClienteJpaEntity;
 
 public final class ClienteMapper {
@@ -13,8 +15,8 @@ public final class ClienteMapper {
             return null;
         }
         return Cliente.with(
-                entity.getId(),
-                entity.getPessoaId(),
+                ClienteID.from(entity.getId()),
+                PessoaID.from(entity.getPessoaId()),
                 entity.getDataCadastro().getValue()
         );
     }
@@ -24,8 +26,8 @@ public final class ClienteMapper {
             return null;
         }
         final var entity = new ClienteJpaEntity();
-        entity.setId(domain.getId());
-        entity.setPessoaId(domain.getPessoaId());
+        entity.setId(domain.getId().getValue());
+        entity.setPessoaId(domain.getPessoaId().getValue());
         entity.setDataCadastro(domain.getDataCadastro());
         return entity;
     }

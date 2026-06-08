@@ -6,6 +6,7 @@ import com.autoservice.domain.cliente.ClienteID;
 import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.pessoa.PessoaID;
 import com.autoservice.domain.veiculo.VeiculoID;
+import com.autoservice.domain.veiculo.valueobject.Ano;
 import com.autoservice.domain.veiculo.valueobject.Placa;
 import com.autoservice.infrastructure.persistence.entity.ClienteJpaEntity;
 import com.autoservice.infrastructure.persistence.mapper.ClienteMapper;
@@ -54,20 +55,20 @@ public class VeiculoQueryService implements
         PaginacaoValidator.validar(page, size);
         final var marcaNormalizada = QueryFilterNormalizer.buscaParcial(marca);
         final var modeloNormalizado = QueryFilterNormalizer.buscaParcial(modelo);
-        final var proprietario = proprietarioId == null ? null : PessoaID.from(proprietarioId);
+        final var proprietario = proprietarioId == null ? null : PessoaID.from(proprietarioId).getValue();
 
         final var query = VEICULO_QUERY + """
-                where (:marca is null or lower(tipoVeiculo.marca.value) like :marca)
-                  and (:modelo is null or lower(tipoVeiculo.modelo.value) like :modelo)
-                  and (:ano is null or tipoVeiculo.ano.value = :ano)
+                where (:marca is null or lower(cast(tipoVeiculo.marca as string)) like :marca)
+                  and (:modelo is null or lower(cast(tipoVeiculo.modelo as string)) like :modelo)
+                  and (:ano is null or tipoVeiculo.ano = :ano)
                   and (:proprietarioId is null or v.proprietarioId = :proprietarioId)
-                order by tipoVeiculo.marca.value asc, tipoVeiculo.modelo.value asc, v.placa.value asc
+                order by cast(tipoVeiculo.marca as string) asc, cast(tipoVeiculo.modelo as string) asc, cast(v.placa as string) asc
                 """;
 
         final var items = this.entityManager.createQuery(query, Object[].class)
                 .setParameter("marca", marcaNormalizada)
                 .setParameter("modelo", modeloNormalizado)
-                .setParameter("ano", ano)
+                .setParameter("ano", ano == null ? null : Ano.from(ano))
                 .setParameter("proprietarioId", proprietario)
                 .setFirstResult(page * size)
                 .setMaxResults(size)
@@ -111,7 +112,7 @@ public class VeiculoQueryService implements
         final var query = VEICULO_QUERY + " where v.id = :id";
 
         final var rows = this.entityManager.createQuery(query, Object[].class)
-                .setParameter("id", VeiculoID.from(id))
+                .setParameter("id", VeiculoID.from(id).getValue())
                 .getResultList();
 
         if (rows.isEmpty()) {
@@ -141,7 +142,7 @@ public class VeiculoQueryService implements
                 """;
 
         final var rows = this.entityManager.createQuery(query, ClienteJpaEntity.class)
-                .setParameter("id", clienteId)
+                .setParameter("id", clienteId.getValue())
                 .getResultList();
 
         if (rows.isEmpty()) {
@@ -154,11 +155,11 @@ public class VeiculoQueryService implements
     private List<VeiculoOutput> buscarVeiculosPorProprietario(final PessoaID proprietarioId) {
         final var query = VEICULO_QUERY + """
                 where v.proprietarioId = :proprietarioId
-                order by tipoVeiculo.marca.value asc, tipoVeiculo.modelo.value asc, v.placa.value asc
+                order by cast(tipoVeiculo.marca as string) asc, cast(tipoVeiculo.modelo as string) asc, cast(v.placa as string) asc
                 """;
 
         return this.entityManager.createQuery(query, Object[].class)
-                .setParameter("proprietarioId", proprietarioId)
+                .setParameter("proprietarioId", proprietarioId.getValue())
                 .getResultList()
                 .stream()
                 .map(VeiculoReadModelMapper::fromQueryRow)
@@ -169,22 +170,22 @@ public class VeiculoQueryService implements
             final String marca,
             final String modelo,
             final Integer ano,
-            final PessoaID proprietarioId
+            final String proprietarioId
     ) {
         final var query = """
                 select count(v)
                 from VeiculoJpaEntity v
                 join TipoVeiculoJpaEntity tipoVeiculo on tipoVeiculo.id = v.tipoVeiculoId
-                where (:marca is null or lower(tipoVeiculo.marca.value) like :marca)
-                  and (:modelo is null or lower(tipoVeiculo.modelo.value) like :modelo)
-                  and (:ano is null or tipoVeiculo.ano.value = :ano)
+                where (:marca is null or lower(cast(tipoVeiculo.marca as string)) like :marca)
+                  and (:modelo is null or lower(cast(tipoVeiculo.modelo as string)) like :modelo)
+                  and (:ano is null or tipoVeiculo.ano = :ano)
                   and (:proprietarioId is null or v.proprietarioId = :proprietarioId)
                 """;
 
         return this.entityManager.createQuery(query, Long.class)
                 .setParameter("marca", marca)
                 .setParameter("modelo", modelo)
-                .setParameter("ano", ano)
+                .setParameter("ano", ano == null ? null : Ano.from(ano))
                 .setParameter("proprietarioId", proprietarioId)
                 .getSingleResult();
     }

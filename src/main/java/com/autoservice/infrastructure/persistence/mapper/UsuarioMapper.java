@@ -1,6 +1,7 @@
 package com.autoservice.infrastructure.persistence.mapper;
 
 import com.autoservice.domain.usuario.Usuario;
+import com.autoservice.domain.usuario.UsuarioID;
 import com.autoservice.infrastructure.persistence.entity.UsuarioJpaEntity;
 
 public final class UsuarioMapper {
@@ -12,7 +13,7 @@ public final class UsuarioMapper {
         if (entity == null) {
             return null;
         }
-        return new Usuario(entity.getId(), entity.getEmail(), entity.getSenha(), entity.getRole());
+        return new Usuario(UsuarioID.from(entity.getId()), entity.getEmail(), entity.getSenha(), entity.getRole());
     }
 
     public static UsuarioJpaEntity toEntity(final Usuario domain) {
@@ -20,7 +21,7 @@ public final class UsuarioMapper {
             return null;
         }
         final var entity = new UsuarioJpaEntity();
-        entity.setId(domain.getId());
+        entity.setId(domain.getId().getValue());
         entity.setEmail(domain.getEmail());
         entity.setSenha(domain.getSenha());
         entity.setRole(domain.getRole());

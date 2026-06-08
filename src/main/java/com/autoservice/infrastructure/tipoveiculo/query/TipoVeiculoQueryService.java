@@ -82,7 +82,7 @@ public class TipoVeiculoQueryService implements ListTipoVeiculoQuery, GetTipoVei
                 """;
 
         final var rows = this.entityManager.createQuery(query, TipoVeiculoJpaEntity.class)
-                .setParameter("id", TipoVeiculoID.from(id))
+                .setParameter("id", TipoVeiculoID.from(id).getValue())
                 .getResultList();
 
         if (rows.isEmpty()) {

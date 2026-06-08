@@ -75,7 +75,7 @@ class OrdemServicoListagemIntegrationTest extends AbstractIntegrationTest {
         final var ordensMonitoradas = new LinkedHashMap<String, String>();
 
         for (final JsonNode item : items) {
-            final var id = item.get("id").asText();
+            final var id = item.get("ordemServicoId").asText();
             if (idsMonitorados.containsKey(id)) {
                 ordensMonitoradas.put(id, item.get("status").asText());
             }

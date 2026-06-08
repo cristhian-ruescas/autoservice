@@ -33,11 +33,11 @@ public class PecaGatewayImpl implements PecaGateway {
 
     @Override
     public Optional<Peca> findById(final PecaID id) {
-        return this.repository.findById(id).map(PecaMapper::toDomain);
+        return this.repository.findById(id.getValue()).map(PecaMapper::toDomain);
     }
 
     @Override
     public void deleteById(final PecaID id) {
-        this.repository.deleteById(id);
+        this.repository.deleteById(id.getValue());
     }
 }

@@ -1,10 +1,8 @@
 package com.autoservice.infrastructure.persistence.entity;
 
-import com.autoservice.domain.pessoa.PessoaID;
 import com.autoservice.domain.pessoa.valueobject.Email;
 import com.autoservice.domain.pessoa.valueobject.Telefone;
 import com.autoservice.infrastructure.persistence.converter.EmailConverter;
-import com.autoservice.infrastructure.persistence.converter.PessoaIdConverter;
 import com.autoservice.infrastructure.persistence.converter.TelefoneConverter;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
@@ -21,8 +19,7 @@ public abstract class PessoaJpaEntity {
 
     @Id
     @Column(name = "id", nullable = false, updatable = false)
-    @Convert(converter = PessoaIdConverter.class)
-    private PessoaID id;
+    private String id;
 
     @Column(name = "email", nullable = false, updatable = false)
     @Convert(converter = EmailConverter.class)
@@ -35,8 +32,8 @@ public abstract class PessoaJpaEntity {
     protected PessoaJpaEntity() {
     }
 
-    public PessoaID getId() { return id; }
-    public void setId(PessoaID id) { this.id = id; }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
     public Email getEmail() { return email; }
     public void setEmail(Email email) { this.email = email; }
     public Telefone getTelefone() { return telefone; }
