@@ -5,20 +5,13 @@ import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.ordemservico.validators.DataCriacaoValidator;
 import com.autoservice.validation.ValidationHandler;
 import com.autoservice.validation.handler.NotificationValidationHandler;
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
-@Embeddable
 public class DataCriacao extends ValueObject {
 
-    @Column(
-            name = "data_criacao",
-            nullable = false
-    )
     private final LocalDate value;
 
     protected DataCriacao() {

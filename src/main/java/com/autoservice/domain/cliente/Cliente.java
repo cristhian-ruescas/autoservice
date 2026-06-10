@@ -7,28 +7,15 @@ import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.pessoa.PessoaID;
 import com.autoservice.validation.ValidationHandler;
 import com.autoservice.validation.handler.NotificationValidationHandler;
-import jakarta.persistence.*;
 
 import java.time.LocalDate;
 
-@Entity
-@Table(name = "cliente", schema = "cadastro")
 public class Cliente extends AggregateRoot<ClienteID> {
 
-    @EmbeddedId
     private ClienteID id;
 
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "value", column = @Column(name = "pessoa_id"))
-    })
     private PessoaID pessoaId;
 
-    @Embedded
-    @Column(
-            name = "data_cadastro",
-            nullable = false
-    )
     private DataCadastro dataCadastro;
 
     protected Cliente() {

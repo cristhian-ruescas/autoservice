@@ -101,8 +101,8 @@ class ClienteQueryServiceTest {
         assertEquals(1, output.veiculos().size());
         assertEquals("ABC1A23", output.veiculos().getFirst().placa());
         assertEquals("Fiat", output.veiculos().getFirst().marca());
-        verify(clienteQuery).setParameter(eq("id"), any(ClienteID.class));
-        verify(veiculoQuery).setParameter("proprietarioId", pessoa.getId());
+        verify(clienteQuery).setParameter(eq("id"), anyString());
+        verify(veiculoQuery).setParameter("proprietarioId", pessoa.getId().getValue());
     }
 
     @Test

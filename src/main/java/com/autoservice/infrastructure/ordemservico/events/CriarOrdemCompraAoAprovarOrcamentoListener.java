@@ -7,6 +7,7 @@ import com.autoservice.domain.ordemcompra.ItemOrdemCompraGateway;
 import com.autoservice.domain.ordemcompra.OrdemCompra;
 import com.autoservice.domain.ordemcompra.OrdemCompraGateway;
 import com.autoservice.domain.ordemservico.OrdemServicoID;
+import com.autoservice.domain.itemservico.ItemServicoPecaAggregator;
 import com.autoservice.domain.ordemservico.events.OrdemServicoOrcamentoAprovadoEvent;
 import com.autoservice.domain.peca.PecaID;
 import org.slf4j.Logger;
@@ -19,7 +20,6 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Component
 public class CriarOrdemCompraAoAprovarOrcamentoListener {
@@ -45,13 +45,10 @@ public class CriarOrdemCompraAoAprovarOrcamentoListener {
     public void on(final OrdemServicoOrcamentoAprovadoEvent event) {
         final OrdemServicoID ordemServicoId = event.getOrdemServicoId();
 
-        final Map<PecaID, Integer> quantidadesPorPeca = this.itemServicoGateway.findByOrdemServicoId(ordemServicoId)
-                .stream()
-                .filter(item -> item.getPecaId() != null)
-                .collect(Collectors.groupingBy(
-                        ItemServico::getPecaId,
-                        Collectors.summingInt(ItemServico::getQuantidade)
-                ));
+        final Map<PecaID, Integer> quantidadesPorPeca = ItemServicoPecaAggregator.quantidadesPorPeca(
+                this.itemServicoGateway,
+                ordemServicoId
+        );
 
         if (quantidadesPorPeca.isEmpty()) {
             LOGGER.info(

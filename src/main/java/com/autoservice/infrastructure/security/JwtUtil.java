@@ -14,7 +14,7 @@ import java.util.function.Function;
 
 @Component
 public class JwtUtil {
-    private static final long EXPIRATION = 1000L * 60 * 60 * 6; // 6 horas
+    private static final long EXPIRATION = 1000L * 60 * 60 * 6;
     private static final Logger logger = LoggerFactory.getLogger(JwtUtil.class);
     private final Algorithm algorithm;
 

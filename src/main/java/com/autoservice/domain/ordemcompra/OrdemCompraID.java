@@ -1,16 +1,12 @@
 package com.autoservice.domain.ordemcompra;
 
 import com.autoservice.domain.Identifier;
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
 
 import java.util.Objects;
 import java.util.UUID;
 
-@Embeddable
 public class OrdemCompraID extends Identifier {
 
-    @Column(name = "id", nullable = false, updatable = false)
     private final String valor;
 
     protected OrdemCompraID() {
