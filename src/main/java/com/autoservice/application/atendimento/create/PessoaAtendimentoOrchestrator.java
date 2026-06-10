@@ -13,11 +13,9 @@ import com.autoservice.domain.pessoa.valueobject.CPF;
 import com.autoservice.domain.pessoa.valueobject.Email;
 import com.autoservice.domain.pessoa.valueobject.Telefone;
 import com.autoservice.validation.Error;
-import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 
-@Component
 public final class PessoaAtendimentoOrchestrator {
 
     private final PessoaGateway pessoaGateway;
@@ -46,7 +44,7 @@ public final class PessoaAtendimentoOrchestrator {
 
         return this.pessoaGateway.findPessoaFisicaByCpf(cpf)
                 .map(pessoa -> new PessoaResultado(pessoa, false, null, false))
-                .orElseGet(() -> new PessoaResultado((PessoaFisica) this.pessoaGateway.create(PessoaFisica.newPessoaFisica(
+                .orElseGet(() -> new PessoaResultado(this.pessoaGateway.create(PessoaFisica.newPessoaFisica(
                         Email.from(command.email()),
                         Telefone.from(command.telefone()),
                         command.nome(),

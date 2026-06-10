@@ -5,12 +5,9 @@ import com.autoservice.domain.cliente.ClienteGateway;
 import com.autoservice.domain.cliente.ClienteID;
 import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.validation.Error;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
-@Service
 public class RemoverClienteUseCase extends UnitUseCase<RemoverClienteCommand> {
 
     private final ClienteGateway clienteGateway;
@@ -20,7 +17,6 @@ public class RemoverClienteUseCase extends UnitUseCase<RemoverClienteCommand> {
     }
 
     @Override
-    @Transactional
     public void execute(final RemoverClienteCommand command) {
         if (command == null) {
             throw DomainException.with(new Error("Comando para remover cliente não deve ser nulo"));

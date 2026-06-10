@@ -12,12 +12,9 @@ import com.autoservice.domain.veiculo.valueobject.Kilometragem;
 import com.autoservice.domain.veiculo.valueobject.Placa;
 import com.autoservice.validation.Error;
 import com.autoservice.validation.handler.NotificationValidationHandler;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
-@Service
 public class AtualizarVeiculoUseCase extends UseCase<AtualizarVeiculoCommand, VeiculoOutput> {
 
     private final VeiculoGateway veiculoGateway;
@@ -32,7 +29,6 @@ public class AtualizarVeiculoUseCase extends UseCase<AtualizarVeiculoCommand, Ve
     }
 
     @Override
-    @Transactional
     public VeiculoOutput execute(final AtualizarVeiculoCommand command) {
         if (command == null) {
             throw DomainException.with(new Error("Comando para atualizar veículo não deve ser nulo"));

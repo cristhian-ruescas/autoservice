@@ -5,11 +5,9 @@ import com.autoservice.domain.tipoveiculo.TipoVeiculoGateway;
 import com.autoservice.domain.veiculo.valueobject.Ano;
 import com.autoservice.domain.veiculo.valueobject.Marca;
 import com.autoservice.domain.veiculo.valueobject.Modelo;
-import org.springframework.stereotype.Service;
 
 import java.util.Objects;
 
-@Service
 public class TipoVeiculoResolver {
 
     private final TipoVeiculoGateway tipoVeiculoGateway;

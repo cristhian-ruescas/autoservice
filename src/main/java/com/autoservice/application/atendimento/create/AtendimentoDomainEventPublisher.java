@@ -5,14 +5,11 @@ import com.autoservice.domain.atendimento.events.*;
 import com.autoservice.domain.cliente.Cliente;
 import com.autoservice.domain.events.DomainEventPublisher;
 import com.autoservice.domain.ordemservico.OrdemServico;
-import com.autoservice.domain.tipoveiculo.TipoVeiculo;
 import com.autoservice.domain.veiculo.Veiculo;
 
 import java.util.Objects;
 
-import org.springframework.stereotype.Component;
 
-@Component
 public final class AtendimentoDomainEventPublisher {
 
     private final DomainEventPublisher eventPublisher;

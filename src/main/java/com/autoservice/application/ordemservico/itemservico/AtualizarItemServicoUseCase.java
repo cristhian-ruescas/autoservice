@@ -6,12 +6,9 @@ import com.autoservice.domain.itemservico.ItemServicoGateway;
 import com.autoservice.domain.itemservico.ItemServicoID;
 import com.autoservice.domain.ordemservico.OrdemServicoID;
 import com.autoservice.validation.Error;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
-@Service
 public class AtualizarItemServicoUseCase extends UseCase<AtualizarItemServicoCommand, AdicionarItemServicoOutput> {
 
     private final ItemServicoOrchestrator itemServicoOrchestrator;
@@ -26,7 +23,6 @@ public class AtualizarItemServicoUseCase extends UseCase<AtualizarItemServicoCom
     }
 
     @Override
-    @Transactional
     public AdicionarItemServicoOutput execute(final AtualizarItemServicoCommand command) {
         if (command == null) {
             throw DomainException.with(new Error("Comando para atualizar item de serviço não deve ser nulo"));

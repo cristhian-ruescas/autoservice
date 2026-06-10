@@ -14,12 +14,9 @@ import com.autoservice.domain.pessoa.valueobject.Telefone;
 import com.autoservice.infrastructure.query.mapper.ClienteReadModelMapper;
 import com.autoservice.validation.Error;
 import com.autoservice.validation.handler.NotificationValidationHandler;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
-@Service
 public class AtualizarClienteUseCase extends UseCase<AtualizarClienteCommand, ClienteOutput> {
 
     private final ClienteGateway clienteGateway;
@@ -37,7 +34,6 @@ public class AtualizarClienteUseCase extends UseCase<AtualizarClienteCommand, Cl
     }
 
     @Override
-    @Transactional
     public ClienteOutput execute(final AtualizarClienteCommand command) {
         if (command == null) {
             throw DomainException.with(new Error("Comando para atualizar cliente não deve ser nulo"));

@@ -8,11 +8,9 @@ import com.autoservice.domain.pessoa.valueobject.Email;
 import com.autoservice.domain.pessoa.valueobject.Telefone;
 import com.autoservice.validation.Error;
 import com.autoservice.validation.handler.NotificationValidationHandler;
-import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 
-@Component
 public final class RepresentanteLegalOrchestrator {
 
     private final PessoaGateway pessoaGateway;

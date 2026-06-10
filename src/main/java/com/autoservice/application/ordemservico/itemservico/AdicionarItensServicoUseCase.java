@@ -5,13 +5,10 @@ import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.itemservico.ItemServicoGateway;
 import com.autoservice.domain.ordemservico.OrdemServicoID;
 import com.autoservice.validation.Error;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
 
-@Service
 public class AdicionarItensServicoUseCase extends UseCase<AdicionarItensServicoCommand, AdicionarItensServicoOutput> {
 
     private final ItemServicoOrchestrator itemServicoOrchestrator;
@@ -26,7 +23,6 @@ public class AdicionarItensServicoUseCase extends UseCase<AdicionarItensServicoC
     }
 
     @Override
-    @Transactional
     public AdicionarItensServicoOutput execute(final AdicionarItensServicoCommand command) {
         if (command == null) {
             throw DomainException.with(new Error("Comando para adicionar itens de serviço não deve ser nulo"));
