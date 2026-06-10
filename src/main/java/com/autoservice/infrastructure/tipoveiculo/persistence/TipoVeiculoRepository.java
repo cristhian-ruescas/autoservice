@@ -15,8 +15,8 @@ public interface TipoVeiculoRepository extends JpaRepository<TipoVeiculoJpaEntit
     @Query("""
             select tipo
             from TipoVeiculoJpaEntity tipo
-            where lower(cast(tipo.marca as string)) = lower(:marca)
-              and lower(cast(tipo.modelo as string)) = lower(:modelo)
+            where lower(tipo.marca) = lower(:marca)
+              and lower(tipo.modelo) = lower(:modelo)
               and tipo.ano = :ano
             """)
     Optional<TipoVeiculoJpaEntity> findByMarcaModeloAno(

@@ -7,6 +7,7 @@ import com.autoservice.application.cliente.query.*;
 import com.autoservice.application.cliente.update.AtualizarClienteCommand;
 import com.autoservice.application.cliente.update.AtualizarClienteUseCase;
 import com.autoservice.presentation.dto.cliente.AtualizarClienteRequest;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -58,7 +59,7 @@ public class ClienteController {
     @PutMapping("/{id}")
     public ResponseEntity<ClienteOutput> atualizar(
             @PathVariable final UUID id,
-            @RequestBody final AtualizarClienteRequest request
+            @RequestBody @Valid final AtualizarClienteRequest request
     ) {
         final var output = this.atualizarClienteUseCase.execute(AtualizarClienteCommand.with(
                 id,
