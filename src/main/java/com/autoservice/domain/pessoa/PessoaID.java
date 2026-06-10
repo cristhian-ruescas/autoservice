@@ -2,20 +2,11 @@ package com.autoservice.domain.pessoa;
 
 import com.autoservice.domain.Identifier;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
-
 import java.util.Objects;
 import java.util.UUID;
 
-@Embeddable
 public class PessoaID extends Identifier {
 
-    @Column(
-            name = "id",
-            nullable = false,
-            updatable = false
-    )
     private final String value;
 
     protected PessoaID() {

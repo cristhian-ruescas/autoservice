@@ -1,6 +1,8 @@
 package com.autoservice.application.atendimento.create;
 
 import com.autoservice.application.atendimento.create.enums.TipoPessoaAtendimento;
+import com.autoservice.application.tipoveiculo.TipoVeiculoResolver;
+import com.autoservice.application.pessoa.RepresentanteLegalOrchestrator;
 import com.autoservice.domain.cliente.Cliente;
 import com.autoservice.domain.cliente.ClienteGateway;
 import com.autoservice.domain.events.DomainEventPublisher;
@@ -17,14 +19,16 @@ import com.autoservice.domain.pessoa.valueobject.CPF;
 import com.autoservice.domain.pessoa.valueobject.Email;
 import com.autoservice.domain.pessoa.valueobject.Telefone;
 import com.autoservice.domain.tipoveiculo.TipoVeiculo;
-import com.autoservice.domain.tipoveiculo.TipoVeiculoGateway;
 import com.autoservice.domain.veiculo.Veiculo;
 import com.autoservice.domain.veiculo.VeiculoGateway;
+import com.autoservice.domain.veiculo.valueobject.Ano;
+import com.autoservice.domain.veiculo.valueobject.Marca;
+import com.autoservice.domain.veiculo.valueobject.Modelo;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -51,7 +55,7 @@ class AbrirAtendimentoUseCaseTest {
     private VeiculoGateway veiculoGateway;
 
     @Mock
-    private TipoVeiculoGateway tipoVeiculoGateway;
+    private TipoVeiculoAtendimentoResolver tipoVeiculoAtendimentoResolver;
 
     @Mock
     private OrdemServicoGateway ordemServicoGateway;
@@ -59,8 +63,30 @@ class AbrirAtendimentoUseCaseTest {
     @Mock
     private DomainEventPublisher eventPublisher;
 
-    @InjectMocks
     private AbrirAtendimentoUseCase useCase;
+
+    @BeforeEach
+    void setUp() {
+        final var representanteLegalOrchestrator = new RepresentanteLegalOrchestrator(pessoaGateway);
+        final var pessoaAtendimentoOrchestrator = new PessoaAtendimentoOrchestrator(
+                pessoaGateway,
+                representanteLegalOrchestrator
+        );
+        final var atendimentoEvents = new AtendimentoDomainEventPublisher(
+                eventPublisher,
+                pessoaAtendimentoOrchestrator
+        );
+
+        useCase = new AbrirAtendimentoUseCase(
+                pessoaAtendimentoOrchestrator,
+                tipoVeiculoAtendimentoResolver,
+                atendimentoEvents,
+                clienteGateway,
+                veiculoGateway,
+                ordemServicoGateway,
+                eventPublisher
+        );
+    }
 
     @Test
     @DisplayName("Deve cadastrar pessoa, cliente, veiculo e criar ordem de servico")
@@ -95,11 +121,11 @@ class AbrirAtendimentoUseCaseTest {
         when(clienteGateway.create(any(Cliente.class)))
                 .thenAnswer(returnsFirstArg());
 
-        when(tipoVeiculoGateway.findByMarcaModeloAno(eq("Toyota"), eq("Corolla"), eq(2023)))
-                .thenReturn(Optional.empty());
-
-        when(tipoVeiculoGateway.create(any(TipoVeiculo.class)))
-                .thenAnswer(returnsFirstArg());
+        when(tipoVeiculoAtendimentoResolver.obterOuCriar(any(AbrirAtendimentoCommand.class)))
+                .thenReturn(new TipoVeiculoResolver.Resultado(
+                        TipoVeiculo.newTipoVeiculo(Marca.from("Toyota"), Modelo.from("Corolla"), Ano.from(2023)),
+                        true
+                ));
 
         when(veiculoGateway.create(any(Veiculo.class)))
                 .thenAnswer(returnsFirstArg());
@@ -122,7 +148,7 @@ class AbrirAtendimentoUseCaseTest {
 
         verify(pessoaGateway, times(1)).create(pessoaCaptor.capture());
         verify(clienteGateway, times(1)).create(clienteCaptor.capture());
-        verify(tipoVeiculoGateway, times(1)).create(any(TipoVeiculo.class));
+        verify(tipoVeiculoAtendimentoResolver, times(1)).obterOuCriar(command);
         verify(veiculoGateway, times(1)).create(veiculoCaptor.capture());
         verify(ordemServicoGateway, times(1)).create(ordemCaptor.capture());
         verify(eventPublisher, times(1)).publishEvent(any(OrdemServicoCriadaEvent.class));
@@ -172,11 +198,11 @@ class AbrirAtendimentoUseCaseTest {
         when(clienteGateway.create(any(Cliente.class)))
                 .thenAnswer(returnsFirstArg());
 
-        when(tipoVeiculoGateway.findByMarcaModeloAno(eq("Toyota"), eq("Corolla"), eq(2023)))
-                .thenReturn(Optional.empty());
-
-        when(tipoVeiculoGateway.create(any(TipoVeiculo.class)))
-                .thenAnswer(returnsFirstArg());
+        when(tipoVeiculoAtendimentoResolver.obterOuCriar(any(AbrirAtendimentoCommand.class)))
+                .thenReturn(new TipoVeiculoResolver.Resultado(
+                        TipoVeiculo.newTipoVeiculo(Marca.from("Toyota"), Modelo.from("Corolla"), Ano.from(2023)),
+                        true
+                ));
 
         when(veiculoGateway.create(any(Veiculo.class)))
                 .thenAnswer(returnsFirstArg());
@@ -195,7 +221,7 @@ class AbrirAtendimentoUseCaseTest {
 
         verify(pessoaGateway, times(2)).create(pessoaCaptor.capture());
         verify(clienteGateway, times(1)).create(clienteCaptor.capture());
-        verify(tipoVeiculoGateway, times(1)).create(any(TipoVeiculo.class));
+        verify(tipoVeiculoAtendimentoResolver, times(1)).obterOuCriar(command);
         verify(veiculoGateway, times(1)).create(veiculoCaptor.capture());
         verify(ordemServicoGateway, times(1)).create(any(OrdemServico.class));
         verify(eventPublisher, times(1)).publishEvent(any(OrdemServicoCriadaEvent.class));
@@ -255,11 +281,11 @@ class AbrirAtendimentoUseCaseTest {
         when(clienteGateway.create(any(Cliente.class)))
                 .thenAnswer(returnsFirstArg());
 
-        when(tipoVeiculoGateway.findByMarcaModeloAno(eq("Toyota"), eq("Corolla"), eq(2023)))
-                .thenReturn(Optional.empty());
-
-        when(tipoVeiculoGateway.create(any(TipoVeiculo.class)))
-                .thenAnswer(returnsFirstArg());
+        when(tipoVeiculoAtendimentoResolver.obterOuCriar(any(AbrirAtendimentoCommand.class)))
+                .thenReturn(new TipoVeiculoResolver.Resultado(
+                        TipoVeiculo.newTipoVeiculo(Marca.from("Toyota"), Modelo.from("Corolla"), Ano.from(2023)),
+                        true
+                ));
 
         when(veiculoGateway.create(any(Veiculo.class)))
                 .thenAnswer(returnsFirstArg());
@@ -272,7 +298,7 @@ class AbrirAtendimentoUseCaseTest {
         final var pessoaCaptor = ArgumentCaptor.forClass(Pessoa.class);
 
         verify(pessoaGateway, times(1)).create(pessoaCaptor.capture());
-        verify(tipoVeiculoGateway, times(1)).create(any(TipoVeiculo.class));
+        verify(tipoVeiculoAtendimentoResolver, times(1)).obterOuCriar(command);
         verify(eventPublisher, times(1)).publishEvent(any(OrdemServicoCriadaEvent.class));
 
         final var pessoaJuridica = (PessoaJuridica) pessoaCaptor.getValue();

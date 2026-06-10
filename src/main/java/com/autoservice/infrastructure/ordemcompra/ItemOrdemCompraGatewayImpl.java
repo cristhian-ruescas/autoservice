@@ -4,6 +4,7 @@ import com.autoservice.domain.ordemcompra.ItemOrdemCompra;
 import com.autoservice.domain.ordemcompra.ItemOrdemCompraGateway;
 import com.autoservice.domain.ordemcompra.OrdemCompraID;
 import com.autoservice.infrastructure.ordemcompra.persistence.ItemOrdemCompraRepository;
+import com.autoservice.infrastructure.persistence.mapper.ItemOrdemCompraMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,12 +23,15 @@ public class ItemOrdemCompraGatewayImpl implements ItemOrdemCompraGateway {
     @Override
     @Transactional
     public ItemOrdemCompra create(final ItemOrdemCompra item) {
-        return this.repository.save(item);
+        this.repository.save(ItemOrdemCompraMapper.toEntity(item));
+        return item;
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<ItemOrdemCompra> findByOrdemCompraId(final OrdemCompraID ordemCompraId) {
-        return this.repository.findByOrdemCompraId(ordemCompraId);
+        return this.repository.findByOrdemCompraId(ordemCompraId.getValue()).stream()
+                .map(ItemOrdemCompraMapper::toDomain)
+                .toList();
     }
 }

@@ -1,7 +1,6 @@
 package com.autoservice.domain;
 
 import com.autoservice.domain.events.DomainEvent;
-import jakarta.persistence.Transient;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,7 +8,6 @@ import java.util.List;
 
 public abstract class AggregateRoot<ID extends Identifier> extends Entity<ID> {
 
-    @Transient
     private final List<DomainEvent> domainEvents;
 
     protected AggregateRoot() {

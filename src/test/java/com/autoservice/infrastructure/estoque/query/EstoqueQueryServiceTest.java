@@ -64,7 +64,7 @@ class EstoqueQueryServiceTest {
 
         assertEquals(25, output.quantidadeDisponivel());
         assertNull(output.peca());
-        verify(query).setParameter(eq("id"), any(EstoqueID.class));
+        verify(query).setParameter(eq("id"), anyString());
     }
 
     @Test
