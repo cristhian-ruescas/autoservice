@@ -25,7 +25,7 @@ public abstract class PessoaJpaEntity {
     @Convert(converter = EmailConverter.class)
     private Email email;
 
-    @Column(name = "telefone", nullable = false)
+    @Column(name = "telefone")
     @Convert(converter = TelefoneConverter.class)
     private Telefone telefone;
 

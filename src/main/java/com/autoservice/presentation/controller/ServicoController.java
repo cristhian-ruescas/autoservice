@@ -64,7 +64,7 @@ public class ServicoController {
     @PutMapping("/{id}")
     public ResponseEntity<ServicoOutput> atualizar(
             @PathVariable final UUID id,
-            @RequestBody final AtualizarServicoRequest request
+            @RequestBody @Valid final AtualizarServicoRequest request
     ) {
         final var output = this.atualizarServicoUseCase.execute(AtualizarServicoCommand.with(
                 id,

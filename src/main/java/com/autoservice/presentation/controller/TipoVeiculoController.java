@@ -72,7 +72,7 @@ public class TipoVeiculoController {
     @PutMapping("/{id}")
     public ResponseEntity<TipoVeiculoOutput> atualizar(
             @PathVariable final UUID id,
-            @RequestBody final AtualizarTipoVeiculoRequest request
+            @RequestBody @Valid final AtualizarTipoVeiculoRequest request
     ) {
         final var output = this.atualizarTipoVeiculoUseCase.execute(AtualizarTipoVeiculoCommand.with(
                 id,

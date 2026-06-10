@@ -83,6 +83,10 @@ public final class ClienteReadModelMapper {
             );
         }
 
+        if (pessoaFisica == null) {
+            throw DomainException.with(new Error("Pessoa do cliente não encontrada"));
+        }
+
         return new ListOrdemServicoOutput.ClienteOutput(
                 cliente.getId().getValue(),
                 TipoPessoaCodigo.FISICA,
