@@ -1,9 +1,7 @@
 package com.autoservice.application.atendimento.create;
 
 import com.autoservice.application.tipoveiculo.TipoVeiculoResolver;
-import org.springframework.stereotype.Component;
 
-@Component
 public class TipoVeiculoAtendimentoResolver {
 
     private final TipoVeiculoResolver tipoVeiculoResolver;

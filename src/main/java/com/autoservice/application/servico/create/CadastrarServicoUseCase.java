@@ -3,12 +3,9 @@ package com.autoservice.application.servico.create;
 import com.autoservice.application.UseCase;
 import com.autoservice.domain.servico.Servico;
 import com.autoservice.domain.servico.ServicoGateway;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
-@Service
 public class CadastrarServicoUseCase extends UseCase<CadastrarServicoCommand, CadastrarServicoOutput> {
 
     private final ServicoGateway servicoGateway;
@@ -18,7 +15,6 @@ public class CadastrarServicoUseCase extends UseCase<CadastrarServicoCommand, Ca
     }
 
     @Override
-    @Transactional
     public CadastrarServicoOutput execute(final CadastrarServicoCommand command) {
         final var servico = Servico.newServico(
                 command.nome(),

@@ -11,11 +11,9 @@ import com.autoservice.domain.peca.Peca;
 import com.autoservice.domain.peca.PecaGateway;
 import com.autoservice.domain.peca.PecaID;
 import com.autoservice.validation.Error;
-import org.springframework.stereotype.Service;
 
 import java.util.Objects;
 
-@Service
 public class ItemServicoOrchestrator {
 
     private final OrdemServicoGateway ordemServicoGateway;
