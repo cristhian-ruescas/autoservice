@@ -98,6 +98,8 @@ public class ApplicationUseCaseConfiguration {
             final ClienteGateway clienteGateway,
             final VeiculoGateway veiculoGateway,
             final OrdemServicoGateway ordemServicoGateway,
+            final ItemServicoOrchestrator itemServicoOrchestrator,
+            final ItemServicoGateway itemServicoGateway,
             final DomainEventPublisher eventPublisher
     ) {
         return new AbrirAtendimentoUseCase(
@@ -107,6 +109,8 @@ public class ApplicationUseCaseConfiguration {
                 clienteGateway,
                 veiculoGateway,
                 ordemServicoGateway,
+                itemServicoOrchestrator,
+                itemServicoGateway,
                 eventPublisher
         );
     }
