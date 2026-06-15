@@ -1,11 +1,15 @@
 package com.autoservice.application.atendimento.create;
 
 import com.autoservice.application.atendimento.create.enums.TipoPessoaAtendimento;
+import com.autoservice.application.ordemservico.itemservico.ItemServicoOrchestrator;
 import com.autoservice.application.tipoveiculo.TipoVeiculoResolver;
 import com.autoservice.application.pessoa.RepresentanteLegalOrchestrator;
 import com.autoservice.domain.cliente.Cliente;
 import com.autoservice.domain.cliente.ClienteGateway;
 import com.autoservice.domain.events.DomainEventPublisher;
+import com.autoservice.domain.itemservico.ItemServico;
+import com.autoservice.domain.itemservico.ItemServicoGateway;
+import com.autoservice.domain.itemservico.enums.ItemServicoTipo;
 import com.autoservice.domain.ordemservico.OrdemServico;
 import com.autoservice.domain.ordemservico.OrdemServicoGateway;
 import com.autoservice.domain.ordemservico.enums.OrdemServicoStatus;
@@ -32,6 +36,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -61,6 +67,12 @@ class AbrirAtendimentoUseCaseTest {
     private OrdemServicoGateway ordemServicoGateway;
 
     @Mock
+    private ItemServicoOrchestrator itemServicoOrchestrator;
+
+    @Mock
+    private ItemServicoGateway itemServicoGateway;
+
+    @Mock
     private DomainEventPublisher eventPublisher;
 
     private AbrirAtendimentoUseCase useCase;
@@ -84,6 +96,8 @@ class AbrirAtendimentoUseCaseTest {
                 clienteGateway,
                 veiculoGateway,
                 ordemServicoGateway,
+                itemServicoOrchestrator,
+                itemServicoGateway,
                 eventPublisher
         );
     }
@@ -109,7 +123,8 @@ class AbrirAtendimentoUseCaseTest {
                 2023,
                 "Preto",
                 10000,
-                "Cliente relata barulho ao frear"
+                "Cliente relata barulho ao frear",
+                List.of()
         );
 
         when(pessoaGateway.findPessoaFisicaByCpf(eq(CPF.from("52998224725"))))
@@ -183,7 +198,8 @@ class AbrirAtendimentoUseCaseTest {
                 2023,
                 "Preto",
                 10000,
-                "Veículo da empresa apresenta falha na partida"
+                "Veículo da empresa apresenta falha na partida",
+                List.of()
         );
 
         when(pessoaGateway.findPessoaJuridicaByCnpj(eq(CNPJ.from("11222333000181"))))
@@ -266,7 +282,8 @@ class AbrirAtendimentoUseCaseTest {
                 2023,
                 "Preto",
                 10000,
-                "Veículo da empresa apresenta falha na partida"
+                "Veículo da empresa apresenta falha na partida",
+                List.of()
         );
 
         when(pessoaGateway.findPessoaJuridicaByCnpj(eq(CNPJ.from("11222333000181"))))
@@ -304,5 +321,80 @@ class AbrirAtendimentoUseCaseTest {
         final var pessoaJuridica = (PessoaJuridica) pessoaCaptor.getValue();
 
         assertEquals(representanteExistente.getId(), pessoaJuridica.getRepresentanteLegalId());
+    }
+
+    @Test
+    @DisplayName("Deve iniciar diagnóstico e adicionar itens quando informados na abertura")
+    void deveAdicionarItensNaAbertura() {
+        final var item = AbrirAtendimentoItemCommand.with(
+                ItemServicoTipo.SERVICO,
+                "Alinhamento",
+                null,
+                1,
+                BigDecimal.valueOf(150)
+        );
+
+        final var command = AbrirAtendimentoCommand.with(
+                TipoPessoaAtendimento.FISICA,
+                "Joao Silva",
+                "52998224725",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                "joao@email.com",
+                "11999999999",
+                "ABC1D23",
+                "Toyota",
+                "Corolla",
+                2023,
+                "Preto",
+                10000,
+                "Cliente relata barulho ao frear",
+                List.of(item)
+        );
+
+        when(pessoaGateway.findPessoaFisicaByCpf(eq(CPF.from("52998224725"))))
+                .thenReturn(Optional.empty());
+
+        when(pessoaGateway.create(any(Pessoa.class)))
+                .thenAnswer(returnsFirstArg());
+
+        when(clienteGateway.create(any(Cliente.class)))
+                .thenAnswer(returnsFirstArg());
+
+        when(tipoVeiculoAtendimentoResolver.obterOuCriar(any(AbrirAtendimentoCommand.class)))
+                .thenReturn(new TipoVeiculoResolver.Resultado(
+                        TipoVeiculo.newTipoVeiculo(Marca.from("Toyota"), Modelo.from("Corolla"), Ano.from(2023)),
+                        true
+                ));
+
+        when(veiculoGateway.create(any(Veiculo.class)))
+                .thenAnswer(returnsFirstArg());
+
+        when(ordemServicoGateway.create(any(OrdemServico.class)))
+                .thenAnswer(returnsFirstArg());
+
+        when(ordemServicoGateway.update(any(OrdemServico.class)))
+                .thenAnswer(returnsFirstArg());
+
+        when(itemServicoOrchestrator.criar(any(), any()))
+                .thenAnswer(invocation -> ItemServico.newServico(
+                        invocation.getArgument(1),
+                        "Alinhamento",
+                        BigDecimal.valueOf(150)
+                ));
+
+        when(itemServicoGateway.create(any(ItemServico.class)))
+                .thenAnswer(returnsFirstArg());
+
+        final var output = useCase.execute(command);
+
+        assertEquals(OrdemServicoStatus.EM_DIAGNOSTICO.name(), output.status());
+        verify(ordemServicoGateway, times(1)).update(any(OrdemServico.class));
+        verify(itemServicoOrchestrator, times(1)).criar(any(), any());
+        verify(itemServicoGateway, times(1)).create(any(ItemServico.class));
     }
 }
