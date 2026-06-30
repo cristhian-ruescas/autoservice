@@ -7,50 +7,22 @@ import com.autoservice.domain.ordemservico.events.*;
 import com.autoservice.domain.ordemservico.validators.OrdemServicoValidator;
 import com.autoservice.domain.ordemservico.valueobject.DataCriacao;
 import com.autoservice.domain.veiculo.VeiculoID;
-import com.autoservice.validation.Error;
 import com.autoservice.validation.ValidationHandler;
 import com.autoservice.validation.handler.NotificationValidationHandler;
-import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
-@Entity
-@Table(name = "ordem_servico", schema = "servico")
 public class OrdemServico extends AggregateRoot<OrdemServicoID> {
 
-    @EmbeddedId
     private OrdemServicoID id;
-
-    @Embedded
-    @AttributeOverride(
-            name = "valor",
-            column = @Column(name = "veiculo_id")
-    )
     private VeiculoID veiculoId;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
     private OrdemServicoStatus status;
-
-    @Embedded
-    @Column(name = "data_criacao", nullable = false)
     private DataCriacao dataCriacao;
-
-    @Column(name = "relato", nullable = false, length = 1000)
     private String relato;
-
-    @Column(name = "tempo_previsto_execucao_dias")
     private Integer tempoPrevistoExecucaoDias;
-
-    @Column(name = "tempo_previsto_execucao_horas")
     private Integer tempoPrevistoExecucaoHoras;
-
-    @Column(name = "iniciado_em")
     private LocalDateTime iniciadoEm;
-
-    @Column(name = "finalizado_em")
     private LocalDateTime finalizadoEm;
 
     protected OrdemServico() {
@@ -93,13 +65,7 @@ public class OrdemServico extends AggregateRoot<OrdemServicoID> {
                 null
         );
 
-        final NotificationValidationHandler handler = new NotificationValidationHandler();
-        ordemServico.validate(handler);
-
-        if (handler.hasError()) {
-            throw DomainException.with(handler.getErrors());
-        }
-
+        ordemServico.validateAndThrow();
         ordemServico.registerEvent(new OrdemServicoCriadaEvent(ordemServico.getId(), ordemServico.getVeiculoId()));
 
         return ordemServico;
@@ -138,24 +104,12 @@ public class OrdemServico extends AggregateRoot<OrdemServicoID> {
                 finalizadoEm
         );
 
-        final NotificationValidationHandler handler = new NotificationValidationHandler();
-        ordemServico.validate(handler);
-
-        if (handler.hasError()) {
-            throw DomainException.with(handler.getErrors());
-        }
-
+        ordemServico.validateAndThrow();
         return ordemServico;
     }
 
     public void iniciarDiagnostico() {
-        if (this.status != OrdemServicoStatus.RECEBIDO) {
-            throw DomainException.with(List.of(
-                    new Error("Ordem de serviço precisa estar RECEBIDO para iniciar diagnóstico")
-            ));
-        }
-
-        this.status = OrdemServicoStatus.EM_DIAGNOSTICO;
+        this.status = OrdemServicoStateMachine.iniciarDiagnostico(this.status);
         this.registerEvent(new OrdemServicoDiagnosticoIniciadoEvent(this.getId()));
     }
 
@@ -163,94 +117,55 @@ public class OrdemServico extends AggregateRoot<OrdemServicoID> {
             final Integer tempoPrevistoExecucaoDias,
             final Integer tempoPrevistoExecucaoHoras
     ) {
-        if (this.status != OrdemServicoStatus.EM_DIAGNOSTICO) {
-            throw DomainException.with(List.of(
-                    new Error("Ordem de serviço precisa estar EM_DIAGNOSTICO para finalizar diagnóstico")
-            ));
-        }
-        final int dias = tempoPrevistoExecucaoDias == null ? 0 : tempoPrevistoExecucaoDias;
-        final int horas = tempoPrevistoExecucaoHoras == null ? 0 : tempoPrevistoExecucaoHoras;
+        final var transicao = OrdemServicoStateMachine.finalizarDiagnostico(
+                this.status,
+                tempoPrevistoExecucaoDias,
+                tempoPrevistoExecucaoHoras
+        );
 
-        if (dias < 0) {
-            throw DomainException.with(List.of(
-                    new Error("Tempo previsto de execução em dias precisa ser maior ou igual a zero")
-            ));
-        }
-        if (horas < 0 || horas > 23) {
-            throw DomainException.with(List.of(
-                    new Error("Tempo previsto de execução em horas precisa estar entre 0 e 23")
-            ));
-        }
-        if (dias == 0 && horas == 0) {
-            throw DomainException.with(List.of(
-                    new Error("Tempo previsto de execução precisa ser maior que zero")
-            ));
-        }
-
-        this.tempoPrevistoExecucaoDias = dias;
-        this.tempoPrevistoExecucaoHoras = horas;
-        this.status = OrdemServicoStatus.AGUARDANDO_APROVACAO;
+        this.tempoPrevistoExecucaoDias = transicao.tempoPrevistoExecucaoDias();
+        this.tempoPrevistoExecucaoHoras = transicao.tempoPrevistoExecucaoHoras();
+        this.status = transicao.status();
         this.registerEvent(new OrdemServicoDiagnosticoFinalizadoEvent(this.getId()));
     }
 
     public void finalizarDiagnostico() {
-        this.finalizarDiagnostico(0, 1);
+        finalizarDiagnostico(0, 1);
     }
 
     public void aprovarOrcamento() {
-        if (this.status != OrdemServicoStatus.AGUARDANDO_APROVACAO) {
-            throw DomainException.with(List.of(
-                    new Error("Ordem de serviço precisa estar AGUARDANDO_APROVACAO para aprovar orçamento")
-            ));
-        }
+        final var transicao = OrdemServicoStateMachine.aprovarOrcamento(this.status);
 
-        this.status = OrdemServicoStatus.EM_EXECUCAO;
-        this.iniciadoEm = LocalDateTime.now();
+        this.status = transicao.status();
+        this.iniciadoEm = transicao.iniciadoEm();
         this.registerEvent(new OrdemServicoOrcamentoAprovadoEvent(this.getId()));
     }
 
     public void reprovarOrcamento() {
-        if (this.status != OrdemServicoStatus.AGUARDANDO_APROVACAO) {
-            throw DomainException.with(List.of(
-                    new Error("Ordem de serviço precisa estar AGUARDANDO_APROVACAO para reprovar orçamento")
-            ));
-        }
-
-        this.status = OrdemServicoStatus.REPROVADO;
+        this.status = OrdemServicoStateMachine.reprovarOrcamento(this.status);
     }
 
     public void finalizarExecucao() {
-        if (this.status != OrdemServicoStatus.EM_EXECUCAO) {
-            throw DomainException.with(List.of(
-                    new Error("Ordem de serviço precisa estar EM_EXECUCAO para ser finalizada")
-            ));
-        }
-
-        this.status = OrdemServicoStatus.FINALIZADA;
+        this.status = OrdemServicoStateMachine.finalizarExecucao(this.status);
         this.finalizadoEm = LocalDateTime.now();
         this.registerEvent(new OrdemServicoFinalizadaEvent(this.getId()));
     }
 
     public void entregar() {
-        if (this.status != OrdemServicoStatus.FINALIZADA && this.status != OrdemServicoStatus.REPROVADO) {
-            throw DomainException.with(List.of(
-                    new Error("Ordem de serviço precisa estar FINALIZADA ou REPROVADO para ser entregue")
-            ));
-        }
-
-        this.status = OrdemServicoStatus.ENTREGUE;
+        this.status = OrdemServicoStateMachine.entregar(this.status);
     }
 
     public void cancelar() {
-        if (this.status == OrdemServicoStatus.FINALIZADA
-                || this.status == OrdemServicoStatus.ENTREGUE
-                || this.status == OrdemServicoStatus.REPROVADO) {
-            throw DomainException.with(List.of(
-                    new Error("Ordem de serviço FINALIZADA, ENTREGUE ou REPROVADO não pode ser cancelada")
-            ));
-        }
+        this.status = OrdemServicoStateMachine.cancelar(this.status);
+    }
 
-        this.status = OrdemServicoStatus.CANCELADO;
+    private void validateAndThrow() {
+        final NotificationValidationHandler handler = new NotificationValidationHandler();
+        validate(handler);
+
+        if (handler.hasError()) {
+            throw DomainException.with(handler.getErrors());
+        }
     }
 
     @Override

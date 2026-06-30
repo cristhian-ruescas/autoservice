@@ -53,12 +53,12 @@ public class OpenApiConfiguration {
                 | Recebida | `RECEBIDO` | `POST /atendimentos` |
                 | Em diagnóstico / montando orçamento | `EM_DIAGNOSTICO` | `PATCH .../diagnostico`, `POST .../itens` |
                 | Aguardando cliente | `AGUARDANDO_APROVACAO` | `PATCH .../diagnostico/finalizar` |
-                | Aprovada / reprovada | `APROVADO` / `REPROVADO` | `PATCH .../aprovacao/aprovar` ou `reprovar` |
+                | Aprovada / reprovada | `EM_EXECUCAO` / `REPROVADO` | `PATCH .../aprovacao/aprovar` ou `reprovar` |
                 | Em execução | `EM_EXECUCAO` | após aprovação; ordens de compra no painel `GET /ordens-compra` |
                 | Finalizada / entregue | `FINALIZADA` / `ENTREGUE` | `PATCH .../finalizar`, `PATCH .../entregar` |
                 | Cancelada | `CANCELADO` | estados de domínio; consultas podem expor quando aplicável |
                 
-                **Nota:** rótulos de negócio podem estar no feminino; os identificadores do enum seguem os nomes acima (`RECEBIDO`, `APROVADO`, etc.).
+                **Nota:** rótulos de negócio podem estar no feminino; os identificadores do enum seguem os nomes acima (`RECEBIDO`, `EM_EXECUCAO`, etc.).
                 
                 ## Outros recursos
                 

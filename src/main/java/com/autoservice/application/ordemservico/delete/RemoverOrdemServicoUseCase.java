@@ -6,12 +6,9 @@ import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.ordemservico.OrdemServicoGateway;
 import com.autoservice.domain.ordemservico.OrdemServicoID;
 import com.autoservice.validation.Error;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
-@Service
 public class RemoverOrdemServicoUseCase extends UseCase<RemoverOrdemServicoCommand, OrdemServicoStatusOutput> {
 
     private final OrdemServicoGateway ordemServicoGateway;
@@ -21,7 +18,6 @@ public class RemoverOrdemServicoUseCase extends UseCase<RemoverOrdemServicoComma
     }
 
     @Override
-    @Transactional
     public OrdemServicoStatusOutput execute(final RemoverOrdemServicoCommand command) {
         if (command == null) {
             throw DomainException.with(new Error("Comando para remover ordem de serviço não deve ser nulo"));

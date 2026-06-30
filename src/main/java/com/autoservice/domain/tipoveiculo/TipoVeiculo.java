@@ -8,25 +8,15 @@ import com.autoservice.domain.veiculo.valueobject.Modelo;
 import com.autoservice.validation.Error;
 import com.autoservice.validation.ValidationHandler;
 import com.autoservice.validation.handler.NotificationValidationHandler;
-import jakarta.persistence.Embedded;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
 
-@Entity
-@Table(name = "tipo_veiculo", schema = "cadastro")
 public class TipoVeiculo extends AggregateRoot<TipoVeiculoID> {
 
-    @EmbeddedId
     private TipoVeiculoID id;
 
-    @Embedded
     private Marca marca;
 
-    @Embedded
     private Modelo modelo;
 
-    @Embedded
     private Ano ano;
 
     protected TipoVeiculo() {

@@ -2,20 +2,11 @@ package com.autoservice.domain.ordemservico;
 
 import com.autoservice.domain.Identifier;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
-
 import java.util.Objects;
 import java.util.UUID;
 
-@Embeddable
 public class OrdemServicoID extends Identifier {
 
-    @Column(
-            name = "id",
-            nullable = false,
-            updatable = false
-    )
     private final String valor;
 
     protected OrdemServicoID() {

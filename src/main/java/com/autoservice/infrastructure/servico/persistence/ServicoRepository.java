@@ -1,10 +1,9 @@
 package com.autoservice.infrastructure.servico.persistence;
 
-import com.autoservice.domain.servico.Servico;
-import com.autoservice.domain.servico.ServicoID;
+import com.autoservice.infrastructure.persistence.entity.ServicoJpaEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ServicoRepository extends JpaRepository<Servico, ServicoID> {
+public interface ServicoRepository extends JpaRepository<ServicoJpaEntity, String> {
 }

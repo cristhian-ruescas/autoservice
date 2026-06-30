@@ -7,12 +7,9 @@ import com.autoservice.domain.servico.Servico;
 import com.autoservice.domain.servico.ServicoGateway;
 import com.autoservice.domain.servico.ServicoID;
 import com.autoservice.validation.Error;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
-@Service
 public class AtualizarServicoUseCase extends UseCase<AtualizarServicoCommand, ServicoOutput> {
 
     private final ServicoGateway servicoGateway;
@@ -22,7 +19,6 @@ public class AtualizarServicoUseCase extends UseCase<AtualizarServicoCommand, Se
     }
 
     @Override
-    @Transactional
     public ServicoOutput execute(final AtualizarServicoCommand command) {
         if (command == null) {
             throw DomainException.with(new Error("Comando para atualizar serviço não deve ser nulo"));

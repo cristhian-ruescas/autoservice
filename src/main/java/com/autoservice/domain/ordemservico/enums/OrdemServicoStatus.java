@@ -4,7 +4,6 @@ public enum OrdemServicoStatus {
     RECEBIDO("Recebido"),
     EM_DIAGNOSTICO("Em Diagnóstico"),
     AGUARDANDO_APROVACAO("Aguardando Aprovação"),
-    APROVADO("Aprovado"),
     REPROVADO("Reprovado"),
     EM_EXECUCAO("Em Execução"),
     FINALIZADA("Finalizada"),

@@ -3,18 +3,11 @@ package com.autoservice.domain.pessoa;
 import com.autoservice.domain.AggregateRoot;
 import com.autoservice.domain.pessoa.valueobject.Email;
 import com.autoservice.domain.pessoa.valueobject.Telefone;
-import jakarta.persistence.*;
 
-@Entity
-@Inheritance(strategy = InheritanceType.JOINED)
-@Table(name = "pessoa", schema = "cadastro")
 public abstract class Pessoa extends AggregateRoot<PessoaID> {
 
-    @EmbeddedId
     private PessoaID id;
-    @Embedded
     private Email email;
-    @Embedded
     private Telefone telefone;
 
     protected Pessoa() {

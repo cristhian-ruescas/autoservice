@@ -5,12 +5,9 @@ import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.tipoveiculo.TipoVeiculoGateway;
 import com.autoservice.domain.tipoveiculo.TipoVeiculoID;
 import com.autoservice.validation.Error;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
-@Service
 public class RemoverTipoVeiculoUseCase extends UnitUseCase<RemoverTipoVeiculoCommand> {
 
     private final TipoVeiculoGateway tipoVeiculoGateway;
@@ -20,7 +17,6 @@ public class RemoverTipoVeiculoUseCase extends UnitUseCase<RemoverTipoVeiculoCom
     }
 
     @Override
-    @Transactional
     public void execute(final RemoverTipoVeiculoCommand command) {
         if (command == null) {
             throw DomainException.with(new Error("Comando para remover tipo de veículo não deve ser nulo"));

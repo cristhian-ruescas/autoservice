@@ -7,6 +7,8 @@ import com.autoservice.domain.estoque.Estoque;
 import com.autoservice.domain.estoque.EstoqueID;
 import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.peca.Peca;
+import com.autoservice.infrastructure.query.PaginacaoValidator;
+import com.autoservice.infrastructure.query.mapper.QueryRowMapperSupport;
 import com.autoservice.validation.Error;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
@@ -26,12 +28,12 @@ public class EstoqueQueryService implements EstoqueQuery {
     @Override
     @Transactional(readOnly = true)
     public PaginationOutput<EstoqueOutput> listar(final int page, final int size) {
-        validarPaginacao(page, size);
+        PaginacaoValidator.validar(page, size);
 
         final var query = """
                 select estoque, peca
-                from Estoque estoque
-                left join Peca peca on peca.estoqueId = estoque.id
+                from EstoqueJpaEntity estoque
+                left join PecaJpaEntity peca on peca.estoqueId = estoque.id
                 order by peca.descricao asc
                 """;
 
@@ -51,13 +53,13 @@ public class EstoqueQueryService implements EstoqueQuery {
     public EstoqueOutput detalhar(final UUID id) {
         final var query = """
                 select estoque, peca
-                from Estoque estoque
-                left join Peca peca on peca.estoqueId = estoque.id
+                from EstoqueJpaEntity estoque
+                left join PecaJpaEntity peca on peca.estoqueId = estoque.id
                 where estoque.id = :id
                 """;
 
         final var rows = this.entityManager.createQuery(query, Object[].class)
-                .setParameter("id", EstoqueID.from(id))
+                .setParameter("id", EstoqueID.from(id).getValue())
                 .getResultList();
 
         if (rows.isEmpty()) {
@@ -68,8 +70,8 @@ public class EstoqueQueryService implements EstoqueQuery {
     }
 
     private EstoqueOutput map(final Object[] row) {
-        final var estoque = (Estoque) row[0];
-        final var peca = (Peca) row[1];
+        final Estoque estoque = QueryRowMapperSupport.toEstoque(row[0]);
+        final Peca peca = QueryRowMapperSupport.toPeca(row[1]);
 
         return new EstoqueOutput(
                 estoque.getId().getValue(),
@@ -96,21 +98,9 @@ public class EstoqueQueryService implements EstoqueQuery {
     private long totalEstoques() {
         final var query = """
                 select count(estoque)
-                from Estoque estoque
+                from EstoqueJpaEntity estoque
                 """;
 
         return this.entityManager.createQuery(query, Long.class).getSingleResult();
-    }
-
-    private void validarPaginacao(final int page, final int size) {
-        if (page < 0) {
-            throw DomainException.with(new Error("Página não deve ser menor que zero"));
-        }
-        if (size <= 0) {
-            throw DomainException.with(new Error("Tamanho da página deve ser maior que zero"));
-        }
-        if (size > 100) {
-            throw DomainException.with(new Error("Tamanho da página não deve ser maior que 100"));
-        }
     }
 }
