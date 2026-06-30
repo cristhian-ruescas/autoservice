@@ -13,10 +13,10 @@ import com.autoservice.application.ordemservico.update.AtualizarOrdemServicoComm
 import com.autoservice.application.ordemservico.update.AtualizarOrdemServicoOutput;
 import com.autoservice.application.ordemservico.update.AtualizarOrdemServicoUseCase;
 import com.autoservice.presentation.dto.ordemservico.AtualizarOrdemServicoRequest;
-import com.autoservice.presentation.dto.ordemservico.OrdemServicoStatusResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -82,9 +82,8 @@ public class OrdemServicoConsultaController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<OrdemServicoStatusResponse> remover(@PathVariable final UUID id) {
-        return ResponseEntity.ok(OrdemServicoStatusResponse.from(
-                this.removerOrdemServicoUseCase.execute(RemoverOrdemServicoCommand.with(id))
-        ));
+    public ResponseEntity<Void> remover(@PathVariable final UUID id) {
+        this.removerOrdemServicoUseCase.execute(RemoverOrdemServicoCommand.with(id));
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

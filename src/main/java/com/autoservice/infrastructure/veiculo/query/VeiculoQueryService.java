@@ -58,11 +58,11 @@ public class VeiculoQueryService implements
         final var proprietario = proprietarioId == null ? null : PessoaID.from(proprietarioId).getValue();
 
         final var query = VEICULO_QUERY + """
-                where (:marca is null or lower(cast(tipoVeiculo.marca as string)) like :marca)
-                  and (:modelo is null or lower(cast(tipoVeiculo.modelo as string)) like :modelo)
+                where (:marca is null or lower(tipoVeiculo.marca) like :marca)
+                  and (:modelo is null or lower(tipoVeiculo.modelo) like :modelo)
                   and (:ano is null or tipoVeiculo.ano = :ano)
                   and (:proprietarioId is null or v.proprietarioId = :proprietarioId)
-                order by cast(tipoVeiculo.marca as string) asc, cast(tipoVeiculo.modelo as string) asc, cast(v.placa as string) asc
+                order by tipoVeiculo.marca asc, tipoVeiculo.modelo asc, v.placa asc
                 """;
 
         final var items = this.entityManager.createQuery(query, Object[].class)
@@ -155,7 +155,7 @@ public class VeiculoQueryService implements
     private List<VeiculoOutput> buscarVeiculosPorProprietario(final PessoaID proprietarioId) {
         final var query = VEICULO_QUERY + """
                 where v.proprietarioId = :proprietarioId
-                order by cast(tipoVeiculo.marca as string) asc, cast(tipoVeiculo.modelo as string) asc, cast(v.placa as string) asc
+                order by tipoVeiculo.marca asc, tipoVeiculo.modelo asc, v.placa asc
                 """;
 
         return this.entityManager.createQuery(query, Object[].class)
@@ -176,8 +176,8 @@ public class VeiculoQueryService implements
                 select count(v)
                 from VeiculoJpaEntity v
                 join TipoVeiculoJpaEntity tipoVeiculo on tipoVeiculo.id = v.tipoVeiculoId
-                where (:marca is null or lower(cast(tipoVeiculo.marca as string)) like :marca)
-                  and (:modelo is null or lower(cast(tipoVeiculo.modelo as string)) like :modelo)
+                where (:marca is null or lower(tipoVeiculo.marca) like :marca)
+                  and (:modelo is null or lower(tipoVeiculo.modelo) like :modelo)
                   and (:ano is null or tipoVeiculo.ano = :ano)
                   and (:proprietarioId is null or v.proprietarioId = :proprietarioId)
                 """;

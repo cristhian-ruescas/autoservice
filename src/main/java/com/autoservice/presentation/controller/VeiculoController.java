@@ -7,6 +7,7 @@ import com.autoservice.application.veiculo.query.*;
 import com.autoservice.application.veiculo.update.AtualizarVeiculoCommand;
 import com.autoservice.application.veiculo.update.AtualizarVeiculoUseCase;
 import com.autoservice.presentation.dto.veiculo.AtualizarVeiculoRequest;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -77,7 +78,7 @@ public class VeiculoController {
     @PutMapping("/{id}")
     public ResponseEntity<VeiculoOutput> atualizar(
             @PathVariable final UUID id,
-            @RequestBody final AtualizarVeiculoRequest request
+            @RequestBody @Valid final AtualizarVeiculoRequest request
     ) {
         final var output = this.atualizarVeiculoUseCase.execute(AtualizarVeiculoCommand.with(
                 id,

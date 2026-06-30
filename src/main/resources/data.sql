@@ -1,3 +1,8 @@
+-- Migração de dados legados: preenche telefones nulos para leitura consistente.
+UPDATE cadastro.pessoa
+SET telefone = '11999999999'
+WHERE telefone IS NULL;
+
 -- Seed local alinhado ao modelo JPA atual.
 
 INSERT INTO cadastro.usuario (id, email, senha, role)
@@ -9,18 +14,18 @@ ON CONFLICT (email) DO UPDATE
 SET senha = EXCLUDED.senha,
     role  = EXCLUDED.role;
 
-INSERT INTO cadastro.pessoa (id, email, phone_number)
+INSERT INTO cadastro.pessoa (id, email, telefone)
 VALUES ('11111111-1111-1111-1111-111111111111', 'admin@autoservice.local', '11999999999'),
        ('22222222-2222-2222-2222-222222222222', 'cliente2@autoservice.local', '11999999998'),
        ('33333333-3333-3333-3333-333333333333', 'cliente3@autoservice.local', '11999999997')
 ON CONFLICT (id) DO UPDATE
 SET email = EXCLUDED.email,
-    phone_number = EXCLUDED.phone_number;
+    telefone = EXCLUDED.telefone;
 
 INSERT INTO cadastro.pessoa_fisica (id, cpf, nome)
-VALUES ('11111111-1111-1111-1111-111111111111', '12345678900', 'Admin User'),
-       ('22222222-2222-2222-2222-222222222222', '98765432100', 'Cliente Dois'),
-       ('33333333-3333-3333-3333-333333333333', '11122233344', 'Cliente Tres')
+VALUES ('11111111-1111-1111-1111-111111111111', '52998224725', 'Admin User'),
+       ('22222222-2222-2222-2222-222222222222', '39053344705', 'Cliente Dois'),
+       ('33333333-3333-3333-3333-333333333333', '11144477735', 'Cliente Tres')
 ON CONFLICT (id) DO UPDATE
 SET cpf = EXCLUDED.cpf,
     nome = EXCLUDED.nome;
@@ -168,3 +173,8 @@ ON CONFLICT (id) DO UPDATE
 SET ordem_compra_id = EXCLUDED.ordem_compra_id,
     peca_id = EXCLUDED.peca_id,
     quantidade = EXCLUDED.quantidade;
+
+-- Corrige CPFs inválidos legados que quebram leitura via AttributeConverter.
+UPDATE cadastro.pessoa_fisica SET cpf = '52998224725' WHERE cpf = '12345678900';
+UPDATE cadastro.pessoa_fisica SET cpf = '39053344705' WHERE cpf = '98765432100';
+UPDATE cadastro.pessoa_fisica SET cpf = '11144477735' WHERE cpf = '11122233344';
