@@ -119,7 +119,7 @@ public class ClienteQueryService implements ListClientesQuery, GetClienteByCpfQu
                 from VeiculoJpaEntity v
                 join TipoVeiculoJpaEntity tipoVeiculo on tipoVeiculo.id = v.tipoVeiculoId
                 where v.proprietarioId = :proprietarioId
-                order by cast(tipoVeiculo.marca as string) asc, cast(tipoVeiculo.modelo as string) asc, cast(v.placa as string) asc
+                order by tipoVeiculo.marca asc, tipoVeiculo.modelo asc, v.placa asc
                 """;
 
         return this.entityManager.createQuery(query, Object[].class)
