@@ -2,6 +2,7 @@ package com.autoservice.infrastructure.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -23,27 +24,40 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter(JwtUtil jwtUtil, UsuarioUserDetailsService usuarioUserDetailsService) {
+    public JwtAuthenticationFilter jwtAuthenticationFilter(
+            final JwtUtil jwtUtil,
+            final UsuarioUserDetailsService usuarioUserDetailsService
+    ) {
         return new JwtAuthenticationFilter(jwtUtil, usuarioUserDetailsService);
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
+    public SecurityFilterChain filterChain(
+            final HttpSecurity http,
+            final JwtAuthenticationFilter jwtAuthenticationFilter
+    ) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
-                        .requestMatchers("/ordens-servico/**", "/clientes/**", "/pecas/**", "/servicos/**", "/estoque/**").hasRole("ADMIN")
-                        .anyRequest().permitAll()
+                        .requestMatchers(SecurityPaths.PUBLIC_ENDPOINTS).permitAll()
+                        .requestMatchers(HttpMethod.GET, SecurityPaths.ANDAMENTO_ORDEM_SERVICO).permitAll()
+                        .requestMatchers(HttpMethod.GET, SecurityPaths.APROVACAO_APROVAR).permitAll()
+                        .requestMatchers(HttpMethod.GET, SecurityPaths.APROVACAO_REPROVAR).permitAll()
+                        .requestMatchers(SecurityPaths.ADMIN_ENDPOINTS).hasRole(SecurityPaths.ROLE_ADMIN)
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(HttpSecurity http, PasswordEncoder encoder, UsuarioUserDetailsService usuarioUserDetailsService) throws Exception {
-        AuthenticationManagerBuilder builder = http.getSharedObject(AuthenticationManagerBuilder.class);
+    public AuthenticationManager authenticationManager(
+            final HttpSecurity http,
+            final PasswordEncoder encoder,
+            final UsuarioUserDetailsService usuarioUserDetailsService
+    ) throws Exception {
+        final AuthenticationManagerBuilder builder = http.getSharedObject(AuthenticationManagerBuilder.class);
         builder.userDetailsService(usuarioUserDetailsService).passwordEncoder(encoder);
         return builder.build();
     }

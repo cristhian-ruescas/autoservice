@@ -4,21 +4,12 @@ import com.autoservice.domain.ValueObject;
 import com.autoservice.domain.pessoa.validators.CPFValidator;
 import com.autoservice.validation.ValidationHandler;
 import com.autoservice.validation.handler.NotificationValidationHandler;
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
 
 import java.util.Objects;
 
-@Embeddable
 public class CPF extends ValueObject {
 
-    @Column(
-            name = "cpf",
-            nullable = false,
-            unique = true
-    )
     private final String value;
-
 
     protected CPF() {
         this.value = null;

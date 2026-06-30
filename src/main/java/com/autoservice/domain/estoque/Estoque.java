@@ -5,27 +5,17 @@ import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.validation.Error;
 import com.autoservice.validation.ValidationHandler;
 import com.autoservice.validation.handler.NotificationValidationHandler;
-import jakarta.persistence.Column;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
 
 import java.util.List;
 
-@Entity
-@Table(name = "estoque", schema = "estoque")
 public class Estoque extends AggregateRoot<EstoqueID> {
 
-    @EmbeddedId
     private EstoqueID id;
 
-    @Column(name = "quantidade_disponivel", nullable = false)
     private Integer quantidadeDisponivel;
 
-    @Column(name = "quantidade_minima", nullable = false)
     private Integer quantidadeMinima;
 
-    @Column(name = "localizacao", length = 120)
     private String localizacao;
 
     protected Estoque() {

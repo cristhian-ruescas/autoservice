@@ -5,27 +5,17 @@ import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.validation.Error;
 import com.autoservice.validation.ValidationHandler;
 import com.autoservice.validation.handler.NotificationValidationHandler;
-import jakarta.persistence.Column;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
 
-@Entity
-@Table(name = "servico_cadastro", schema = "cadastro")
 public class Servico extends AggregateRoot<ServicoID> {
 
-    @EmbeddedId
     private ServicoID id;
 
-    @Column(name = "nome", nullable = false, length = 120)
     private String nome;
 
-    @Column(name = "descricao", length = 500)
     private String descricao;
 
-    @Column(name = "valor_referencia", precision = 10, scale = 2)
     private BigDecimal valorReferencia;
 
     protected Servico() {

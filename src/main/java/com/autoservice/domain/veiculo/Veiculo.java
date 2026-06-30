@@ -10,34 +10,17 @@ import com.autoservice.domain.veiculo.valueobject.Kilometragem;
 import com.autoservice.domain.veiculo.valueobject.Placa;
 import com.autoservice.validation.ValidationHandler;
 import com.autoservice.validation.handler.NotificationValidationHandler;
-import jakarta.persistence.*;
 
-@Entity
-@Table(name = "veiculo", schema = "cadastro")
 public class Veiculo extends AggregateRoot<VeiculoID> {
 
-    @EmbeddedId
     private VeiculoID id;
 
-    @Embedded
-    @AttributeOverride(
-            name = "value",
-            column = @Column(name = "proprietario_id")
-    )
     private PessoaID proprietarioId;
 
-    @Embedded
-    @AttributeOverride(
-            name = "valor",
-            column = @Column(name = "tipo_veiculo_id")
-    )
     private TipoVeiculoID tipoVeiculoId;
 
-    @Embedded
     private Placa placa;
-    @Embedded
     private Cor cor;
-    @Embedded
     private Kilometragem kilometragem;
 
     protected Veiculo() {
@@ -83,7 +66,6 @@ public class Veiculo extends AggregateRoot<VeiculoID> {
         }
         return veiculo;
     }
-
 
     public static Veiculo with(
             VeiculoID id,

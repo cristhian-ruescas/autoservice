@@ -7,23 +7,13 @@ import com.autoservice.domain.pessoa.valueobject.Email;
 import com.autoservice.domain.pessoa.valueobject.Telefone;
 import com.autoservice.validation.ValidationHandler;
 import com.autoservice.validation.handler.NotificationValidationHandler;
-import jakarta.persistence.*;
 
-@Entity
-@Table(name = "pessoa_juridica", schema = "cadastro")
 public class PessoaJuridica extends Pessoa {
 
-    @Column(name = "razao_social", nullable = false)
     private String razaoSocial;
 
-    @Embedded
     private CNPJ cnpj;
 
-    @Embedded
-    @AttributeOverride(
-            name = "value",
-            column = @Column(name = "representante_legal_id")
-    )
     private PessoaID representanteLegalId;
 
     protected PessoaJuridica() {

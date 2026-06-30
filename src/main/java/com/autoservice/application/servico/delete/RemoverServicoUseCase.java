@@ -5,12 +5,9 @@ import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.servico.ServicoGateway;
 import com.autoservice.domain.servico.ServicoID;
 import com.autoservice.validation.Error;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
-@Service
 public class RemoverServicoUseCase extends UnitUseCase<RemoverServicoCommand> {
 
     private final ServicoGateway servicoGateway;
@@ -20,7 +17,6 @@ public class RemoverServicoUseCase extends UnitUseCase<RemoverServicoCommand> {
     }
 
     @Override
-    @Transactional
     public void execute(final RemoverServicoCommand command) {
         if (command == null || command.servicoId() == null) {
             throw DomainException.with(new Error("Serviço é obrigatório para remoção"));

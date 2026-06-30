@@ -2,8 +2,8 @@ package com.autoservice.infrastructure.ordemservico.events;
 
 import com.autoservice.domain.estoque.EstoqueGateway;
 import com.autoservice.domain.exceptions.DomainException;
-import com.autoservice.domain.itemservico.ItemServico;
 import com.autoservice.domain.itemservico.ItemServicoGateway;
+import com.autoservice.domain.itemservico.ItemServicoPecaAggregator;
 import com.autoservice.domain.ordemservico.events.OrdemServicoFinalizadaEvent;
 import com.autoservice.domain.peca.PecaGateway;
 import com.autoservice.domain.peca.PecaID;
@@ -18,7 +18,6 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Component
 public class BaixarPecasDoEstoqueAoFinalizarOrdemServicoListener {
@@ -42,14 +41,10 @@ public class BaixarPecasDoEstoqueAoFinalizarOrdemServicoListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void on(final OrdemServicoFinalizadaEvent event) {
-        final Map<PecaID, Integer> quantidadesPorPeca = this.itemServicoGateway
-                .findByOrdemServicoId(event.getOrdemServicoId())
-                .stream()
-                .filter(item -> item.getPecaId() != null)
-                .collect(Collectors.groupingBy(
-                        ItemServico::getPecaId,
-                        Collectors.summingInt(ItemServico::getQuantidade)
-                ));
+        final Map<PecaID, Integer> quantidadesPorPeca = ItemServicoPecaAggregator.quantidadesPorPeca(
+                this.itemServicoGateway,
+                event.getOrdemServicoId()
+        );
 
         if (quantidadesPorPeca.isEmpty()) {
             LOGGER.info(

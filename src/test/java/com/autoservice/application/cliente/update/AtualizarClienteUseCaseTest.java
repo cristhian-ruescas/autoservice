@@ -1,6 +1,7 @@
 package com.autoservice.application.cliente.update;
 
 import com.autoservice.application.cliente.query.ClienteOutput;
+import com.autoservice.application.pessoa.RepresentanteLegalOrchestrator;
 import com.autoservice.domain.cliente.Cliente;
 import com.autoservice.domain.cliente.ClienteGateway;
 import com.autoservice.domain.cliente.ClienteID;
@@ -43,6 +44,9 @@ class AtualizarClienteUseCaseTest {
 
     @Mock
     private PessoaGateway pessoaGateway;
+
+    @Mock
+    private RepresentanteLegalOrchestrator representanteLegalOrchestrator;
 
     @InjectMocks
     private AtualizarClienteUseCase useCase;
@@ -195,17 +199,19 @@ class AtualizarClienteUseCaseTest {
 
         when(clienteGateway.findById(clienteId)).thenReturn(Optional.of(cliente));
         when(pessoaGateway.findById(pessoaId)).thenReturn(Optional.of(pj));
-        when(pessoaGateway.findPessoaFisicaByCpf(CPF.from(CPF_VALIDO))).thenReturn(Optional.empty());
-        when(pessoaGateway.create(any(PessoaFisica.class))).thenAnswer(invocation -> {
-            final PessoaFisica criada = invocation.getArgument(0);
-            return PessoaFisica.withId(
-                    PessoaID.unique(),
-                    criada.getEmail(),
-                    criada.getTelefone(),
-                    criada.getNome(),
-                    criada.getCpf()
-            );
-        });
+        final var representante = PessoaFisica.withId(
+                PessoaID.unique(),
+                Email.from("rep@email.com"),
+                Telefone.from("11555555555"),
+                "Rep Novo",
+                CPF.from(CPF_VALIDO)
+        );
+        when(representanteLegalOrchestrator.obterOuCriar(
+                "Rep Novo",
+                CPF_VALIDO,
+                "rep@email.com",
+                "11555555555"
+        )).thenReturn(new RepresentanteLegalOrchestrator.Resultado(representante, true));
         when(pessoaGateway.update(any(PessoaJuridica.class))).thenAnswer(returnsFirstArg());
 
         final var cmd = AtualizarClienteCommand.with(
@@ -221,7 +227,12 @@ class AtualizarClienteUseCaseTest {
 
         useCase.execute(cmd);
 
-        verify(pessoaGateway).create(any(PessoaFisica.class));
+        verify(representanteLegalOrchestrator).obterOuCriar(
+                "Rep Novo",
+                CPF_VALIDO,
+                "rep@email.com",
+                "11555555555"
+        );
         verify(pessoaGateway).update(any(PessoaJuridica.class));
     }
 }

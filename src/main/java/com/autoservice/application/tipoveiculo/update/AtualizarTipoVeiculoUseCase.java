@@ -10,12 +10,9 @@ import com.autoservice.domain.veiculo.valueobject.Ano;
 import com.autoservice.domain.veiculo.valueobject.Marca;
 import com.autoservice.domain.veiculo.valueobject.Modelo;
 import com.autoservice.validation.Error;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
-@Service
 public class AtualizarTipoVeiculoUseCase extends UseCase<AtualizarTipoVeiculoCommand, TipoVeiculoOutput> {
 
     private final TipoVeiculoGateway tipoVeiculoGateway;
@@ -25,7 +22,6 @@ public class AtualizarTipoVeiculoUseCase extends UseCase<AtualizarTipoVeiculoCom
     }
 
     @Override
-    @Transactional
     public TipoVeiculoOutput execute(final AtualizarTipoVeiculoCommand command) {
         if (command == null) {
             throw DomainException.with(new Error("Comando para atualizar tipo de veículo não deve ser nulo"));

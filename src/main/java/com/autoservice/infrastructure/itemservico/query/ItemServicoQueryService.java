@@ -24,13 +24,13 @@ public class ItemServicoQueryService implements ListItensServicoQuery {
     public List<AdicionarItemServicoOutput> execute(final UUID ordemServicoId) {
         final var query = """
                 select item
-                from ItemServico item
+                from ItemServicoJpaEntity item
                 where item.ordemServicoId = :ordemServicoId
                 order by item.tipo asc, item.descricao asc
                 """;
 
         return this.entityManager.createQuery(query, com.autoservice.domain.itemservico.ItemServico.class)
-                .setParameter("ordemServicoId", OrdemServicoID.from(ordemServicoId))
+                .setParameter("ordemServicoId", OrdemServicoID.from(ordemServicoId).getValue())
                 .getResultList()
                 .stream()
                 .map(AdicionarItemServicoOutput::from)

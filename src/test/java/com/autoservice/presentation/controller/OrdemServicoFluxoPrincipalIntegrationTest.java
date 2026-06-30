@@ -23,10 +23,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * Fluxo principal: atendimento → diagnóstico → itens → orçamento → aprovação → finalização → métrica.
- * O envio de e-mail do orçamento é substituído por mock para não depender de SMTP.
- */
 @AutoConfigureMockMvc
 @EnabledIf("com.autoservice.support.TestEnvironment#dockerAvailable")
 class OrdemServicoFluxoPrincipalIntegrationTest extends AbstractIntegrationTest {

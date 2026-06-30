@@ -79,14 +79,14 @@ public class GlobalExceptionHandler {
             HttpServletRequest request) {
 
         ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.NOT_FOUND.value(),
-                ex.getMessage(),
+                HttpStatus.BAD_REQUEST.value(),
+                ex.getMessage() == null ? "Requisição inválida" : ex.getMessage(),
                 request.getRequestURI(),
                 LocalDateTime.now(),
                 List.of()
         );
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
@@ -127,8 +127,11 @@ public class GlobalExceptionHandler {
                 ? null
                 : ex.getMostSpecificCause().getMessage();
 
-        if (rootMessage != null && !rootMessage.isBlank()) {
-            return rootMessage;
+        if (rootMessage != null && rootMessage.toLowerCase().contains("duplicate")) {
+            return "Registro duplicado para os dados informados";
+        }
+        if (rootMessage != null && rootMessage.toLowerCase().contains("foreign key")) {
+            return "Operação inválida por dependência de outro registro";
         }
 
         return "Dados inválidos para gravação";
