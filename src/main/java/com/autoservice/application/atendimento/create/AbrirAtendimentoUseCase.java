@@ -1,9 +1,12 @@
 package com.autoservice.application.atendimento.create;
 
 import com.autoservice.application.UseCase;
+import com.autoservice.application.ordemservico.itemservico.AdicionarItemServicoCommand;
+import com.autoservice.application.ordemservico.itemservico.ItemServicoOrchestrator;
 import com.autoservice.domain.cliente.Cliente;
 import com.autoservice.domain.cliente.ClienteGateway;
 import com.autoservice.domain.events.DomainEventPublisher;
+import com.autoservice.domain.itemservico.ItemServicoGateway;
 import com.autoservice.domain.ordemservico.OrdemServico;
 import com.autoservice.domain.ordemservico.OrdemServicoGateway;
 import com.autoservice.domain.pessoa.Pessoa;
@@ -15,6 +18,7 @@ import com.autoservice.domain.veiculo.valueobject.Kilometragem;
 import com.autoservice.domain.veiculo.valueobject.Placa;
 
 import java.util.Objects;
+import java.util.UUID;
 
 public class AbrirAtendimentoUseCase extends UseCase<AbrirAtendimentoCommand, AbrirAtendimentoOutput> {
 
@@ -25,6 +29,8 @@ public class AbrirAtendimentoUseCase extends UseCase<AbrirAtendimentoCommand, Ab
     private final ClienteGateway clienteGateway;
     private final VeiculoGateway veiculoGateway;
     private final OrdemServicoGateway ordemServicoGateway;
+    private final ItemServicoOrchestrator itemServicoOrchestrator;
+    private final ItemServicoGateway itemServicoGateway;
 
     public AbrirAtendimentoUseCase(
             final PessoaAtendimentoOrchestrator pessoaAtendimentoOrchestrator,
@@ -33,6 +39,8 @@ public class AbrirAtendimentoUseCase extends UseCase<AbrirAtendimentoCommand, Ab
             final ClienteGateway clienteGateway,
             final VeiculoGateway veiculoGateway,
             final OrdemServicoGateway ordemServicoGateway,
+            final ItemServicoOrchestrator itemServicoOrchestrator,
+            final ItemServicoGateway itemServicoGateway,
             final DomainEventPublisher eventPublisher
     ) {
         this.pessoaAtendimentoOrchestrator = Objects.requireNonNull(pessoaAtendimentoOrchestrator);
@@ -42,6 +50,8 @@ public class AbrirAtendimentoUseCase extends UseCase<AbrirAtendimentoCommand, Ab
         this.clienteGateway = Objects.requireNonNull(clienteGateway);
         this.veiculoGateway = Objects.requireNonNull(veiculoGateway);
         this.ordemServicoGateway = Objects.requireNonNull(ordemServicoGateway);
+        this.itemServicoOrchestrator = Objects.requireNonNull(itemServicoOrchestrator);
+        this.itemServicoGateway = Objects.requireNonNull(itemServicoGateway);
     }
 
     @Override
@@ -61,7 +71,9 @@ public class AbrirAtendimentoUseCase extends UseCase<AbrirAtendimentoCommand, Ab
         final var ordemServico = abrirOrdemServico(command, veiculo);
         this.atendimentoEvents.publicarOrdemServicoAberta(ordemServico);
 
-        return AbrirAtendimentoOutput.from(pessoa.pessoa(), cliente, veiculo, ordemServico);
+        final var ordemServicoComItens = adicionarItensSeInformados(command, ordemServico);
+
+        return AbrirAtendimentoOutput.from(pessoa.pessoa(), cliente, veiculo, ordemServicoComItens);
     }
 
     private Cliente criarCliente(final Pessoa pessoa) {
@@ -95,5 +107,36 @@ public class AbrirAtendimentoUseCase extends UseCase<AbrirAtendimentoCommand, Ab
 
         return ordemServicoCriada;
     }
-}
 
+    private OrdemServico adicionarItensSeInformados(
+            final AbrirAtendimentoCommand command,
+            final OrdemServico ordemServico
+    ) {
+        if (command.itens().isEmpty()) {
+            return ordemServico;
+        }
+
+        ordemServico.iniciarDiagnostico();
+
+        final var ordemServicoEmDiagnostico = this.ordemServicoGateway.update(ordemServico);
+        ordemServicoEmDiagnostico.getDomainEvents().forEach(this.eventPublisher::publishEvent);
+        ordemServicoEmDiagnostico.clearEvents();
+
+        final var ordemServicoId = ordemServicoEmDiagnostico.getId();
+
+        command.itens().forEach(item -> {
+            final var itemCommand = AdicionarItemServicoCommand.with(
+                    UUID.fromString(ordemServicoId.getValue()),
+                    item.tipo(),
+                    item.descricao(),
+                    item.pecaId(),
+                    item.quantidade(),
+                    item.valorUnitario()
+            );
+            final var itemCriado = this.itemServicoOrchestrator.criar(itemCommand, ordemServicoId);
+            this.itemServicoGateway.create(itemCriado);
+        });
+
+        return ordemServicoEmDiagnostico;
+    }
+}
