@@ -67,6 +67,7 @@ public class OrdemServico extends AggregateRoot<OrdemServicoID> {
 
         ordemServico.validateAndThrow();
         ordemServico.registerEvent(new OrdemServicoCriadaEvent(ordemServico.getId(), ordemServico.getVeiculoId()));
+        ordemServico.registrarAlteracaoStatus(null);
 
         return ordemServico;
     }
@@ -109,14 +110,17 @@ public class OrdemServico extends AggregateRoot<OrdemServicoID> {
     }
 
     public void iniciarDiagnostico() {
+        final var statusAnterior = this.status;
         this.status = OrdemServicoStateMachine.iniciarDiagnostico(this.status);
         this.registerEvent(new OrdemServicoDiagnosticoIniciadoEvent(this.getId()));
+        registrarAlteracaoStatus(statusAnterior);
     }
 
     public void finalizarDiagnostico(
             final Integer tempoPrevistoExecucaoDias,
             final Integer tempoPrevistoExecucaoHoras
     ) {
+        final var statusAnterior = this.status;
         final var transicao = OrdemServicoStateMachine.finalizarDiagnostico(
                 this.status,
                 tempoPrevistoExecucaoDias,
@@ -127,6 +131,7 @@ public class OrdemServico extends AggregateRoot<OrdemServicoID> {
         this.tempoPrevistoExecucaoHoras = transicao.tempoPrevistoExecucaoHoras();
         this.status = transicao.status();
         this.registerEvent(new OrdemServicoDiagnosticoFinalizadoEvent(this.getId()));
+        registrarAlteracaoStatus(statusAnterior);
     }
 
     public void finalizarDiagnostico() {
@@ -134,29 +139,43 @@ public class OrdemServico extends AggregateRoot<OrdemServicoID> {
     }
 
     public void aprovarOrcamento() {
+        final var statusAnterior = this.status;
         final var transicao = OrdemServicoStateMachine.aprovarOrcamento(this.status);
 
         this.status = transicao.status();
         this.iniciadoEm = transicao.iniciadoEm();
         this.registerEvent(new OrdemServicoOrcamentoAprovadoEvent(this.getId()));
+        registrarAlteracaoStatus(statusAnterior);
     }
 
     public void reprovarOrcamento() {
+        final var statusAnterior = this.status;
         this.status = OrdemServicoStateMachine.reprovarOrcamento(this.status);
+        registrarAlteracaoStatus(statusAnterior);
     }
 
     public void finalizarExecucao() {
+        final var statusAnterior = this.status;
         this.status = OrdemServicoStateMachine.finalizarExecucao(this.status);
         this.finalizadoEm = LocalDateTime.now();
         this.registerEvent(new OrdemServicoFinalizadaEvent(this.getId()));
+        registrarAlteracaoStatus(statusAnterior);
     }
 
     public void entregar() {
+        final var statusAnterior = this.status;
         this.status = OrdemServicoStateMachine.entregar(this.status);
+        registrarAlteracaoStatus(statusAnterior);
     }
 
     public void cancelar() {
+        final var statusAnterior = this.status;
         this.status = OrdemServicoStateMachine.cancelar(this.status);
+        registrarAlteracaoStatus(statusAnterior);
+    }
+
+    private void registrarAlteracaoStatus(final OrdemServicoStatus statusAnterior) {
+        this.registerEvent(new OrdemServicoStatusAlteradoEvent(this.getId(), statusAnterior, this.status));
     }
 
     private void validateAndThrow() {
