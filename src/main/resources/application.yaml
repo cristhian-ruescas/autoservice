@@ -1,8 +1,8 @@
 server:
-  port: 8088
+  port: 8080
 spring:
   config:
-    import: optional:file:${user.dir}/local.variable.env[.properties]
+    import: optional:file:${user.dir}/.env[.properties]
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/autoservice}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
@@ -21,7 +21,7 @@ spring:
     init:
       mode: always
   mail:
-    host: ${MAIL_HOST:localhost}
+    host: ${MAIL_HOST:localhost}  
     port: ${MAIL_PORT:1025}
     username: ${MAIL_USERNAME:}
     password: ${MAIL_PASSWORD:}
@@ -33,7 +33,7 @@ spring:
             enable: ${MAIL_SMTP_STARTTLS:false}
 autoservice:
   app:
-    base-url: ${APP_BASE_URL:http://localhost:8088}
+    base-url: ${APP_BASE_URL:http://localhost:8080}
   jwt:
     secret: ${AUTOSERVICE_JWT_SECRET:}
   mail:
@@ -47,3 +47,38 @@ springdoc:
     operations-sorter: alpha
     display-request-duration: true
   show-actuator: false
+
+#minikube
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: autoservice-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: autoservice
+  template:
+    metadata:
+      labels:
+        app: autoservice
+    spec:
+      containers:
+        - name: autoservice-api
+          image: autoservice-app:v1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: autoservice-service
+spec:
+  type: NodePort
+  selector:
+    app: autoservice
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30080
