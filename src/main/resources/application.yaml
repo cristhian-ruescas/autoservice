@@ -38,6 +38,10 @@ autoservice:
     secret: ${AUTOSERVICE_JWT_SECRET:}
   mail:
     from: ${MAIL_FROM:orcamentos@autoservice.local}
+  notificacao:
+    webhook-url: ${AUTOSERVICE_NOTIFICACAO_WEBHOOK_URL:}
+    simulada:
+      habilitada: ${AUTOSERVICE_NOTIFICACAO_SIMULADA_HABILITADA:true}
 
 springdoc:
   api-docs:

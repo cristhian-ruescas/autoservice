@@ -25,7 +25,8 @@ public class OpenApiConfiguration {
             "Estoques",
             "Ordens de serviço",
             "Ordem de serviço — métricas",
-            "Ordens de compra"
+            "Ordens de compra",
+            "Integrações externas"
     );
 
     private static String descricaoFluxoENegocio() {
@@ -39,7 +40,7 @@ public class OpenApiConfiguration {
                 3. **Catálogos** — `POST /pecas`, opcional `POST /tipos-veiculo` (marca/modelo/ano) e `POST /servicos` (serviços ofertados e valor de referência).
                 4. **Incluir itens na OS (serviço e/ou peça)** — `POST /ordens-servico/{id}/itens` com itens do tipo `SERVICO` ou `PECA` (somente com OS em `EM_DIAGNOSTICO`). Opcional: `GET /estoques` para consultar disponibilidade.
                 5. **Finalizar diagnóstico / orçamento** — `PATCH /ordens-servico/{id}/diagnostico/finalizar` → `AGUARDANDO_APROVACAO` (valor total do orçamento deve ser maior que zero).
-                6. **Aprovação** — `PATCH /ordens-servico/{id}/aprovacao/aprovar` (ou `.../reprovar`) → `EM_EXECUCAO` quando aprovada.
+                6. **Aprovação** — `PATCH /ordens-servico/{id}/aprovacao/aprovar` (ou `.../reprovar`) → `EM_EXECUCAO` quando aprovada. O cliente é notificado a cada mudança de status (e-mail e/ou webhook configurável).
                 7. **Ordem de compra** — `GET /ordens-compra` e `GET /ordens-compra/{id}`; **realizar** com `PATCH /ordens-compra/{id}/realizar` (atualiza estoque na conclusão do pedido).
                 8. **Encerrar serviço** — `PATCH /ordens-servico/{id}/finalizar` → `FINALIZADA`.
                 9. **Entrega** — `PATCH /ordens-servico/{id}/entregar` → `ENTREGUE`.
