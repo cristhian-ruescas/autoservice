@@ -24,7 +24,8 @@ public final class SecurityPaths {
             "/pecas/**",
             "/servicos/**",
             "/tipos-veiculo/**",
-            "/estoques/**"
+            "/estoques/**",
+            "/integracoes/**"
     };
 
     private SecurityPaths() {

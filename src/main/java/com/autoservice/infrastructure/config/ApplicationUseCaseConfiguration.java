@@ -151,13 +151,19 @@ public class ApplicationUseCaseConfiguration {
     }
 
     @Bean
-    ReprovarOrdemServicoUseCase reprovarOrdemServicoUseCase(final OrdemServicoGateway ordemServicoGateway) {
-        return new ReprovarOrdemServicoUseCase(ordemServicoGateway);
+    ReprovarOrdemServicoUseCase reprovarOrdemServicoUseCase(
+            final OrdemServicoGateway ordemServicoGateway,
+            final DomainEventPublisher eventPublisher
+    ) {
+        return new ReprovarOrdemServicoUseCase(ordemServicoGateway, eventPublisher);
     }
 
     @Bean
-    RemoverOrdemServicoUseCase removerOrdemServicoUseCase(final OrdemServicoGateway ordemServicoGateway) {
-        return new RemoverOrdemServicoUseCase(ordemServicoGateway);
+    RemoverOrdemServicoUseCase removerOrdemServicoUseCase(
+            final OrdemServicoGateway ordemServicoGateway,
+            final DomainEventPublisher eventPublisher
+    ) {
+        return new RemoverOrdemServicoUseCase(ordemServicoGateway, eventPublisher);
     }
 
     @Bean
@@ -186,8 +192,11 @@ public class ApplicationUseCaseConfiguration {
     }
 
     @Bean
-    EntregarOrdemServicoUseCase entregarOrdemServicoUseCase(final OrdemServicoGateway ordemServicoGateway) {
-        return new EntregarOrdemServicoUseCase(ordemServicoGateway);
+    EntregarOrdemServicoUseCase entregarOrdemServicoUseCase(
+            final OrdemServicoGateway ordemServicoGateway,
+            final DomainEventPublisher eventPublisher
+    ) {
+        return new EntregarOrdemServicoUseCase(ordemServicoGateway, eventPublisher);
     }
 
     @Bean
