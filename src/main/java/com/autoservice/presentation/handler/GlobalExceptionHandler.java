@@ -96,9 +96,7 @@ public class GlobalExceptionHandler {
             final MethodArgumentTypeMismatchException ex,
             final HttpServletRequest request
     ) {
-        final var message = ex.getName() == null
-                ? "Parâmetro de requisição inválido"
-                : "Parâmetro inválido: " + ex.getName();
+        final var message = "Parâmetro inválido: " + ex.getName();
 
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
@@ -161,9 +159,7 @@ public class GlobalExceptionHandler {
     }
 
     private String resolveDataIntegrityMessage(final DataIntegrityViolationException ex) {
-        final var rootMessage = ex.getMostSpecificCause() == null
-                ? null
-                : ex.getMostSpecificCause().getMessage();
+        final var rootMessage = ex.getMostSpecificCause().getMessage();
 
         if (rootMessage != null && rootMessage.toLowerCase().contains("duplicate")) {
             return "Registro duplicado para os dados informados";
