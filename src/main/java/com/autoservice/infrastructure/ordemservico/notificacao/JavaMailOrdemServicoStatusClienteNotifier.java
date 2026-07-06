@@ -45,7 +45,7 @@ public class JavaMailOrdemServicoStatusClienteNotifier implements OrdemServicoSt
 
         try {
             final var message = this.mailSender.createMimeMessage();
-            final var helper = new MimeMessageHelper(message, false, "UTF-8");
+            final var helper = new MimeMessageHelper(message, true, "UTF-8");
 
             helper.setFrom(this.from);
             helper.setTo(email);
