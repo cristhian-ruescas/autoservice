@@ -105,7 +105,6 @@ class DataCadastroTest {
         final DataCadastro data2 = DataCadastro.from(data);
 
         assertEquals(data1, data2);
-        assertEquals(data1, data1);
     }
 
     @Test
