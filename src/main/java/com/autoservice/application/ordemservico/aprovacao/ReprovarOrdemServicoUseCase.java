@@ -32,7 +32,7 @@ public class ReprovarOrdemServicoUseCase extends UseCase<ReprovarOrdemServicoCom
 
         ordemServico.reprovarOrcamento();
 
-        final var ordemServicoAtualizada = this.ordemServicoGateway.update(ordemServico);
+        final var ordemServicoAtualizada = this.ordemServicoGateway.create(ordemServico);
 
         ordemServicoAtualizada.getDomainEvents().forEach(this.eventPublisher::publishEvent);
         ordemServicoAtualizada.clearEvents();
