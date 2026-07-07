@@ -46,12 +46,11 @@ class AtualizarItemServicoUseCaseTest {
     @Mock
     private PecaGatewayImpl pecaGateway;
 
-    private ItemServicoOrchestrator itemServicoOrchestrator;
     private AtualizarItemServicoUseCase useCase;
 
     @BeforeEach
     void setUp() {
-        itemServicoOrchestrator = new ItemServicoOrchestrator(ordemServicoGateway, pecaGateway);
+        ItemServicoOrchestrator itemServicoOrchestrator = new ItemServicoOrchestrator(ordemServicoGateway, pecaGateway);
         useCase = new AtualizarItemServicoUseCase(itemServicoOrchestrator, itemServicoGateway);
     }
 

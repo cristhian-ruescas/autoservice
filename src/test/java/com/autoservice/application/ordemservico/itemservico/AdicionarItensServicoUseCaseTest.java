@@ -47,12 +47,11 @@ class AdicionarItensServicoUseCaseTest {
     @Mock
     private PecaGatewayImpl pecaGateway;
 
-    private ItemServicoOrchestrator itemServicoOrchestrator;
     private AdicionarItensServicoUseCase useCase;
 
     @BeforeEach
     void setUp() {
-        itemServicoOrchestrator = new ItemServicoOrchestrator(ordemServicoGateway, pecaGateway);
+        ItemServicoOrchestrator itemServicoOrchestrator = new ItemServicoOrchestrator(ordemServicoGateway, pecaGateway);
         useCase = new AdicionarItensServicoUseCase(itemServicoOrchestrator, itemServicoGateway);
     }
 
