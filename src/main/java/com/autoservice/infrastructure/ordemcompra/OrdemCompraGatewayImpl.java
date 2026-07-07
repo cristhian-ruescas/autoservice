@@ -28,13 +28,6 @@ public class OrdemCompraGatewayImpl implements OrdemCompraGateway {
     }
 
     @Override
-    @Transactional
-    public OrdemCompra update(final OrdemCompra ordemCompra) {
-        this.repository.save(OrdemCompraMapper.toEntity(ordemCompra));
-        return ordemCompra;
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public Optional<OrdemCompra> findById(final OrdemCompraID id) {
         return this.repository.findById(id.getValue()).map(OrdemCompraMapper::toDomain);

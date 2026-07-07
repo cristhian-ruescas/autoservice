@@ -23,6 +23,6 @@ public class AtualizarLocalizacaoEstoqueUseCase extends UseCase<AtualizarLocaliz
 
         estoque.alterarLocalizacao(command.localizacao());
 
-        return AtualizarLocalizacaoEstoqueOutput.from(this.estoqueGateway.update(estoque));
+        return AtualizarLocalizacaoEstoqueOutput.from(this.estoqueGateway.create(estoque));
     }
 }

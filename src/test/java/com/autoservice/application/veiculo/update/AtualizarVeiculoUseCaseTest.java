@@ -23,7 +23,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -63,7 +62,7 @@ class AtualizarVeiculoUseCaseTest {
                 Ano.from(2020));
 
         when(veiculoGateway.findById(vid)).thenReturn(Optional.of(existente));
-        when(tipoVeiculoGateway.findByMarcaModeloAno(eq("Toyota"), eq("Corolla"), eq(2020)))
+        when(tipoVeiculoGateway.findByMarcaModeloAno("Toyota", "Corolla", 2020))
                 .thenReturn(Optional.of(tipo));
         when(veiculoGateway.update(any(Veiculo.class))).thenAnswer(returnsFirstArg());
 

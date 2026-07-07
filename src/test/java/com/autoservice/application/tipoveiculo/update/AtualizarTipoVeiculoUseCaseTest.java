@@ -41,7 +41,7 @@ class AtualizarTipoVeiculoUseCaseTest {
                 Ano.from(2010));
 
         when(tipoVeiculoGateway.findById(tid)).thenReturn(Optional.of(atual));
-        when(tipoVeiculoGateway.update(any(TipoVeiculo.class))).thenAnswer(returnsFirstArg());
+        when(tipoVeiculoGateway.create(any(TipoVeiculo.class))).thenAnswer(returnsFirstArg());
 
         final var out = useCase.execute(AtualizarTipoVeiculoCommand.with(
                 UUID.fromString(tid.getValue()),

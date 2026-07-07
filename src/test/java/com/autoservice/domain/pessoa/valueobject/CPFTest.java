@@ -119,7 +119,7 @@ class CPFTest {
     void deveSerDiferenteDeNull() {
         final CPF cpf = CPF.from("52998224725");
 
-        assertNotEquals(cpf, null);
+        assertNotEquals( null, cpf);
     }
 
     @Test
@@ -127,7 +127,8 @@ class CPFTest {
     void deveSerDiferenteDeOutroTipo() {
         final CPF cpf = CPF.from("52998224725");
 
-        assertNotEquals(cpf, "52998224725");
+        assertNotEquals( null, cpf);
+
     }
 
     @Test

@@ -12,10 +12,10 @@ import com.autoservice.domain.ordemservico.OrdemServicoID;
 import com.autoservice.domain.ordemservico.enums.OrdemServicoStatus;
 import com.autoservice.domain.ordemservico.valueobject.DataCriacao;
 import com.autoservice.domain.peca.Peca;
-import com.autoservice.domain.peca.PecaGateway;
 import com.autoservice.domain.peca.PecaID;
 import com.autoservice.domain.tipoveiculo.TipoVeiculoID;
 import com.autoservice.domain.veiculo.VeiculoID;
+import com.autoservice.infrastructure.peca.PecaGatewayImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,7 +44,7 @@ class AtualizarItemServicoUseCaseTest {
     private ItemServicoGateway itemServicoGateway;
 
     @Mock
-    private PecaGateway pecaGateway;
+    private PecaGatewayImpl pecaGateway;
 
     private ItemServicoOrchestrator itemServicoOrchestrator;
     private AtualizarItemServicoUseCase useCase;
@@ -76,7 +76,7 @@ class AtualizarItemServicoUseCaseTest {
 
         when(ordemServicoGateway.findById(osId)).thenReturn(Optional.of(os));
         when(itemServicoGateway.findById(itemId)).thenReturn(Optional.of(item));
-        when(itemServicoGateway.update(any(ItemServico.class))).thenAnswer(returnsFirstArg());
+        when(itemServicoGateway.create(any(ItemServico.class))).thenAnswer(returnsFirstArg());
 
         final var out = useCase.execute(AtualizarItemServicoCommand.with(
                 UUID.fromString(osId.getValue()),
@@ -88,7 +88,7 @@ class AtualizarItemServicoUseCaseTest {
                 new BigDecimal("120.00")));
 
         assertEquals("Balanceamento", out.descricao());
-        verify(itemServicoGateway).update(any(ItemServico.class));
+        verify(itemServicoGateway).create(any(ItemServico.class));
     }
 
     @Test
@@ -123,7 +123,7 @@ class AtualizarItemServicoUseCaseTest {
         when(ordemServicoGateway.findById(osId)).thenReturn(Optional.of(os));
         when(itemServicoGateway.findById(itemId)).thenReturn(Optional.of(item));
         when(pecaGateway.findById(pecaNova)).thenReturn(Optional.of(peca));
-        when(itemServicoGateway.update(any(ItemServico.class))).thenAnswer(returnsFirstArg());
+        when(itemServicoGateway.create(any(ItemServico.class))).thenAnswer(returnsFirstArg());
 
         final var out = useCase.execute(AtualizarItemServicoCommand.with(
                 UUID.fromString(osId.getValue()),

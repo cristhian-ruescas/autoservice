@@ -2,13 +2,13 @@ package com.autoservice.application.peca.create;
 
 import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.peca.Peca;
-import com.autoservice.domain.peca.PecaGateway;
 import com.autoservice.domain.tipoveiculo.TipoVeiculo;
 import com.autoservice.domain.tipoveiculo.TipoVeiculoGateway;
 import com.autoservice.domain.tipoveiculo.TipoVeiculoID;
 import com.autoservice.domain.veiculo.valueobject.Ano;
 import com.autoservice.domain.veiculo.valueobject.Marca;
 import com.autoservice.domain.veiculo.valueobject.Modelo;
+import com.autoservice.infrastructure.peca.PecaGatewayImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
 class CadastrarPecaUseCaseTest {
 
     @Mock
-    private PecaGateway pecaGateway;
+    private PecaGatewayImpl pecaGateway;
 
     @Mock
     private TipoVeiculoGateway tipoVeiculoGateway;

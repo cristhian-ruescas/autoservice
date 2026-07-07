@@ -3,20 +3,20 @@ package com.autoservice.application.peca.create;
 import com.autoservice.application.UseCase;
 import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.peca.Peca;
-import com.autoservice.domain.peca.PecaGateway;
 import com.autoservice.domain.tipoveiculo.TipoVeiculoGateway;
 import com.autoservice.domain.tipoveiculo.TipoVeiculoID;
+import com.autoservice.infrastructure.peca.PecaGatewayImpl;
 import com.autoservice.validation.Error;
 
 import java.util.Objects;
 
 public class CadastrarPecaUseCase extends UseCase<CadastrarPecaCommand, CadastrarPecaOutput> {
 
-    private final PecaGateway pecaGateway;
+    private final PecaGatewayImpl pecaGateway;
     private final TipoVeiculoGateway tipoVeiculoGateway;
 
     public CadastrarPecaUseCase(
-            final PecaGateway pecaGateway,
+            final PecaGatewayImpl pecaGateway,
             final TipoVeiculoGateway tipoVeiculoGateway
     ) {
         this.pecaGateway = Objects.requireNonNull(pecaGateway);

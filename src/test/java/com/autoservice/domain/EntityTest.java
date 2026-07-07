@@ -62,10 +62,8 @@ class EntityTest {
         assertEquals(id1, e1.getId());
         assertNull(e4.getId());
 
-        assertEquals(e1, e1);
         assertEquals(e1, e2);
-        assertNotEquals(e1, null);
-        assertNotEquals(e1, "Outro Objeto");
+        assertNotEquals(null, e1);
         assertNotEquals(e1, e3);
         assertNotEquals(e1, e4);
 

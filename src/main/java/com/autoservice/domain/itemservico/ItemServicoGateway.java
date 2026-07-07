@@ -12,8 +12,6 @@ public interface ItemServicoGateway {
 
     ItemServico create(ItemServico itemServico);
 
-    ItemServico update(ItemServico itemServico);
-
     Optional<ItemServico> findById(ItemServicoID id);
 
     void deleteById(ItemServicoID id);

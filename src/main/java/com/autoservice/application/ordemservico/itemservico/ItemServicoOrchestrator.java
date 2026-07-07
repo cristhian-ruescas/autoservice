@@ -8,8 +8,8 @@ import com.autoservice.domain.ordemservico.OrdemServicoGateway;
 import com.autoservice.domain.ordemservico.OrdemServicoID;
 import com.autoservice.domain.ordemservico.enums.OrdemServicoStatus;
 import com.autoservice.domain.peca.Peca;
-import com.autoservice.domain.peca.PecaGateway;
 import com.autoservice.domain.peca.PecaID;
+import com.autoservice.infrastructure.peca.PecaGatewayImpl;
 import com.autoservice.validation.Error;
 
 import java.util.Objects;
@@ -17,11 +17,11 @@ import java.util.Objects;
 public class ItemServicoOrchestrator {
 
     private final OrdemServicoGateway ordemServicoGateway;
-    private final PecaGateway pecaGateway;
+    private final PecaGatewayImpl pecaGateway;
 
     public ItemServicoOrchestrator(
             final OrdemServicoGateway ordemServicoGateway,
-            final PecaGateway pecaGateway
+            final PecaGatewayImpl pecaGateway
     ) {
         this.ordemServicoGateway = Objects.requireNonNull(ordemServicoGateway);
         this.pecaGateway = Objects.requireNonNull(pecaGateway);

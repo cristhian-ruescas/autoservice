@@ -26,6 +26,6 @@ public class EntregarOrdemServicoUseCase extends UseCase<EntregarOrdemServicoCom
 
         ordemServico.entregar();
 
-        return OrdemServicoStatusOutput.from(this.ordemServicoGateway.update(ordemServico));
+        return OrdemServicoStatusOutput.from(this.ordemServicoGateway.create(ordemServico));
     }
 }

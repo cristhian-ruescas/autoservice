@@ -6,7 +6,5 @@ public interface EstoqueGateway {
 
     Estoque create(Estoque estoque);
 
-    Estoque update(Estoque estoque);
-
     Optional<Estoque> findById(EstoqueID id);
 }

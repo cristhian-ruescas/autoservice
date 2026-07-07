@@ -26,6 +26,6 @@ public class ReprovarOrdemServicoUseCase extends UseCase<ReprovarOrdemServicoCom
 
         ordemServico.reprovarOrcamento();
 
-        return OrdemServicoStatusOutput.from(this.ordemServicoGateway.update(ordemServico));
+        return OrdemServicoStatusOutput.from(this.ordemServicoGateway.create(ordemServico));
     }
 }

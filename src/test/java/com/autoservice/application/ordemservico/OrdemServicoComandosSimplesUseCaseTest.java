@@ -70,7 +70,7 @@ class OrdemServicoComandosSimplesUseCaseTest {
                 "r");
 
         when(ordemServicoGateway.findById(id)).thenReturn(Optional.of(os));
-        when(ordemServicoGateway.update(any(OrdemServico.class))).thenAnswer(returnsFirstArg());
+        when(ordemServicoGateway.create(any(OrdemServico.class))).thenAnswer(returnsFirstArg());
 
         final var out = aprovarOrdemServicoUseCase.execute(AprovarOrdemServicoCommand.with(UUID.fromString(id.getValue())));
 
@@ -89,7 +89,7 @@ class OrdemServicoComandosSimplesUseCaseTest {
                 "r");
 
         when(ordemServicoGateway.findById(id)).thenReturn(Optional.of(os));
-        when(ordemServicoGateway.update(any(OrdemServico.class))).thenAnswer(returnsFirstArg());
+        when(ordemServicoGateway.create(any(OrdemServico.class))).thenAnswer(returnsFirstArg());
 
         final var out = reprovarOrdemServicoUseCase.execute(ReprovarOrdemServicoCommand.with(UUID.fromString(id.getValue())));
 
@@ -107,7 +107,7 @@ class OrdemServicoComandosSimplesUseCaseTest {
                 "r");
 
         when(ordemServicoGateway.findById(id)).thenReturn(Optional.of(os));
-        when(ordemServicoGateway.update(any(OrdemServico.class))).thenAnswer(returnsFirstArg());
+        when(ordemServicoGateway.create(any(OrdemServico.class))).thenAnswer(returnsFirstArg());
 
         final var out = finalizarOrdemServicoUseCase.execute(FinalizarOrdemServicoCommand.with(UUID.fromString(id.getValue())));
 
@@ -126,7 +126,7 @@ class OrdemServicoComandosSimplesUseCaseTest {
                 "r");
 
         when(ordemServicoGateway.findById(id)).thenReturn(Optional.of(os));
-        when(ordemServicoGateway.update(any(OrdemServico.class))).thenAnswer(returnsFirstArg());
+        when(ordemServicoGateway.create(any(OrdemServico.class))).thenAnswer(returnsFirstArg());
 
         final var out = entregarOrdemServicoUseCase.execute(EntregarOrdemServicoCommand.with(UUID.fromString(id.getValue())));
 
@@ -144,7 +144,7 @@ class OrdemServicoComandosSimplesUseCaseTest {
                 "r");
 
         when(ordemServicoGateway.findById(id)).thenReturn(Optional.of(os));
-        when(ordemServicoGateway.update(any(OrdemServico.class))).thenAnswer(returnsFirstArg());
+        when(ordemServicoGateway.create(any(OrdemServico.class))).thenAnswer(returnsFirstArg());
 
         final var out = removerOrdemServicoUseCase.execute(RemoverOrdemServicoCommand.with(UUID.fromString(id.getValue())));
 

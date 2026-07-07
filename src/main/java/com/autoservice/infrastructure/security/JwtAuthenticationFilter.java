@@ -41,6 +41,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 username = jwtUtil.extractUsername(jwt);
             } catch (Exception e) {
+                // Invalid token, do nothing
             }
         }
 
@@ -55,6 +56,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             } catch (UsernameNotFoundException e) {
+                // User not found, do nothing
             }
         }
         filterChain.doFilter(request, response);

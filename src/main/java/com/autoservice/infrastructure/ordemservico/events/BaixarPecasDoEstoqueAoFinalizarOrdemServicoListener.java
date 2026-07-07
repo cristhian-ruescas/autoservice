@@ -5,8 +5,8 @@ import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.itemservico.ItemServicoGateway;
 import com.autoservice.domain.itemservico.ItemServicoPecaAggregator;
 import com.autoservice.domain.ordemservico.events.OrdemServicoFinalizadaEvent;
-import com.autoservice.domain.peca.PecaGateway;
 import com.autoservice.domain.peca.PecaID;
+import com.autoservice.infrastructure.peca.PecaGatewayImpl;
 import com.autoservice.validation.Error;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,12 +25,12 @@ public class BaixarPecasDoEstoqueAoFinalizarOrdemServicoListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(BaixarPecasDoEstoqueAoFinalizarOrdemServicoListener.class);
 
     private final ItemServicoGateway itemServicoGateway;
-    private final PecaGateway pecaGateway;
+    private final PecaGatewayImpl pecaGateway;
     private final EstoqueGateway estoqueGateway;
 
     public BaixarPecasDoEstoqueAoFinalizarOrdemServicoListener(
             final ItemServicoGateway itemServicoGateway,
-            final PecaGateway pecaGateway,
+            final PecaGatewayImpl pecaGateway,
             final EstoqueGateway estoqueGateway
     ) {
         this.itemServicoGateway = Objects.requireNonNull(itemServicoGateway);
@@ -73,7 +73,7 @@ public class BaixarPecasDoEstoqueAoFinalizarOrdemServicoListener {
                 .orElseThrow(() -> DomainException.with(new Error("Estoque da peça não encontrado")));
 
         estoque.baixar(quantidade);
-        this.estoqueGateway.update(estoque);
+        this.estoqueGateway.create(estoque);
 
         LOGGER.info(
                 "Baixada(s) {} unidade(s) do estoque {} para a peça {} na finalização da ordem de serviço {}.",

@@ -60,7 +60,7 @@ public class AtualizarOrdemServicoUseCase extends UseCase<AtualizarOrdemServicoC
         );
         validate(ordemServicoAtualizada);
 
-        return AtualizarOrdemServicoOutput.from(this.ordemServicoGateway.update(ordemServicoAtualizada));
+        return AtualizarOrdemServicoOutput.from(this.ordemServicoGateway.create(ordemServicoAtualizada));
     }
 
     private VeiculoID obterVeiculoId(

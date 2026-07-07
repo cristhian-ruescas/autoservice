@@ -19,9 +19,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -79,7 +78,7 @@ class OrdemServicoListagemIntegrationTest extends AbstractIntegrationTest {
             if (idsMonitorados.containsKey(id)) {
                 ordensMonitoradas.put(id, item.get("status").asText());
             }
-            assertFalse(osFinalizada.equals(id), "Ordem finalizada não deve aparecer na listagem operacional");
+            assertNotEquals(osFinalizada, id, "Ordem finalizada não deve aparecer na listagem operacional");
         }
 
         assertEquals(List.of("EM_EXECUCAO", "AGUARDANDO_APROVACAO", "EM_DIAGNOSTICO", "RECEBIDO"), List.copyOf(ordensMonitoradas.values()));

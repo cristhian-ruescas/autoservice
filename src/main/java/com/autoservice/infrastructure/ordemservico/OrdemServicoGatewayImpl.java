@@ -28,13 +28,6 @@ public class OrdemServicoGatewayImpl implements OrdemServicoGateway {
     }
 
     @Override
-    @Transactional
-    public OrdemServico update(final OrdemServico ordemServico) {
-        this.repository.save(OrdemServicoMapper.toEntity(ordemServico));
-        return ordemServico;
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public Optional<OrdemServico> findById(final OrdemServicoID id) {
         return this.repository.findById(id.getValue()).map(OrdemServicoMapper::toDomain);

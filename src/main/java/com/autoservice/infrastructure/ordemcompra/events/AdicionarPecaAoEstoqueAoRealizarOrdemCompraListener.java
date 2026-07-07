@@ -6,7 +6,7 @@ import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.ordemcompra.ItemOrdemCompra;
 import com.autoservice.domain.ordemcompra.ItemOrdemCompraGateway;
 import com.autoservice.domain.ordemcompra.events.OrdemCompraRealizadaEvent;
-import com.autoservice.domain.peca.PecaGateway;
+import com.autoservice.infrastructure.peca.PecaGatewayImpl;
 import com.autoservice.validation.Error;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,12 +23,12 @@ public class AdicionarPecaAoEstoqueAoRealizarOrdemCompraListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AdicionarPecaAoEstoqueAoRealizarOrdemCompraListener.class);
 
-    private final PecaGateway pecaGateway;
+    private final PecaGatewayImpl pecaGateway;
     private final EstoqueGateway estoqueGateway;
     private final ItemOrdemCompraGateway itemOrdemCompraGateway;
 
     public AdicionarPecaAoEstoqueAoRealizarOrdemCompraListener(
-            final PecaGateway pecaGateway,
+            final PecaGatewayImpl pecaGateway,
             final EstoqueGateway estoqueGateway,
             final ItemOrdemCompraGateway itemOrdemCompraGateway
     ) {
@@ -60,7 +60,7 @@ public class AdicionarPecaAoEstoqueAoRealizarOrdemCompraListener {
                     null
             ));
             peca.vincularEstoque(estoque.getId());
-            this.pecaGateway.update(peca);
+            this.pecaGateway.create(peca);
 
             LOGGER.info(
                     "Criado estoque {} para peça {} ao realizar ordem de compra {}.",
@@ -75,7 +75,7 @@ public class AdicionarPecaAoEstoqueAoRealizarOrdemCompraListener {
                 .orElseThrow(() -> DomainException.with(new Error("Estoque da peça não encontrado")));
 
         estoque.adicionar(quantidade);
-        this.estoqueGateway.update(estoque);
+        this.estoqueGateway.create(estoque);
 
         LOGGER.info(
                 "Adicionada {} unidade ao estoque {} da peça {} ao realizar ordem de compra {}.",

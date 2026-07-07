@@ -108,7 +108,7 @@ class CNPJTest {
 
         assertEquals(cnpj1, cnpj2);
         assertNotEquals(cnpj1, cnpj3);
-        assertNotEquals(cnpj1, null);
+        assertNotEquals( null, cnpj1);
     }
 
     @Test
@@ -145,7 +145,7 @@ class CNPJTest {
     void deveRetornarFalsoAoCompararComNull() {
         final CNPJ cnpj = CNPJ.from("11222333000181");
 
-        assertFalse(cnpj.equals(null));
+        assertNotEquals(null, cnpj);
     }
 
     @Test
@@ -153,7 +153,7 @@ class CNPJTest {
     void deveRetornarFalsoAoCompararComTipoDiferente() {
         final CNPJ cnpj = CNPJ.from("11222333000181");
 
-        assertFalse(cnpj.equals("11222333000181"));
+        assertNotEquals("11222333000181", cnpj);
     }
 
     @Test

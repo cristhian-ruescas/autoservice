@@ -118,7 +118,7 @@ public class AbrirAtendimentoUseCase extends UseCase<AbrirAtendimentoCommand, Ab
 
         ordemServico.iniciarDiagnostico();
 
-        final var ordemServicoEmDiagnostico = this.ordemServicoGateway.update(ordemServico);
+        final var ordemServicoEmDiagnostico = this.ordemServicoGateway.create(ordemServico);
         ordemServicoEmDiagnostico.getDomainEvents().forEach(this.eventPublisher::publishEvent);
         ordemServicoEmDiagnostico.clearEvents();
 
