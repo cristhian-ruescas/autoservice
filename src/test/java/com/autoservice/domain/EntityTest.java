@@ -64,8 +64,10 @@ class EntityTest {
 
         assertEquals(e1, e2);
         assertNotEquals(null, e1);
-        assertNotEquals(e1, e3);
-        assertNotEquals(e1, e4);
+        assertNotEquals(e3, e1);
+        assertNotEquals(e4, e1);
+        final Object outroTipo = "Outro Objeto";
+        assertNotEquals(outroTipo, e1);
 
         assertEquals(e1.hashCode(), e2.hashCode());
         assertNotEquals(e1.hashCode(), e3.hashCode());

@@ -26,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -85,6 +86,6 @@ class FinalizarDiagnosticoUseCaseTest {
                 FinalizarDiagnosticoCommand.with(UUID.fromString(id.getValue()), 2, 5));
 
         assertEquals(OrdemServicoStatus.AGUARDANDO_APROVACAO.name(), out.status());
-        verify(eventPublisher).publishEvent(any());
+        verify(eventPublisher, times(2)).publishEvent(any());
     }
 }

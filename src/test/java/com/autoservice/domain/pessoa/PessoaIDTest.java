@@ -107,14 +107,15 @@ class PessoaIDTest {
     void deveRetornarFalsoAoCompararComNull() {
         final PessoaID pessoaID = PessoaID.from("id");
 
-        assertNotEquals(null, pessoaID);
+        assertNotEquals(pessoaID, null);
     }
 
     @Test
     @DisplayName("Deve retornar falso ao comparar com outro tipo")
     void deveRetornarFalsoAoCompararComOutroTipo() {
         final PessoaID pessoaID = PessoaID.from("id");
+        final Object outroTipo = "id";
 
-        assertNotEquals("id", pessoaID);
+        assertNotEquals(pessoaID, outroTipo);
     }
 }
