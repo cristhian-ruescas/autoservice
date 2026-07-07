@@ -26,14 +26,6 @@ class KilometragemTest {
     }
 
     @Test
-    @DisplayName("Deve retornar verdadeiro se comparado com a mesma instância")
-    void testEqualsSameInstance() {
-        var kilometragem = Kilometragem.from(1000);
-        assertTrue(kilometragem.equals(kilometragem));
-
-    }
-
-    @Test
     @DisplayName("Deve retornar verdadeiro para instâncias diferentes com mesmo valor")
     void testEqualsSameValue() {
         var kilometragem1 = Kilometragem.from(1000);

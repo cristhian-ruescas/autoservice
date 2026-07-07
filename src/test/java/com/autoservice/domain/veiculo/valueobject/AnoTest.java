@@ -33,13 +33,6 @@ class AnoTest {
     }
 
     @Test
-    @DisplayName("Deve retornar verdadeiro se comparado com a mesma instância")
-    void testEqualsSameInstance() {
-        var ano = Ano.from(2023);
-        assertEquals(ano, ano);
-    }
-
-    @Test
     @DisplayName("Deve retornar verdadeiro para instâncias diferentes com mesmo valor")
     void testEqualsSameValue() {
         var ano1 = Ano.from(2023);

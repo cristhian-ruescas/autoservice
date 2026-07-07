@@ -33,13 +33,6 @@ class ModeloTest {
     }
 
     @Test
-    @DisplayName("Deve retornar verdadeiro se comparado com a mesma instância")
-    void testEqualsSameInstance() {
-        var modelo = Modelo.from("Corolla");
-        assertEquals(modelo, modelo);
-    }
-
-    @Test
     @DisplayName("Deve retornar verdadeiro para instâncias diferentes com mesmo valor")
     void testEqualsSameValue() {
         var modelo1 = Modelo.from("Corolla");

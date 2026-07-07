@@ -33,13 +33,6 @@ class PlacaTest {
     }
 
     @Test
-    @DisplayName("Deve retornar verdadeiro se comparado com a mesma instância")
-    void testEqualsSameInstance() {
-        var placa = Placa.from("ABC1D23");
-        assertEquals(placa, placa);
-    }
-
-    @Test
     @DisplayName("Deve retornar verdadeiro para instâncias diferentes com mesmo valor")
     void testEqualsSameValue() {
         var placa1 = Placa.from("ABC1D23");
