@@ -31,6 +31,6 @@ public class RemoverOrdemServicoUseCase extends UseCase<RemoverOrdemServicoComma
 
         ordemServico.cancelar();
 
-        return OrdemServicoStatusOutput.from(this.ordemServicoGateway.update(ordemServico));
+        return OrdemServicoStatusOutput.from(this.ordemServicoGateway.create(ordemServico));
     }
 }

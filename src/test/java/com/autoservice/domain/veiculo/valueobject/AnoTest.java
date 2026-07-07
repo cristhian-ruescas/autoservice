@@ -22,21 +22,21 @@ class AnoTest {
     @DisplayName("Deve retornar falso se comparado com nulo")
     void testEqualsNull() {
         var ano = Ano.from(2023);
-        assertFalse(ano.equals(null));
+        assertNotEquals(null, ano);
     }
 
     @Test
     @DisplayName("Deve retornar falso se comparado com classe diferente")
     void testEqualsDifferentClass() {
         var ano = Ano.from(2023);
-        assertFalse(ano.equals("2023"));
+        assertNotEquals("2023", ano);
     }
 
     @Test
     @DisplayName("Deve retornar verdadeiro se comparado com a mesma instância")
     void testEqualsSameInstance() {
         var ano = Ano.from(2023);
-        assertTrue(ano.equals(ano));
+        assertEquals(ano, ano);
     }
 
     @Test

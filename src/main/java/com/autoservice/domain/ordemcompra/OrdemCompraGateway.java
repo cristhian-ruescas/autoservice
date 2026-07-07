@@ -6,7 +6,5 @@ public interface OrdemCompraGateway {
 
     OrdemCompra create(OrdemCompra ordemCompra);
 
-    OrdemCompra update(OrdemCompra ordemCompra);
-
     Optional<OrdemCompra> findById(OrdemCompraID id);
 }

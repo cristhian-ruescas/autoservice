@@ -42,7 +42,7 @@ class RealizarOrdemCompraUseCaseTest {
         final var oc = OrdemCompra.with(id, OrdemCompraStatus.PENDENTE, DataCompra.from(LocalDate.now()));
 
         when(ordemCompraGateway.findById(id)).thenReturn(Optional.of(oc));
-        when(ordemCompraGateway.update(any(OrdemCompra.class))).thenAnswer(returnsFirstArg());
+        when(ordemCompraGateway.create(any(OrdemCompra.class))).thenAnswer(returnsFirstArg());
 
         final var out = useCase.execute(RealizarOrdemCompraCommand.with(UUID.fromString(id.getValue())));
 

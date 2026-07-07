@@ -1,13 +1,12 @@
 package com.autoservice.infrastructure.ordemservico.events;
 
-import com.autoservice.domain.itemservico.ItemServico;
 import com.autoservice.domain.itemservico.ItemServicoGateway;
+import com.autoservice.domain.itemservico.ItemServicoPecaAggregator;
 import com.autoservice.domain.ordemcompra.ItemOrdemCompra;
 import com.autoservice.domain.ordemcompra.ItemOrdemCompraGateway;
 import com.autoservice.domain.ordemcompra.OrdemCompra;
 import com.autoservice.domain.ordemcompra.OrdemCompraGateway;
 import com.autoservice.domain.ordemservico.OrdemServicoID;
-import com.autoservice.domain.itemservico.ItemServicoPecaAggregator;
 import com.autoservice.domain.ordemservico.events.OrdemServicoOrcamentoAprovadoEvent;
 import com.autoservice.domain.peca.PecaID;
 import org.slf4j.Logger;

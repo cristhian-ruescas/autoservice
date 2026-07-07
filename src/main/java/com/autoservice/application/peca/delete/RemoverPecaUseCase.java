@@ -5,20 +5,20 @@ import com.autoservice.domain.estoque.EstoqueGateway;
 import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.itemservico.ItemServicoGateway;
 import com.autoservice.domain.ordemservico.enums.OrdemServicoStatus;
-import com.autoservice.domain.peca.PecaGateway;
 import com.autoservice.domain.peca.PecaID;
+import com.autoservice.infrastructure.peca.PecaGatewayImpl;
 import com.autoservice.validation.Error;
 
 import java.util.Objects;
 
 public class RemoverPecaUseCase extends UnitUseCase<RemoverPecaCommand> {
 
-    private final PecaGateway pecaGateway;
+    private final PecaGatewayImpl pecaGateway;
     private final EstoqueGateway estoqueGateway;
     private final ItemServicoGateway itemServicoGateway;
 
     public RemoverPecaUseCase(
-            final PecaGateway pecaGateway,
+            final PecaGatewayImpl pecaGateway,
             final EstoqueGateway estoqueGateway,
             final ItemServicoGateway itemServicoGateway
     ) {

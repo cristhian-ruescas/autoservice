@@ -30,11 +30,6 @@ public class ItemServicoGatewayImpl implements ItemServicoGateway {
         return itemServico;
     }
 
-    @Override
-    public ItemServico update(final ItemServico itemServico) {
-        this.repository.save(ItemServicoMapper.toEntity(itemServico));
-        return itemServico;
-    }
 
     @Override
     public Optional<ItemServico> findById(final ItemServicoID id) {

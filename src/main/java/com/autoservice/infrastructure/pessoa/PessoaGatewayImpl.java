@@ -3,8 +3,6 @@ package com.autoservice.infrastructure.pessoa;
 import com.autoservice.domain.pessoa.*;
 import com.autoservice.domain.pessoa.valueobject.CNPJ;
 import com.autoservice.domain.pessoa.valueobject.CPF;
-import com.autoservice.infrastructure.persistence.entity.PessoaFisicaJpaEntity;
-import com.autoservice.infrastructure.persistence.entity.PessoaJuridicaJpaEntity;
 import com.autoservice.infrastructure.persistence.mapper.PessoaMapper;
 import com.autoservice.infrastructure.pessoa.persistence.PessoaJpaRepository;
 import org.springframework.stereotype.Service;

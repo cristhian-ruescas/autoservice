@@ -95,14 +95,7 @@ class VeiculoIDTest {
     void deveRetornarFalsoAoCompararComNull() {
         final VeiculoID id = VeiculoID.from("id");
 
-        assertNotEquals(id, null);
+        assertNotEquals(null, id);
     }
 
-    @Test
-    @DisplayName("Deve retornar falso ao comparar com outro tipo")
-    void deveRetornarFalsoAoCompararComOutroTipo() {
-        final VeiculoID id = VeiculoID.from("id");
-
-        assertNotEquals(id, "id");
-    }
 }

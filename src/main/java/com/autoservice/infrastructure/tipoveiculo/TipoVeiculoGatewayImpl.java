@@ -27,12 +27,6 @@ public class TipoVeiculoGatewayImpl implements TipoVeiculoGateway {
     }
 
     @Override
-    public TipoVeiculo update(final TipoVeiculo tipoVeiculo) {
-        this.repository.save(TipoVeiculoMapper.toEntity(tipoVeiculo));
-        return tipoVeiculo;
-    }
-
-    @Override
     public Optional<TipoVeiculo> findById(final TipoVeiculoID id) {
         return this.repository.findById(id.getValue()).map(TipoVeiculoMapper::toDomain);
     }

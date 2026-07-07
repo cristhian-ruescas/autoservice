@@ -18,9 +18,6 @@ public class PessoaFisicaJpaEntity extends PessoaJpaEntity {
     @Convert(converter = CPFConverter.class)
     private CPF cpf;
 
-    public PessoaFisicaJpaEntity() {
-    }
-
     public String getNome() { return nome; }
     public void setNome(String nome) { this.nome = nome; }
     public CPF getCpf() { return cpf; }

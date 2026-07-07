@@ -28,13 +28,6 @@ public class EstoqueGatewayImpl implements EstoqueGateway {
     }
 
     @Override
-    @Transactional
-    public Estoque update(final Estoque estoque) {
-        this.repository.save(EstoqueMapper.toEntity(estoque));
-        return estoque;
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public Optional<Estoque> findById(final EstoqueID id) {
         return this.repository.findById(id.getValue()).map(EstoqueMapper::toDomain);

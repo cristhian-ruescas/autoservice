@@ -31,7 +31,7 @@ public class RealizarOrdemCompraUseCase extends UseCase<RealizarOrdemCompraComma
 
         ordemCompra.realizar();
 
-        final var ordemCompraAtualizada = this.ordemCompraGateway.update(ordemCompra);
+        final var ordemCompraAtualizada = this.ordemCompraGateway.create(ordemCompra);
 
         ordemCompraAtualizada.getDomainEvents().forEach(this.eventPublisher::publishEvent);
         ordemCompraAtualizada.clearEvents();

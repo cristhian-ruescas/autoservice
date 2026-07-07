@@ -79,7 +79,7 @@ class FinalizarDiagnosticoUseCaseTest {
                 "r");
         when(ordemServicoGateway.findById(id)).thenReturn(Optional.of(os));
         when(itemServicoGateway.totalByOrdemServicoId(id)).thenReturn(new BigDecimal("50.00"));
-        when(ordemServicoGateway.update(any(OrdemServico.class))).thenAnswer(returnsFirstArg());
+        when(ordemServicoGateway.create(any(OrdemServico.class))).thenAnswer(returnsFirstArg());
 
         final OrdemServicoStatusOutput out = useCase.execute(
                 FinalizarDiagnosticoCommand.with(UUID.fromString(id.getValue()), 2, 5));
