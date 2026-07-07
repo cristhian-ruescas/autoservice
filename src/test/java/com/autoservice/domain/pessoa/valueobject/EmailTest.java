@@ -109,7 +109,16 @@ class EmailTest {
     void deveSerDiferenteDeNull() {
         final Email email = Email.from("usuario@email.com");
 
-        assertNotEquals(null, email);
+        assertNotEquals(email, null);
+    }
+
+    @Test
+    @DisplayName("Deve retornar false ao comparar com outro tipo")
+    void deveSerDiferenteDeOutroTipo() {
+        final Email email = Email.from("usuario@email.com");
+        final Object outroTipo = "usuario@email.com";
+
+        assertNotEquals(email, outroTipo);
     }
 
     @Test
