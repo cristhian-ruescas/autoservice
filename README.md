@@ -65,6 +65,46 @@ docker compose -f docker/docker-compose.yaml up --build
 
 O `Dockerfile` está em **`docker/Dockerfile`** (build multi-stage com Maven + JRE 21).
 
+### Kubernetes (K8s)
+
+Os manifestos para deploy estão em **`/k8s`**, incluindo:
+
+- `Deployment`, `Service`, `ConfigMap`, `Secret` e `HPA` da aplicação;
+- `Deployment`, `Service`, `ConfigMap`, `Secret` e `PVC` do PostgreSQL;
+- `kustomization.yaml` para aplicar todos os recursos de uma vez.
+
+Antes do deploy, ajuste os valores sensíveis em:
+
+- `k8s/11-secret-app.yaml` (`AUTOSERVICE_JWT_SECRET`, `MAIL_USERNAME`, `MAIL_PASSWORD`);
+- `k8s/21-secret-postgres.yaml` (`POSTGRES_PASSWORD`);
+- `k8s/30-deployment-app.yaml` (`image`, caso use outro registry/tag).
+
+Imagem padrão da aplicação no manifesto:
+
+- `ghcr.io/cristhian-ruescas/autoservice:latest`
+
+Validação local dos manifestos (sem aplicar no cluster):
+
+```bash
+kubectl apply --dry-run=client -k k8s
+```
+
+Aplicar no cluster:
+
+```bash
+kubectl apply -k k8s
+```
+
+Verificar rollout:
+
+```bash
+kubectl -n autoservice get pods
+kubectl -n autoservice get svc
+kubectl -n autoservice get hpa
+kubectl -n autoservice rollout status deployment/autoservice-postgres
+kubectl -n autoservice rollout status deployment/autoservice-app
+```
+
 ## Testes e cobertura
 
 - **Unitários** e **integração** (Testcontainers + Postgres quando o Docker está disponível).
