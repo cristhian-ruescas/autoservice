@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: autoservice-app
+  namespace: autoservice
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: autoservice-app
+  template:
+    metadata:
+      labels:
+        app: autoservice-app
+    spec:
+      containers:
+        - name: autoservice-app
+          image: ghcr.io/cristhian-ruescas/autoservice:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8088
+          envFrom:
+            - configMapRef:
+                name: autoservice-app-config
+            - secretRef:
+                name: autoservice-app-secret
+          env:
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: autoservice-postgres-secret
+                  key: POSTGRES_PASSWORD
+          readinessProbe:
+            tcpSocket:
+              port: 8088
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 8088
+            initialDelaySeconds: 40
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
