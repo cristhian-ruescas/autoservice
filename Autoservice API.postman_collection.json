@@ -1,0 +1,4255 @@
+{
+  "info": {
+    "_postman_id": "51bc5282-9c2b-42d8-be25-608ec9a226ab",
+    "name": "Autoservice API",
+    "description": "API da oficina: atendimento (abertura de OS com cliente PF ou PJ), ordem de serviço, peças, **catálogo de serviços**, estoque, ordem de compra e **métricas** de execução.\n\n## Fluxo sugerido (happy path)\n\n1. **Cliente PF ou PJ + OS** — `POST /atendimentos` com `tipoPessoa` `FISICA` ou `JURIDICA`. Retorna a OS em `RECEBIDO`.\n2. **Iniciar diagnóstico** — `PATCH /ordens-servico/{id}/diagnostico` → `EM_DIAGNOSTICO`.\n3. **Catálogos** — `POST /pecas`, opcional `POST /tipos-veiculo` (marca/modelo/ano) e `POST /servicos` (serviços ofertados e valor de referência).\n4. **Incluir itens na OS (serviço e/ou peça)** — `POST /ordens-servico/{id}/itens` com itens do tipo `SERVICO` ou `PECA` (somente com OS em `EM_DIAGNOSTICO`). Opcional: `GET /estoques` para consultar disponibilidade.\n5. **Finalizar diagnóstico / orçamento** — `PATCH /ordens-servico/{id}/diagnostico/finalizar` → `AGUARDANDO_APROVACAO` (valor total do orçamento deve ser maior que zero).\n6. **Aprovação** — `PATCH /ordens-servico/{id}/aprovacao/aprovar` (ou `.../reprovar`) → `EM_EXECUCAO` quando aprovada.\n7. **Ordem de compra** — `GET /ordens-compra` e `GET /ordens-compra/{id}`; **realizar** com `PATCH /ordens-compra/{id}/realizar` (atualiza estoque na conclusão do pedido).\n8. **Encerrar serviço** — `PATCH /ordens-servico/{id}/finalizar` → `FINALIZADA`.\n9. **Entrega** — `PATCH /ordens-servico/{id}/entregar` → `ENTREGUE`.\n\n**Atalho de leitura:** acompanhamento do cliente — `GET /ordens-servico/{id}/andamento`.\n\n## Resumo: status da ordem de serviço\n\n| Fase | Valor em `status` (API) | Endpoints principais |\n|------|-------------------------|----------------------|\n| Recebida | `RECEBIDO` | `POST /atendimentos` |\n| Em diagnóstico / montando orçamento | `EM_DIAGNOSTICO` | `PATCH .../diagnostico`, `POST .../itens` |\n| Aguardando cliente | `AGUARDANDO_APROVACAO` | `PATCH .../diagnostico/finalizar` |\n| Aprovada / reprovada | `APROVADO` / `REPROVADO` | `PATCH .../aprovacao/aprovar` ou `reprovar` |\n| Em execução | `EM_EXECUCAO` | após aprovação; ordens de compra no painel `GET /ordens-compra` |\n| Finalizada / entregue | `FINALIZADA` / `ENTREGUE` | `PATCH .../finalizar`, `PATCH .../entregar` |\n| Cancelada | `CANCELADO` | estados de domínio; consultas podem expor quando aplicável |\n\n**Nota:** rótulos de negócio podem estar no feminino; os identificadores do enum seguem os nomes acima (`RECEBIDO`, `APROVADO`, etc.).\n\n## Outros recursos\n\n- **Estoque:** `GET /estoques`, `GET /estoques/{id}`, `PATCH /estoques/{id}/localizacao`\n- **Listagem e detalhe da OS:** `GET /ordens-servico`, `GET /ordens-servico/{id}`\n- **CRUD de serviços (catálogo):** `GET/POST /servicos`, `GET/PUT/DELETE /servicos/{id}`\n- **Tempo médio de execução (após aprovar até finalizar):** `GET /ordens-servico/metricas/tempo-medio-execucao`\n\n\nContact Support:\n Name: Autoservice",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "56463417",
+    "_collection_link": "https://go.postman.co/collection/56463417-51bc5282-9c2b-42d8-be25-608ec9a226ab?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "veiculos",
+      "item": [
+        {
+          "name": "{id}",
+          "item": [
+            {
+              "name": "buscar Por Id",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/veiculos/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "veiculos",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/veiculos/:id",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "veiculos",
+                        ":id"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"id\": \"string\",\n  \"placa\": \"string\",\n  \"marca\": \"string\",\n  \"modelo\": \"string\",\n  \"ano\": 4517,\n  \"cor\": \"string\",\n  \"kilometragem\": 3170,\n  \"proprietario\": {\n    \"tipoPessoa\": \"string\",\n    \"nome\": \"string\",\n    \"cpf\": \"string\",\n    \"razaoSocial\": \"string\",\n    \"cnpj\": \"string\",\n    \"email\": \"string\",\n    \"telefone\": \"string\"\n  }\n}"
+                }
+              ]
+            },
+            {
+              "name": "atualizar",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"placa\": \"string\",\n  \"marca\": \"string\",\n  \"modelo\": \"string\",\n  \"ano\": 4890,\n  \"cor\": \"string\",\n  \"kilometragem\": 6529\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/veiculos/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "veiculos",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "PUT",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      },
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"placa\": \"string\",\n  \"marca\": \"string\",\n  \"modelo\": \"string\",\n  \"ano\": 4890,\n  \"cor\": \"string\",\n  \"kilometragem\": 6529\n}",
+                      "options": {
+                        "raw": {
+                          "headerFamily": "json",
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/veiculos/:id",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "veiculos",
+                        ":id"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"id\": \"string\",\n  \"placa\": \"string\",\n  \"marca\": \"string\",\n  \"modelo\": \"string\",\n  \"ano\": 4517,\n  \"cor\": \"string\",\n  \"kilometragem\": 3170,\n  \"proprietario\": {\n    \"tipoPessoa\": \"string\",\n    \"nome\": \"string\",\n    \"cpf\": \"string\",\n    \"razaoSocial\": \"string\",\n    \"cnpj\": \"string\",\n    \"email\": \"string\",\n    \"telefone\": \"string\"\n  }\n}"
+                }
+              ]
+            },
+            {
+              "name": "remover",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/veiculos/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "veiculos",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "DELETE",
+                    "header": [],
+                    "url": {
+                      "raw": "{{baseUrl}}/veiculos/:id",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "veiculos",
+                        ":id"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [],
+                  "cookie": [],
+                  "body": ""
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "placa",
+          "item": [
+            {
+              "name": "{placa}",
+              "item": [
+                {
+                  "name": "buscar Por Placa",
+                  "request": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/veiculos/placa/:placa",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "veiculos",
+                        "placa",
+                        ":placa"
+                      ],
+                      "variable": [
+                        {
+                          "key": "placa",
+                          "value": "string"
+                        }
+                      ]
+                    }
+                  },
+                  "response": [
+                    {
+                      "name": "OK",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "*/*"
+                          }
+                        ],
+                        "url": {
+                          "raw": "{{baseUrl}}/veiculos/placa/:placa",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "veiculos",
+                            "placa",
+                            ":placa"
+                          ],
+                          "variable": [
+                            {
+                              "key": "placa",
+                              "value": "string"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "_postman_previewlanguage": "text",
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "*/*"
+                        }
+                      ],
+                      "cookie": [],
+                      "body": "{\n  \"id\": \"string\",\n  \"placa\": \"string\",\n  \"marca\": \"string\",\n  \"modelo\": \"string\",\n  \"ano\": 4517,\n  \"cor\": \"string\",\n  \"kilometragem\": 3170,\n  \"proprietario\": {\n    \"tipoPessoa\": \"string\",\n    \"nome\": \"string\",\n    \"cpf\": \"string\",\n    \"razaoSocial\": \"string\",\n    \"cnpj\": \"string\",\n    \"email\": \"string\",\n    \"telefone\": \"string\"\n  }\n}"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "cliente",
+          "item": [
+            {
+              "name": "{clienteId}",
+              "item": [
+                {
+                  "name": "listar Por Cliente",
+                  "request": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/veiculos/cliente/:clienteId",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "veiculos",
+                        "cliente",
+                        ":clienteId"
+                      ],
+                      "variable": [
+                        {
+                          "key": "clienteId",
+                          "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                        }
+                      ]
+                    }
+                  },
+                  "response": [
+                    {
+                      "name": "OK",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "*/*"
+                          }
+                        ],
+                        "url": {
+                          "raw": "{{baseUrl}}/veiculos/cliente/:clienteId",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "veiculos",
+                            "cliente",
+                            ":clienteId"
+                          ],
+                          "variable": [
+                            {
+                              "key": "clienteId",
+                              "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "_postman_previewlanguage": "text",
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "*/*"
+                        }
+                      ],
+                      "cookie": [],
+                      "body": "[\n  {\n    \"id\": \"string\",\n    \"placa\": \"string\",\n    \"marca\": \"string\",\n    \"modelo\": \"string\",\n    \"ano\": 1465,\n    \"cor\": \"string\",\n    \"kilometragem\": 5712,\n    \"proprietario\": {\n      \"tipoPessoa\": \"string\",\n      \"nome\": \"string\",\n      \"cpf\": \"string\",\n      \"razaoSocial\": \"string\",\n      \"cnpj\": \"string\",\n      \"email\": \"string\",\n      \"telefone\": \"string\"\n    }\n  },\n  {\n    \"id\": \"string\",\n    \"placa\": \"string\",\n    \"marca\": \"string\",\n    \"modelo\": \"string\",\n    \"ano\": 535,\n    \"cor\": \"string\",\n    \"kilometragem\": 6340,\n    \"proprietario\": {\n      \"tipoPessoa\": \"string\",\n      \"nome\": \"string\",\n      \"cpf\": \"string\",\n      \"razaoSocial\": \"string\",\n      \"cnpj\": \"string\",\n      \"email\": \"string\",\n      \"telefone\": \"string\"\n    }\n  }\n]"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "listar 3",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/veiculos?page=0&size=20&marca=string&modelo=string&ano=2704&proprietarioId=b6c9308d-4d5f-cdbe-a485-7671b2b84a1d",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "veiculos"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                },
+                {
+                  "key": "marca",
+                  "value": "string"
+                },
+                {
+                  "key": "modelo",
+                  "value": "string"
+                },
+                {
+                  "key": "ano",
+                  "value": "2704"
+                },
+                {
+                  "key": "proprietarioId",
+                  "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/veiculos?page=0&size=20&marca=string&modelo=string&ano=2704&proprietarioId=b6c9308d-4d5f-cdbe-a485-7671b2b84a1d",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "veiculos"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "20"
+                    },
+                    {
+                      "key": "marca",
+                      "value": "string"
+                    },
+                    {
+                      "key": "modelo",
+                      "value": "string"
+                    },
+                    {
+                      "key": "ano",
+                      "value": "2704"
+                    },
+                    {
+                      "key": "proprietarioId",
+                      "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "text",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "*/*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"string\",\n      \"placa\": \"string\",\n      \"marca\": \"string\",\n      \"modelo\": \"string\",\n      \"ano\": 5775,\n      \"cor\": \"string\",\n      \"kilometragem\": 4004,\n      \"proprietario\": {\n        \"tipoPessoa\": \"string\",\n        \"nome\": \"string\",\n        \"cpf\": \"string\",\n        \"razaoSocial\": \"string\",\n        \"cnpj\": \"string\",\n        \"email\": \"string\",\n        \"telefone\": \"string\"\n      }\n    },\n    {\n      \"id\": \"string\",\n      \"placa\": \"string\",\n      \"marca\": \"string\",\n      \"modelo\": \"string\",\n      \"ano\": 8055,\n      \"cor\": \"string\",\n      \"kilometragem\": 6121,\n      \"proprietario\": {\n        \"tipoPessoa\": \"string\",\n        \"nome\": \"string\",\n        \"cpf\": \"string\",\n        \"razaoSocial\": \"string\",\n        \"cnpj\": \"string\",\n        \"email\": \"string\",\n        \"telefone\": \"string\"\n      }\n    }\n  ],\n  \"page\": 4267,\n  \"size\": 1779,\n  \"totalElements\": 2313,\n  \"totalPages\": 7748\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "tipos-veiculo",
+      "item": [
+        {
+          "name": "{id}",
+          "item": [
+            {
+              "name": "buscar Por Id 1",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/tipos-veiculo/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tipos-veiculo",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/tipos-veiculo/:id",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "tipos-veiculo",
+                        ":id"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"id\": \"string\",\n  \"marca\": \"string\",\n  \"modelo\": \"string\",\n  \"ano\": 6255\n}"
+                }
+              ]
+            },
+            {
+              "name": "atualizar 1",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"marca\": \"string\",\n  \"modelo\": \"string\",\n  \"ano\": 6934\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/tipos-veiculo/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tipos-veiculo",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "PUT",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      },
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"marca\": \"string\",\n  \"modelo\": \"string\",\n  \"ano\": 6934\n}",
+                      "options": {
+                        "raw": {
+                          "headerFamily": "json",
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/tipos-veiculo/:id",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "tipos-veiculo",
+                        ":id"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"id\": \"string\",\n  \"marca\": \"string\",\n  \"modelo\": \"string\",\n  \"ano\": 6255\n}"
+                }
+              ]
+            },
+            {
+              "name": "remover 1",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/tipos-veiculo/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tipos-veiculo",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "DELETE",
+                    "header": [],
+                    "url": {
+                      "raw": "{{baseUrl}}/tipos-veiculo/:id",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "tipos-veiculo",
+                        ":id"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [],
+                  "cookie": [],
+                  "body": ""
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "listar",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tipos-veiculo?page=0&size=20&marca=string&modelo=string&ano=2704",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tipos-veiculo"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                },
+                {
+                  "key": "marca",
+                  "value": "string"
+                },
+                {
+                  "key": "modelo",
+                  "value": "string"
+                },
+                {
+                  "key": "ano",
+                  "value": "2704"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/tipos-veiculo?page=0&size=20&marca=string&modelo=string&ano=2704",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tipos-veiculo"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "20"
+                    },
+                    {
+                      "key": "marca",
+                      "value": "string"
+                    },
+                    {
+                      "key": "modelo",
+                      "value": "string"
+                    },
+                    {
+                      "key": "ano",
+                      "value": "2704"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "text",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "*/*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"string\",\n      \"marca\": \"string\",\n      \"modelo\": \"string\",\n      \"ano\": 931\n    },\n    {\n      \"id\": \"string\",\n      \"marca\": \"string\",\n      \"modelo\": \"string\",\n      \"ano\": 1081\n    }\n  ],\n  \"page\": 3270,\n  \"size\": 457,\n  \"totalElements\": 2193,\n  \"totalPages\": 6285\n}"
+            }
+          ]
+        },
+        {
+          "name": "Cadastrar ou reutilizar tipo de veículo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ano\": 6425,\n  \"marca\": \"string\",\n  \"modelo\": \"string\"\n}",
+              "options": {
+                "raw": {
+                  "headerFamily": "json",
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tipos-veiculo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tipos-veiculo"
+              ]
+            },
+            "description": "Idempotente por marca, modelo e ano (case-insensitive)."
+          },
+          "response": [
+            {
+              "name": "OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"ano\": 6425,\n  \"marca\": \"string\",\n  \"modelo\": \"string\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/tipos-veiculo",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tipos-veiculo"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "text",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "*/*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"string\",\n  \"marca\": \"string\",\n  \"modelo\": \"string\",\n  \"ano\": 6255\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "servicos",
+      "item": [
+        {
+          "name": "{id}",
+          "item": [
+            {
+              "name": "buscar Por Id 2",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/servicos/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "servicos",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/servicos/:id",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "servicos",
+                        ":id"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"id\": \"string\",\n  \"nome\": \"string\",\n  \"descricao\": \"string\",\n  \"valorReferencia\": 243.34287246165377\n}"
+                }
+              ]
+            },
+            {
+              "name": "atualizar 2",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nome\": \"string\",\n  \"descricao\": \"string\",\n  \"valorReferencia\": 9049.189962837436\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/servicos/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "servicos",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "PUT",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      },
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"nome\": \"string\",\n  \"descricao\": \"string\",\n  \"valorReferencia\": 9049.189962837436\n}",
+                      "options": {
+                        "raw": {
+                          "headerFamily": "json",
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/servicos/:id",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "servicos",
+                        ":id"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"id\": \"string\",\n  \"nome\": \"string\",\n  \"descricao\": \"string\",\n  \"valorReferencia\": 243.34287246165377\n}"
+                }
+              ]
+            },
+            {
+              "name": "remover 2",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/servicos/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "servicos",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "DELETE",
+                    "header": [],
+                    "url": {
+                      "raw": "{{baseUrl}}/servicos/:id",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "servicos",
+                        ":id"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [],
+                  "cookie": [],
+                  "body": ""
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "listar 1",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/servicos?page=0&size=20&nome=string",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "servicos"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                },
+                {
+                  "key": "nome",
+                  "value": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/servicos?page=0&size=20&nome=string",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "servicos"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "20"
+                    },
+                    {
+                      "key": "nome",
+                      "value": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "text",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "*/*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"string\",\n      \"nome\": \"string\",\n      \"descricao\": \"string\",\n      \"valorReferencia\": 5598.113642329953\n    },\n    {\n      \"id\": \"string\",\n      \"nome\": \"string\",\n      \"descricao\": \"string\",\n      \"valorReferencia\": 5786.514440825661\n    }\n  ],\n  \"page\": 3109,\n  \"size\": 3548,\n  \"totalElements\": 7453,\n  \"totalPages\": 9800\n}"
+            }
+          ]
+        },
+        {
+          "name": "Cadastrar serviço no catálogo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"string\",\n  \"descricao\": \"string\",\n  \"valorReferencia\": 5958.974889539796\n}",
+              "options": {
+                "raw": {
+                  "headerFamily": "json",
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/servicos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "servicos"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nome\": \"string\",\n  \"descricao\": \"string\",\n  \"valorReferencia\": 5958.974889539796\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/servicos",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "servicos"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "text",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "*/*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"string\",\n  \"nome\": \"string\",\n  \"descricao\": \"string\",\n  \"valorReferencia\": 243.34287246165377\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "pecas",
+      "item": [
+        {
+          "name": "{id}",
+          "item": [
+            {
+              "name": "buscar Por Id 3",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/pecas/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "pecas",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/pecas/:id",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "pecas",
+                        ":id"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"id\": \"string\",\n  \"descricao\": \"string\",\n  \"codigo\": \"string\",\n  \"marca\": \"string\",\n  \"valorUnitario\": 5055.755170727725,\n  \"tipoVeiculoId\": \"string\"\n}"
+                }
+              ]
+            },
+            {
+              "name": "atualizar 3",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"descricao\": \"string\",\n  \"codigo\": \"string\",\n  \"marca\": \"string\",\n  \"valorUnitario\": 595.9254739856157,\n  \"tipoVeiculoId\": \"f4ecd5c5-78e9-4327-767e-22b08af873cf\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/pecas/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "pecas",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "PUT",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      },
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"descricao\": \"string\",\n  \"codigo\": \"string\",\n  \"marca\": \"string\",\n  \"valorUnitario\": 595.9254739856157,\n  \"tipoVeiculoId\": \"f4ecd5c5-78e9-4327-767e-22b08af873cf\"\n}",
+                      "options": {
+                        "raw": {
+                          "headerFamily": "json",
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/pecas/:id",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "pecas",
+                        ":id"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"id\": \"string\",\n  \"descricao\": \"string\",\n  \"codigo\": \"string\",\n  \"marca\": \"string\",\n  \"valorUnitario\": 5055.755170727725,\n  \"tipoVeiculoId\": \"string\"\n}"
+                }
+              ]
+            },
+            {
+              "name": "remover 3",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/pecas/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "pecas",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "DELETE",
+                    "header": [],
+                    "url": {
+                      "raw": "{{baseUrl}}/pecas/:id",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "pecas",
+                        ":id"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [],
+                  "cookie": [],
+                  "body": ""
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "listar 2",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pecas?page=0&size=20&marca=string&codigo=string",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pecas"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                },
+                {
+                  "key": "marca",
+                  "value": "string"
+                },
+                {
+                  "key": "codigo",
+                  "value": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/pecas?page=0&size=20&marca=string&codigo=string",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "pecas"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "20"
+                    },
+                    {
+                      "key": "marca",
+                      "value": "string"
+                    },
+                    {
+                      "key": "codigo",
+                      "value": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "text",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "*/*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"string\",\n      \"descricao\": \"string\",\n      \"codigo\": \"string\",\n      \"marca\": \"string\",\n      \"valorUnitario\": 5992.240355395873,\n      \"tipoVeiculoId\": \"string\"\n    },\n    {\n      \"id\": \"string\",\n      \"descricao\": \"string\",\n      \"codigo\": \"string\",\n      \"marca\": \"string\",\n      \"valorUnitario\": 6772.227852106303,\n      \"tipoVeiculoId\": \"string\"\n    }\n  ],\n  \"page\": 2899,\n  \"size\": 4034,\n  \"totalElements\": 2124,\n  \"totalPages\": 9604\n}"
+            }
+          ]
+        },
+        {
+          "name": "Cadastrar peça",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"string\",\n  \"descricao\": \"string\",\n  \"marca\": \"string\",\n  \"valorUnitario\": 2591.3641258628772,\n  \"tipoVeiculoId\": \"5249b2bf-a203-3421-0609-e1cc62f86183\"\n}",
+              "options": {
+                "raw": {
+                  "headerFamily": "json",
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pecas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pecas"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"codigo\": \"string\",\n  \"descricao\": \"string\",\n  \"marca\": \"string\",\n  \"valorUnitario\": 2591.3641258628772,\n  \"tipoVeiculoId\": \"5249b2bf-a203-3421-0609-e1cc62f86183\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/pecas",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "pecas"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "text",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "*/*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"string\",\n  \"descricao\": \"string\",\n  \"codigo\": \"string\",\n  \"marca\": \"string\",\n  \"valorUnitario\": 5055.755170727725,\n  \"tipoVeiculoId\": \"string\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ordens-servico",
+      "item": [
+        {
+          "name": "{id}",
+          "item": [
+            {
+              "name": "itens",
+              "item": [
+                {
+                  "name": "{itemId}",
+                  "item": [
+                    {
+                      "name": "atualizar Item",
+                      "request": {
+                        "method": "PUT",
+                        "header": [
+                          {
+                            "key": "Content-Type",
+                            "value": "application/json"
+                          },
+                          {
+                            "key": "Accept",
+                            "value": "*/*"
+                          }
+                        ],
+                        "body": {
+                          "mode": "raw",
+                          "raw": "{\n  \"tipo\": \"string\",\n  \"descricao\": \"string\",\n  \"pecaId\": \"59ad9820-7e2a-5556-8b9f-4efdf1ac1518\",\n  \"quantidade\": 1137,\n  \"valorUnitario\": 3453.57326906492\n}",
+                          "options": {
+                            "raw": {
+                              "headerFamily": "json",
+                              "language": "json"
+                            }
+                          }
+                        },
+                        "url": {
+                          "raw": "{{baseUrl}}/ordens-servico/:id/itens/:itemId",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "ordens-servico",
+                            ":id",
+                            "itens",
+                            ":itemId"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id",
+                              "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                            },
+                            {
+                              "key": "itemId",
+                              "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                            }
+                          ]
+                        }
+                      },
+                      "response": [
+                        {
+                          "name": "OK",
+                          "originalRequest": {
+                            "method": "PUT",
+                            "header": [
+                              {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                              },
+                              {
+                                "key": "Accept",
+                                "value": "*/*"
+                              }
+                            ],
+                            "body": {
+                              "mode": "raw",
+                              "raw": "{\n  \"tipo\": \"string\",\n  \"descricao\": \"string\",\n  \"pecaId\": \"59ad9820-7e2a-5556-8b9f-4efdf1ac1518\",\n  \"quantidade\": 1137,\n  \"valorUnitario\": 3453.57326906492\n}",
+                              "options": {
+                                "raw": {
+                                  "headerFamily": "json",
+                                  "language": "json"
+                                }
+                              }
+                            },
+                            "url": {
+                              "raw": "{{baseUrl}}/ordens-servico/:id/itens/:itemId",
+                              "host": [
+                                "{{baseUrl}}"
+                              ],
+                              "path": [
+                                "ordens-servico",
+                                ":id",
+                                "itens",
+                                ":itemId"
+                              ],
+                              "variable": [
+                                {
+                                  "key": "id",
+                                  "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                                },
+                                {
+                                  "key": "itemId",
+                                  "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                                }
+                              ]
+                            }
+                          },
+                          "status": "OK",
+                          "code": 200,
+                          "_postman_previewlanguage": "text",
+                          "header": [
+                            {
+                              "key": "Content-Type",
+                              "value": "*/*"
+                            }
+                          ],
+                          "cookie": [],
+                          "body": "{\n  \"id\": \"string\",\n  \"ordemServicoId\": \"string\",\n  \"tipo\": \"string\",\n  \"descricao\": \"string\",\n  \"pecaId\": \"string\",\n  \"quantidade\": 5456,\n  \"valorUnitario\": 8727.020393768176,\n  \"valorTotal\": 7416.089853662379\n}"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "remover Item",
+                      "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                          "raw": "{{baseUrl}}/ordens-servico/:id/itens/:itemId",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "ordens-servico",
+                            ":id",
+                            "itens",
+                            ":itemId"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id",
+                              "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                            },
+                            {
+                              "key": "itemId",
+                              "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                            }
+                          ]
+                        }
+                      },
+                      "response": [
+                        {
+                          "name": "OK",
+                          "originalRequest": {
+                            "method": "DELETE",
+                            "header": [],
+                            "url": {
+                              "raw": "{{baseUrl}}/ordens-servico/:id/itens/:itemId",
+                              "host": [
+                                "{{baseUrl}}"
+                              ],
+                              "path": [
+                                "ordens-servico",
+                                ":id",
+                                "itens",
+                                ":itemId"
+                              ],
+                              "variable": [
+                                {
+                                  "key": "id",
+                                  "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                                },
+                                {
+                                  "key": "itemId",
+                                  "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                                }
+                              ]
+                            }
+                          },
+                          "status": "OK",
+                          "code": 200,
+                          "_postman_previewlanguage": "text",
+                          "header": [],
+                          "cookie": [],
+                          "body": ""
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "listar Itens",
+                  "request": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/ordens-servico/:id/itens",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "ordens-servico",
+                        ":id",
+                        "itens"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                        }
+                      ]
+                    }
+                  },
+                  "response": [
+                    {
+                      "name": "OK",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "*/*"
+                          }
+                        ],
+                        "url": {
+                          "raw": "{{baseUrl}}/ordens-servico/:id/itens",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "ordens-servico",
+                            ":id",
+                            "itens"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id",
+                              "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "_postman_previewlanguage": "text",
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "*/*"
+                        }
+                      ],
+                      "cookie": [],
+                      "body": "[\n  {\n    \"id\": \"string\",\n    \"ordemServicoId\": \"string\",\n    \"tipo\": \"string\",\n    \"descricao\": \"string\",\n    \"pecaId\": \"string\",\n    \"quantidade\": 6199,\n    \"valorUnitario\": 8713.126983750592,\n    \"valorTotal\": 9332.298457264367\n  },\n  {\n    \"id\": \"string\",\n    \"ordemServicoId\": \"string\",\n    \"tipo\": \"string\",\n    \"descricao\": \"string\",\n    \"pecaId\": \"string\",\n    \"quantidade\": 7009,\n    \"valorUnitario\": 2895.605533319058,\n    \"valorTotal\": 1919.1167969405965\n  }\n]"
+                    }
+                  ]
+                },
+                {
+                  "name": "Adicionar itens à OS",
+                  "request": {
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      },
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"itens\": [\n    {\n      \"tipo\": \"string\",\n      \"descricao\": \"string\",\n      \"pecaId\": \"a888a274-1f14-0d9d-1878-10f133fd5efc\",\n      \"quantidade\": 4113,\n      \"valorUnitario\": 5204.716843652436\n    }\n  ]\n}",
+                      "options": {
+                        "raw": {
+                          "headerFamily": "json",
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/ordens-servico/:id/itens",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "ordens-servico",
+                        ":id",
+                        "itens"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                        }
+                      ]
+                    },
+                    "description": "Serviços e peças com quantidade e valor. Exige status EM_DIAGNOSTICO (etapa de orçamento no fluxo)."
+                  },
+                  "response": [
+                    {
+                      "name": "OK",
+                      "originalRequest": {
+                        "method": "POST",
+                        "header": [
+                          {
+                            "key": "Content-Type",
+                            "value": "application/json"
+                          },
+                          {
+                            "key": "Accept",
+                            "value": "*/*"
+                          }
+                        ],
+                        "body": {
+                          "mode": "raw",
+                          "raw": "{\n  \"itens\": [\n    {\n      \"tipo\": \"string\",\n      \"descricao\": \"string\",\n      \"pecaId\": \"a888a274-1f14-0d9d-1878-10f133fd5efc\",\n      \"quantidade\": 4113,\n      \"valorUnitario\": 5204.716843652436\n    }\n  ]\n}",
+                          "options": {
+                            "raw": {
+                              "headerFamily": "json",
+                              "language": "json"
+                            }
+                          }
+                        },
+                        "url": {
+                          "raw": "{{baseUrl}}/ordens-servico/:id/itens",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "ordens-servico",
+                            ":id",
+                            "itens"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id",
+                              "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "_postman_previewlanguage": "text",
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "*/*"
+                        }
+                      ],
+                      "cookie": [],
+                      "body": "{\n  \"itens\": [\n    {\n      \"id\": \"string\",\n      \"ordemServicoId\": \"string\",\n      \"tipo\": \"string\",\n      \"descricao\": \"string\",\n      \"pecaId\": \"string\",\n      \"quantidade\": 7385,\n      \"valorUnitario\": 7181.521548865505,\n      \"valorTotal\": 8597.213594522018\n    },\n    {\n      \"id\": \"string\",\n      \"ordemServicoId\": \"string\",\n      \"tipo\": \"string\",\n      \"descricao\": \"string\",\n      \"pecaId\": \"string\",\n      \"quantidade\": 3394,\n      \"valorUnitario\": 4438.351490528282,\n      \"valorTotal\": 8481.105758315973\n    }\n  ],\n  \"valorTotal\": 8717.966903925795\n}"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "finalizar",
+              "item": [
+                {
+                  "name": "Finalizar execução da OS",
+                  "request": {
+                    "method": "PATCH",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/ordens-servico/:id/finalizar",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "ordens-servico",
+                        ":id",
+                        "finalizar"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                        }
+                      ]
+                    },
+                    "description": "EM_EXECUCAO → FINALIZADA."
+                  },
+                  "response": [
+                    {
+                      "name": "OK",
+                      "originalRequest": {
+                        "method": "PATCH",
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "*/*"
+                          }
+                        ],
+                        "url": {
+                          "raw": "{{baseUrl}}/ordens-servico/:id/finalizar",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "ordens-servico",
+                            ":id",
+                            "finalizar"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id",
+                              "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "_postman_previewlanguage": "text",
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "*/*"
+                        }
+                      ],
+                      "cookie": [],
+                      "body": "{\n  \"id\": \"string\",\n  \"status\": \"string\"\n}"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "entregar",
+              "item": [
+                {
+                  "name": "Registrar entrega do veículo",
+                  "request": {
+                    "method": "PATCH",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/ordens-servico/:id/entregar",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "ordens-servico",
+                        ":id",
+                        "entregar"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                        }
+                      ]
+                    },
+                    "description": "FINALIZADA ou REPROVADO → ENTREGUE."
+                  },
+                  "response": [
+                    {
+                      "name": "OK",
+                      "originalRequest": {
+                        "method": "PATCH",
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "*/*"
+                          }
+                        ],
+                        "url": {
+                          "raw": "{{baseUrl}}/ordens-servico/:id/entregar",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "ordens-servico",
+                            ":id",
+                            "entregar"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id",
+                              "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "_postman_previewlanguage": "text",
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "*/*"
+                        }
+                      ],
+                      "cookie": [],
+                      "body": "{\n  \"id\": \"string\",\n  \"status\": \"string\"\n}"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "diagnostico",
+              "item": [
+                {
+                  "name": "finalizar",
+                  "item": [
+                    {
+                      "name": "Finalizar diagnóstico / gerar orçamento",
+                      "request": {
+                        "method": "PATCH",
+                        "header": [
+                          {
+                            "key": "Content-Type",
+                            "value": "application/json"
+                          },
+                          {
+                            "key": "Accept",
+                            "value": "*/*"
+                          }
+                        ],
+                        "body": {
+                          "mode": "raw",
+                          "raw": "{\n  \"tempoPrevistoExecucaoDias\": 1188,\n  \"tempoPrevistoExecucaoHoras\": 21\n}",
+                          "options": {
+                            "raw": {
+                              "headerFamily": "json",
+                              "language": "json"
+                            }
+                          }
+                        },
+                        "url": {
+                          "raw": "{{baseUrl}}/ordens-servico/:id/diagnostico/finalizar",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "ordens-servico",
+                            ":id",
+                            "diagnostico",
+                            "finalizar"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id",
+                              "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                            }
+                          ]
+                        },
+                        "description": "Define previsão de execução, passa para AGUARDANDO_APROVACAO e dispara fluxo de envio de orçamento."
+                      },
+                      "response": [
+                        {
+                          "name": "OK",
+                          "originalRequest": {
+                            "method": "PATCH",
+                            "header": [
+                              {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                              },
+                              {
+                                "key": "Accept",
+                                "value": "*/*"
+                              }
+                            ],
+                            "body": {
+                              "mode": "raw",
+                              "raw": "{\n  \"tempoPrevistoExecucaoDias\": 1188,\n  \"tempoPrevistoExecucaoHoras\": 21\n}",
+                              "options": {
+                                "raw": {
+                                  "headerFamily": "json",
+                                  "language": "json"
+                                }
+                              }
+                            },
+                            "url": {
+                              "raw": "{{baseUrl}}/ordens-servico/:id/diagnostico/finalizar",
+                              "host": [
+                                "{{baseUrl}}"
+                              ],
+                              "path": [
+                                "ordens-servico",
+                                ":id",
+                                "diagnostico",
+                                "finalizar"
+                              ],
+                              "variable": [
+                                {
+                                  "key": "id",
+                                  "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                                }
+                              ]
+                            }
+                          },
+                          "status": "OK",
+                          "code": 200,
+                          "_postman_previewlanguage": "text",
+                          "header": [
+                            {
+                              "key": "Content-Type",
+                              "value": "*/*"
+                            }
+                          ],
+                          "cookie": [],
+                          "body": "{\n  \"id\": \"string\",\n  \"status\": \"string\"\n}"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "Iniciar diagnóstico",
+                  "request": {
+                    "method": "PATCH",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/ordens-servico/:id/diagnostico",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "ordens-servico",
+                        ":id",
+                        "diagnostico"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                        }
+                      ]
+                    },
+                    "description": "Transição RECEBIDO → EM_DIAGNOSTICO."
+                  },
+                  "response": [
+                    {
+                      "name": "OK",
+                      "originalRequest": {
+                        "method": "PATCH",
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "*/*"
+                          }
+                        ],
+                        "url": {
+                          "raw": "{{baseUrl}}/ordens-servico/:id/diagnostico",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "ordens-servico",
+                            ":id",
+                            "diagnostico"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id",
+                              "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "_postman_previewlanguage": "text",
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "*/*"
+                        }
+                      ],
+                      "cookie": [],
+                      "body": "{\n  \"id\": \"string\",\n  \"status\": \"string\"\n}"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "aprovacao",
+              "item": [
+                {
+                  "name": "reprovar",
+                  "item": [
+                    {
+                      "name": "Reprovar orçamento por link (GET)",
+                      "request": {
+                        "method": "GET",
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "*/*"
+                          }
+                        ],
+                        "url": {
+                          "raw": "{{baseUrl}}/ordens-servico/:id/aprovacao/reprovar",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "ordens-servico",
+                            ":id",
+                            "aprovacao",
+                            "reprovar"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id",
+                              "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                            }
+                          ]
+                        },
+                        "description": "Destinado a links em e-mail (sem corpo)."
+                      },
+                      "response": [
+                        {
+                          "name": "OK",
+                          "originalRequest": {
+                            "method": "GET",
+                            "header": [
+                              {
+                                "key": "Accept",
+                                "value": "*/*"
+                              }
+                            ],
+                            "url": {
+                              "raw": "{{baseUrl}}/ordens-servico/:id/aprovacao/reprovar",
+                              "host": [
+                                "{{baseUrl}}"
+                              ],
+                              "path": [
+                                "ordens-servico",
+                                ":id",
+                                "aprovacao",
+                                "reprovar"
+                              ],
+                              "variable": [
+                                {
+                                  "key": "id",
+                                  "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                                }
+                              ]
+                            }
+                          },
+                          "status": "OK",
+                          "code": 200,
+                          "_postman_previewlanguage": "text",
+                          "header": [
+                            {
+                              "key": "Content-Type",
+                              "value": "*/*"
+                            }
+                          ],
+                          "cookie": [],
+                          "body": "{\n  \"id\": \"string\",\n  \"status\": \"string\"\n}"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Reprovar orçamento (PATCH)",
+                      "request": {
+                        "method": "PATCH",
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "*/*"
+                          }
+                        ],
+                        "url": {
+                          "raw": "{{baseUrl}}/ordens-servico/:id/aprovacao/reprovar",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "ordens-servico",
+                            ":id",
+                            "aprovacao",
+                            "reprovar"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id",
+                              "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                            }
+                          ]
+                        }
+                      },
+                      "response": [
+                        {
+                          "name": "OK",
+                          "originalRequest": {
+                            "method": "PATCH",
+                            "header": [
+                              {
+                                "key": "Accept",
+                                "value": "*/*"
+                              }
+                            ],
+                            "url": {
+                              "raw": "{{baseUrl}}/ordens-servico/:id/aprovacao/reprovar",
+                              "host": [
+                                "{{baseUrl}}"
+                              ],
+                              "path": [
+                                "ordens-servico",
+                                ":id",
+                                "aprovacao",
+                                "reprovar"
+                              ],
+                              "variable": [
+                                {
+                                  "key": "id",
+                                  "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                                }
+                              ]
+                            }
+                          },
+                          "status": "OK",
+                          "code": 200,
+                          "_postman_previewlanguage": "text",
+                          "header": [
+                            {
+                              "key": "Content-Type",
+                              "value": "*/*"
+                            }
+                          ],
+                          "cookie": [],
+                          "body": "{\n  \"id\": \"string\",\n  \"status\": \"string\"\n}"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "aprovar",
+                  "item": [
+                    {
+                      "name": "Aprovar orçamento por link (GET)",
+                      "request": {
+                        "method": "GET",
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "*/*"
+                          }
+                        ],
+                        "url": {
+                          "raw": "{{baseUrl}}/ordens-servico/:id/aprovacao/aprovar",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "ordens-servico",
+                            ":id",
+                            "aprovacao",
+                            "aprovar"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id",
+                              "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                            }
+                          ]
+                        },
+                        "description": "Destinado a links em e-mail (sem corpo)."
+                      },
+                      "response": [
+                        {
+                          "name": "OK",
+                          "originalRequest": {
+                            "method": "GET",
+                            "header": [
+                              {
+                                "key": "Accept",
+                                "value": "*/*"
+                              }
+                            ],
+                            "url": {
+                              "raw": "{{baseUrl}}/ordens-servico/:id/aprovacao/aprovar",
+                              "host": [
+                                "{{baseUrl}}"
+                              ],
+                              "path": [
+                                "ordens-servico",
+                                ":id",
+                                "aprovacao",
+                                "aprovar"
+                              ],
+                              "variable": [
+                                {
+                                  "key": "id",
+                                  "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                                }
+                              ]
+                            }
+                          },
+                          "status": "OK",
+                          "code": 200,
+                          "_postman_previewlanguage": "text",
+                          "header": [
+                            {
+                              "key": "Content-Type",
+                              "value": "*/*"
+                            }
+                          ],
+                          "cookie": [],
+                          "body": "{\n  \"id\": \"string\",\n  \"status\": \"string\"\n}"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Aprovar orçamento (PATCH)",
+                      "request": {
+                        "method": "PATCH",
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "*/*"
+                          }
+                        ],
+                        "url": {
+                          "raw": "{{baseUrl}}/ordens-servico/:id/aprovacao/aprovar",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "ordens-servico",
+                            ":id",
+                            "aprovacao",
+                            "aprovar"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id",
+                              "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                            }
+                          ]
+                        }
+                      },
+                      "response": [
+                        {
+                          "name": "OK",
+                          "originalRequest": {
+                            "method": "PATCH",
+                            "header": [
+                              {
+                                "key": "Accept",
+                                "value": "*/*"
+                              }
+                            ],
+                            "url": {
+                              "raw": "{{baseUrl}}/ordens-servico/:id/aprovacao/aprovar",
+                              "host": [
+                                "{{baseUrl}}"
+                              ],
+                              "path": [
+                                "ordens-servico",
+                                ":id",
+                                "aprovacao",
+                                "aprovar"
+                              ],
+                              "variable": [
+                                {
+                                  "key": "id",
+                                  "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                                }
+                              ]
+                            }
+                          },
+                          "status": "OK",
+                          "code": 200,
+                          "_postman_previewlanguage": "text",
+                          "header": [
+                            {
+                              "key": "Content-Type",
+                              "value": "*/*"
+                            }
+                          ],
+                          "cookie": [],
+                          "body": "{\n  \"id\": \"string\",\n  \"status\": \"string\"\n}"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "andamento",
+              "item": [
+                {
+                  "name": "acompanhar",
+                  "request": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/ordens-servico/:id/andamento",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "ordens-servico",
+                        ":id",
+                        "andamento"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                        }
+                      ]
+                    }
+                  },
+                  "response": [
+                    {
+                      "name": "OK",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "*/*"
+                          }
+                        ],
+                        "url": {
+                          "raw": "{{baseUrl}}/ordens-servico/:id/andamento",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "ordens-servico",
+                            ":id",
+                            "andamento"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id",
+                              "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "_postman_previewlanguage": "text",
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "*/*"
+                        }
+                      ],
+                      "cookie": [],
+                      "body": "{\n  \"ordemServicoId\": \"string\",\n  \"status\": \"string\",\n  \"descricaoStatus\": \"string\",\n  \"etapaAtual\": \"string\",\n  \"percentualAndamento\": 6989,\n  \"dataCriacao\": \"1988-09-05\",\n  \"iniciadoEm\": \"1996-01-05T11:41:19.438Z\",\n  \"finalizadoEm\": \"2010-11-10T07:57:25.636Z\",\n  \"veiculo\": {\n    \"id\": \"string\",\n    \"placa\": \"string\",\n    \"marca\": \"string\",\n    \"modelo\": \"string\",\n    \"ano\": 1064,\n    \"cor\": \"string\",\n    \"kilometragem\": 4929,\n    \"proprietario\": {\n      \"tipoPessoa\": \"string\",\n      \"nome\": \"string\",\n      \"cpf\": \"string\",\n      \"razaoSocial\": \"string\",\n      \"cnpj\": \"string\",\n      \"email\": \"string\",\n      \"telefone\": \"string\"\n    }\n  },\n  \"etapas\": [\n    {\n      \"status\": \"string\",\n      \"nome\": \"string\",\n      \"situacao\": \"string\",\n      \"percentual\": 8491\n    },\n    {\n      \"status\": \"string\",\n      \"nome\": \"string\",\n      \"situacao\": \"string\",\n      \"percentual\": 8934\n    }\n  ]\n}"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Detalhar ordem de serviço",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/ordens-servico/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "ordens-servico",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                    }
+                  ]
+                },
+                "description": "Inclui veículo, cliente, itens e valor total."
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/ordens-servico/:id",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "ordens-servico",
+                        ":id"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"ordemServicoId\": \"string\",\n  \"status\": \"string\",\n  \"dataCriacao\": \"1993-09-23\",\n  \"relato\": \"string\",\n  \"tempoPrevistoExecucaoDias\": 241,\n  \"tempoPrevistoExecucaoHoras\": 4512,\n  \"iniciadoEm\": \"2019-12-08T15:53:09.608Z\",\n  \"finalizadoEm\": \"1965-11-18T16:17:19.927Z\",\n  \"veiculo\": {\n    \"id\": \"string\",\n    \"placa\": \"string\",\n    \"marca\": \"string\",\n    \"modelo\": \"string\",\n    \"ano\": 4809,\n    \"cor\": \"string\",\n    \"kilometragem\": 6880,\n    \"proprietario\": {\n      \"tipoPessoa\": \"string\",\n      \"nome\": \"string\",\n      \"cpf\": \"string\",\n      \"razaoSocial\": \"string\",\n      \"cnpj\": \"string\",\n      \"email\": \"string\",\n      \"telefone\": \"string\"\n    }\n  },\n  \"cliente\": {\n    \"id\": \"string\",\n    \"tipoPessoa\": \"string\",\n    \"dataCadastro\": \"1996-04-23\",\n    \"nome\": \"string\",\n    \"cpf\": \"string\",\n    \"razaoSocial\": \"string\",\n    \"cnpj\": \"string\",\n    \"email\": \"string\",\n    \"telefone\": \"string\",\n    \"representanteLegal\": {\n      \"id\": \"string\",\n      \"nome\": \"string\",\n      \"cpf\": \"string\",\n      \"email\": \"string\",\n      \"telefone\": \"string\"\n    }\n  },\n  \"itens\": [\n    {\n      \"id\": \"string\",\n      \"tipo\": \"string\",\n      \"descricao\": \"string\",\n      \"pecaId\": \"string\",\n      \"peca\": {\n        \"id\": \"string\",\n        \"descricao\": \"string\",\n        \"codigo\": \"string\",\n        \"marca\": \"string\",\n        \"valorUnitario\": 1935.2035002277323,\n        \"tipoVeiculoId\": \"string\"\n      },\n      \"quantidade\": 1677,\n      \"valorUnitario\": 3302.541772569002,\n      \"valorTotal\": 1489.1918407668825\n    },\n    {\n      \"id\": \"string\",\n      \"tipo\": \"string\",\n      \"descricao\": \"string\",\n      \"pecaId\": \"string\",\n      \"peca\": {\n        \"id\": \"string\",\n        \"descricao\": \"string\",\n        \"codigo\": \"string\",\n        \"marca\": \"string\",\n        \"valorUnitario\": 4679.384410408745,\n        \"tipoVeiculoId\": \"string\"\n      },\n      \"quantidade\": 149,\n      \"valorUnitario\": 1300.3696767138451,\n      \"valorTotal\": 4150.60358053455\n    }\n  ],\n  \"valorTotal\": 1579.8689514532828\n}"
+                }
+              ]
+            },
+            {
+              "name": "atualizar 4",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"veiculoId\": \"7b462374-d37d-3b5d-3a7c-0f937c01a2a6\",\n  \"relato\": \"string\",\n  \"tempoPrevistoExecucaoDias\": 4577,\n  \"tempoPrevistoExecucaoHoras\": 3681\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/ordens-servico/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "ordens-servico",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "PUT",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      },
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"veiculoId\": \"7b462374-d37d-3b5d-3a7c-0f937c01a2a6\",\n  \"relato\": \"string\",\n  \"tempoPrevistoExecucaoDias\": 4577,\n  \"tempoPrevistoExecucaoHoras\": 3681\n}",
+                      "options": {
+                        "raw": {
+                          "headerFamily": "json",
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/ordens-servico/:id",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "ordens-servico",
+                        ":id"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"id\": \"string\",\n  \"veiculoId\": \"string\",\n  \"status\": \"string\",\n  \"dataCriacao\": \"2025-07-11\",\n  \"relato\": \"string\",\n  \"tempoPrevistoExecucaoDias\": 315,\n  \"tempoPrevistoExecucaoHoras\": 5673,\n  \"iniciadoEm\": \"1976-03-20T23:50:34.429Z\",\n  \"finalizadoEm\": \"1955-11-18T09:47:17.010Z\"\n}"
+                }
+              ]
+            },
+            {
+              "name": "remover 4",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/ordens-servico/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "ordens-servico",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "DELETE",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/ordens-servico/:id",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "ordens-servico",
+                        ":id"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"id\": \"string\",\n  \"status\": \"string\"\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "metricas",
+          "item": [
+            {
+              "name": "tempo-medio-execucao",
+              "item": [
+                {
+                  "name": "Tempo médio de execução",
+                  "request": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/ordens-servico/metricas/tempo-medio-execucao",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "ordens-servico",
+                        "metricas",
+                        "tempo-medio-execucao"
+                      ]
+                    },
+                    "description": "Calcula a média do intervalo entre início da execução (`iniciadoEm`, ao aprovar o orçamento) e término (`finalizadoEm`, ao finalizar a OS), apenas para ordens em FINALIZADA ou ENTREGUE. O agrupamento por descrição usa os itens de linha do tipo SERVICO vinculados à OS."
+                  },
+                  "response": [
+                    {
+                      "name": "OK",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "*/*"
+                          }
+                        ],
+                        "url": {
+                          "raw": "{{baseUrl}}/ordens-servico/metricas/tempo-medio-execucao",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "ordens-servico",
+                            "metricas",
+                            "tempo-medio-execucao"
+                          ]
+                        }
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "_postman_previewlanguage": "text",
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "*/*"
+                        }
+                      ],
+                      "cookie": [],
+                      "body": "{\n  \"tempoMedioGlobalSegundos\": 7446.753774568369,\n  \"tempoMedioGlobalHoras\": 7525.8451070552355,\n  \"porDescricaoItemServico\": [\n    {\n      \"descricaoItemServico\": \"string\",\n      \"tempoMedioExecucaoSegundos\": 4203.5386015459335,\n      \"tempoMedioExecucaoHoras\": 2943.6555132908525,\n      \"quantidadeOrdensConsideradas\": 9369\n    },\n    {\n      \"descricaoItemServico\": \"string\",\n      \"tempoMedioExecucaoSegundos\": 7946.290950642122,\n      \"tempoMedioExecucaoHoras\": 5731.027565425306,\n      \"quantidadeOrdensConsideradas\": 4865\n    }\n  ]\n}"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "list",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/ordens-servico?page=0&size=20&status=string",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ordens-servico"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                },
+                {
+                  "key": "status",
+                  "value": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/ordens-servico?page=0&size=20&status=string",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "ordens-servico"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "20"
+                    },
+                    {
+                      "key": "status",
+                      "value": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "text",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "*/*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"items\": [\n    {\n      \"ordemServicoId\": \"string\",\n      \"status\": \"string\",\n      \"dataCriacao\": \"1951-05-09\",\n      \"relato\": \"string\",\n      \"tempoPrevistoExecucaoDias\": 7637,\n      \"tempoPrevistoExecucaoHoras\": 3308,\n      \"iniciadoEm\": \"1950-12-03T00:20:52.542Z\",\n      \"finalizadoEm\": \"1981-03-02T13:44:40.263Z\",\n      \"veiculo\": {\n        \"id\": \"string\",\n        \"placa\": \"string\",\n        \"marca\": \"string\",\n        \"modelo\": \"string\",\n        \"ano\": 7026,\n        \"cor\": \"string\",\n        \"kilometragem\": 8634,\n        \"proprietario\": {\n          \"tipoPessoa\": \"string\",\n          \"nome\": \"string\",\n          \"cpf\": \"string\",\n          \"razaoSocial\": \"string\",\n          \"cnpj\": \"string\",\n          \"email\": \"string\",\n          \"telefone\": \"string\"\n        }\n      },\n      \"cliente\": {\n        \"id\": \"string\",\n        \"tipoPessoa\": \"string\",\n        \"dataCadastro\": \"1962-11-27\",\n        \"nome\": \"string\",\n        \"cpf\": \"string\",\n        \"razaoSocial\": \"string\",\n        \"cnpj\": \"string\",\n        \"email\": \"string\",\n        \"telefone\": \"string\",\n        \"representanteLegal\": {\n          \"id\": \"string\",\n          \"nome\": \"string\",\n          \"cpf\": \"string\",\n          \"email\": \"string\",\n          \"telefone\": \"string\"\n        }\n      }\n    },\n    {\n      \"ordemServicoId\": \"string\",\n      \"status\": \"string\",\n      \"dataCriacao\": \"2010-06-11\",\n      \"relato\": \"string\",\n      \"tempoPrevistoExecucaoDias\": 5365,\n      \"tempoPrevistoExecucaoHoras\": 8698,\n      \"iniciadoEm\": \"1959-10-20T19:20:36.803Z\",\n      \"finalizadoEm\": \"1996-01-26T23:11:47.926Z\",\n      \"veiculo\": {\n        \"id\": \"string\",\n        \"placa\": \"string\",\n        \"marca\": \"string\",\n        \"modelo\": \"string\",\n        \"ano\": 336,\n        \"cor\": \"string\",\n        \"kilometragem\": 8440,\n        \"proprietario\": {\n          \"tipoPessoa\": \"string\",\n          \"nome\": \"string\",\n          \"cpf\": \"string\",\n          \"razaoSocial\": \"string\",\n          \"cnpj\": \"string\",\n          \"email\": \"string\",\n          \"telefone\": \"string\"\n        }\n      },\n      \"cliente\": {\n        \"id\": \"string\",\n        \"tipoPessoa\": \"string\",\n        \"dataCadastro\": \"2005-01-23\",\n        \"nome\": \"string\",\n        \"cpf\": \"string\",\n        \"razaoSocial\": \"string\",\n        \"cnpj\": \"string\",\n        \"email\": \"string\",\n        \"telefone\": \"string\",\n        \"representanteLegal\": {\n          \"id\": \"string\",\n          \"nome\": \"string\",\n          \"cpf\": \"string\",\n          \"email\": \"string\",\n          \"telefone\": \"string\"\n        }\n      }\n    }\n  ],\n  \"page\": 3415,\n  \"size\": 2103,\n  \"totalElements\": 9246,\n  \"totalPages\": 255\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "clientes",
+      "item": [
+        {
+          "name": "{id}",
+          "item": [
+            {
+              "name": "buscar Por Id 4",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/clientes/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "clientes",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/clientes/:id",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "clientes",
+                        ":id"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"id\": \"string\",\n  \"tipoPessoa\": \"string\",\n  \"dataCadastro\": \"1955-03-08\",\n  \"nome\": \"string\",\n  \"cpf\": \"string\",\n  \"razaoSocial\": \"string\",\n  \"cnpj\": \"string\",\n  \"email\": \"string\",\n  \"telefone\": \"string\",\n  \"representanteLegal\": {\n    \"id\": \"string\",\n    \"nome\": \"string\",\n    \"cpf\": \"string\",\n    \"email\": \"string\",\n    \"telefone\": \"string\"\n  },\n  \"veiculos\": [\n    {\n      \"id\": \"string\",\n      \"placa\": \"string\",\n      \"marca\": \"string\",\n      \"modelo\": \"string\",\n      \"ano\": 5887,\n      \"cor\": \"string\",\n      \"kilometragem\": 6623,\n      \"proprietario\": {\n        \"tipoPessoa\": \"string\",\n        \"nome\": \"string\",\n        \"cpf\": \"string\",\n        \"razaoSocial\": \"string\",\n        \"cnpj\": \"string\",\n        \"email\": \"string\",\n        \"telefone\": \"string\"\n      }\n    },\n    {\n      \"id\": \"string\",\n      \"placa\": \"string\",\n      \"marca\": \"string\",\n      \"modelo\": \"string\",\n      \"ano\": 9227,\n      \"cor\": \"string\",\n      \"kilometragem\": 7017,\n      \"proprietario\": {\n        \"tipoPessoa\": \"string\",\n        \"nome\": \"string\",\n        \"cpf\": \"string\",\n        \"razaoSocial\": \"string\",\n        \"cnpj\": \"string\",\n        \"email\": \"string\",\n        \"telefone\": \"string\"\n      }\n    }\n  ]\n}"
+                }
+              ]
+            },
+            {
+              "name": "atualizar 5",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nome\": \"string\",\n  \"razaoSocial\": \"string\",\n  \"email\": \"string\",\n  \"telefone\": \"string\",\n  \"representanteNome\": \"string\",\n  \"representanteCpf\": \"string\",\n  \"representanteEmail\": \"string\",\n  \"representanteTelefone\": \"string\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/clientes/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "clientes",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "PUT",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      },
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"nome\": \"string\",\n  \"razaoSocial\": \"string\",\n  \"email\": \"string\",\n  \"telefone\": \"string\",\n  \"representanteNome\": \"string\",\n  \"representanteCpf\": \"string\",\n  \"representanteEmail\": \"string\",\n  \"representanteTelefone\": \"string\"\n}",
+                      "options": {
+                        "raw": {
+                          "headerFamily": "json",
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/clientes/:id",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "clientes",
+                        ":id"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"id\": \"string\",\n  \"tipoPessoa\": \"string\",\n  \"dataCadastro\": \"1972-10-27\",\n  \"nome\": \"string\",\n  \"cpf\": \"string\",\n  \"razaoSocial\": \"string\",\n  \"cnpj\": \"string\",\n  \"email\": \"string\",\n  \"telefone\": \"string\",\n  \"representanteLegal\": {\n    \"id\": \"string\",\n    \"nome\": \"string\",\n    \"cpf\": \"string\",\n    \"email\": \"string\",\n    \"telefone\": \"string\"\n  }\n}"
+                }
+              ]
+            },
+            {
+              "name": "remover 5",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/clientes/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "clientes",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "DELETE",
+                    "header": [],
+                    "url": {
+                      "raw": "{{baseUrl}}/clientes/:id",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "clientes",
+                        ":id"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [],
+                  "cookie": [],
+                  "body": ""
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "cpf",
+          "item": [
+            {
+              "name": "{cpf}",
+              "item": [
+                {
+                  "name": "buscar Por Cpf",
+                  "request": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/clientes/cpf/:cpf",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "clientes",
+                        "cpf",
+                        ":cpf"
+                      ],
+                      "variable": [
+                        {
+                          "key": "cpf",
+                          "value": "string"
+                        }
+                      ]
+                    }
+                  },
+                  "response": [
+                    {
+                      "name": "OK",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "*/*"
+                          }
+                        ],
+                        "url": {
+                          "raw": "{{baseUrl}}/clientes/cpf/:cpf",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "clientes",
+                            "cpf",
+                            ":cpf"
+                          ],
+                          "variable": [
+                            {
+                              "key": "cpf",
+                              "value": "string"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "_postman_previewlanguage": "text",
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "*/*"
+                        }
+                      ],
+                      "cookie": [],
+                      "body": "{\n  \"id\": \"string\",\n  \"tipoPessoa\": \"string\",\n  \"dataCadastro\": \"1972-10-27\",\n  \"nome\": \"string\",\n  \"cpf\": \"string\",\n  \"razaoSocial\": \"string\",\n  \"cnpj\": \"string\",\n  \"email\": \"string\",\n  \"telefone\": \"string\",\n  \"representanteLegal\": {\n    \"id\": \"string\",\n    \"nome\": \"string\",\n    \"cpf\": \"string\",\n    \"email\": \"string\",\n    \"telefone\": \"string\"\n  }\n}"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "listar 6",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/clientes?page=0&size=20&tipoPessoa=string",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "clientes"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                },
+                {
+                  "key": "tipoPessoa",
+                  "value": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/clientes?page=0&size=20&tipoPessoa=string",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "clientes"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "20"
+                    },
+                    {
+                      "key": "tipoPessoa",
+                      "value": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "text",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "*/*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"string\",\n      \"tipoPessoa\": \"string\",\n      \"dataCadastro\": \"2016-04-30\",\n      \"nome\": \"string\",\n      \"cpf\": \"string\",\n      \"razaoSocial\": \"string\",\n      \"cnpj\": \"string\",\n      \"email\": \"string\",\n      \"telefone\": \"string\",\n      \"representanteLegal\": {\n        \"id\": \"string\",\n        \"nome\": \"string\",\n        \"cpf\": \"string\",\n        \"email\": \"string\",\n        \"telefone\": \"string\"\n      }\n    },\n    {\n      \"id\": \"string\",\n      \"tipoPessoa\": \"string\",\n      \"dataCadastro\": \"1955-04-27\",\n      \"nome\": \"string\",\n      \"cpf\": \"string\",\n      \"razaoSocial\": \"string\",\n      \"cnpj\": \"string\",\n      \"email\": \"string\",\n      \"telefone\": \"string\",\n      \"representanteLegal\": {\n        \"id\": \"string\",\n        \"nome\": \"string\",\n        \"cpf\": \"string\",\n        \"email\": \"string\",\n        \"telefone\": \"string\"\n      }\n    }\n  ],\n  \"page\": 2049,\n  \"size\": 1413,\n  \"totalElements\": 8439,\n  \"totalPages\": 5645\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "auth",
+      "item": [
+        {
+          "name": "login",
+          "item": [
+            {
+              "name": "login",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"key_0\": \"string\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      },
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"key_0\": \"string\"\n}",
+                      "options": {
+                        "raw": {
+                          "headerFamily": "json",
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/auth/login",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "auth",
+                        "login"
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{}"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "atendimentos",
+      "item": [
+        {
+          "name": "Abrir atendimento / criar OS",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ano\": 7330,\n  \"cor\": \"string\",\n  \"email\": \"str\",\n  \"kilometragem\": 8090,\n  \"marca\": \"string\",\n  \"modelo\": \"string\",\n  \"placa\": \"string\",\n  \"relato\": \"string\",\n  \"telefone\": \"string\",\n  \"tipoPessoa\": \"string\",\n  \"nome\": \"string\",\n  \"cpf\": \"string\",\n  \"razaoSocial\": \"string\",\n  \"cnpj\": \"string\",\n  \"representanteNome\": \"string\",\n  \"representanteCpf\": \"string\",\n  \"representanteEmail\": \"string\",\n  \"representanteTelefone\": \"string\"\n}",
+              "options": {
+                "raw": {
+                  "headerFamily": "json",
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/atendimentos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "atendimentos"
+              ]
+            },
+            "description": "Primeiro passo do fluxo: OS criada em RECEBIDO com cliente e veículo."
+          },
+          "response": [
+            {
+              "name": "OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"ano\": 7330,\n  \"cor\": \"string\",\n  \"email\": \"str\",\n  \"kilometragem\": 8090,\n  \"marca\": \"string\",\n  \"modelo\": \"string\",\n  \"placa\": \"string\",\n  \"relato\": \"string\",\n  \"telefone\": \"string\",\n  \"tipoPessoa\": \"string\",\n  \"nome\": \"string\",\n  \"cpf\": \"string\",\n  \"razaoSocial\": \"string\",\n  \"cnpj\": \"string\",\n  \"representanteNome\": \"string\",\n  \"representanteCpf\": \"string\",\n  \"representanteEmail\": \"string\",\n  \"representanteTelefone\": \"string\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/atendimentos",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "atendimentos"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "text",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "*/*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"clienteId\": \"string\",\n  \"veiculoId\": \"string\",\n  \"ordemServicoId\": \"string\",\n  \"status\": \"string\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ordens-compra",
+      "item": [
+        {
+          "name": "{id}",
+          "item": [
+            {
+              "name": "realizar",
+              "item": [
+                {
+                  "name": "Realizar ordem de compra",
+                  "request": {
+                    "method": "PATCH",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/ordens-compra/:id/realizar",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "ordens-compra",
+                        ":id",
+                        "realizar"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                        }
+                      ]
+                    },
+                    "description": "Confirma compra e aciona atualização de estoque no domínio."
+                  },
+                  "response": [
+                    {
+                      "name": "OK",
+                      "originalRequest": {
+                        "method": "PATCH",
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "*/*"
+                          }
+                        ],
+                        "url": {
+                          "raw": "{{baseUrl}}/ordens-compra/:id/realizar",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "ordens-compra",
+                            ":id",
+                            "realizar"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id",
+                              "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "_postman_previewlanguage": "text",
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "*/*"
+                        }
+                      ],
+                      "cookie": [],
+                      "body": "{\n  \"id\": \"string\",\n  \"status\": \"string\",\n  \"dataCompra\": \"1950-07-12\"\n}"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Detalhar ordem de compra",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/ordens-compra/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "ordens-compra",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/ordens-compra/:id",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "ordens-compra",
+                        ":id"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"id\": \"string\",\n  \"status\": \"string\",\n  \"dataCompra\": \"1992-10-31\",\n  \"itens\": [\n    {\n      \"id\": \"string\",\n      \"pecaId\": \"string\",\n      \"codigo\": \"string\",\n      \"descricao\": \"string\",\n      \"quantidade\": 2075\n    },\n    {\n      \"id\": \"string\",\n      \"pecaId\": \"string\",\n      \"codigo\": \"string\",\n      \"descricao\": \"string\",\n      \"quantidade\": 524\n    }\n  ]\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Listar ordens de compra",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/ordens-compra",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ordens-compra"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/ordens-compra",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "ordens-compra"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "text",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "*/*"
+                }
+              ],
+              "cookie": [],
+              "body": "[\n  {\n    \"id\": \"string\",\n    \"status\": \"string\",\n    \"dataCompra\": \"1960-08-17\",\n    \"itens\": [\n      {\n        \"id\": \"string\",\n        \"pecaId\": \"string\",\n        \"codigo\": \"string\",\n        \"descricao\": \"string\",\n        \"quantidade\": 8106\n      },\n      {\n        \"id\": \"string\",\n        \"pecaId\": \"string\",\n        \"codigo\": \"string\",\n        \"descricao\": \"string\",\n        \"quantidade\": 5616\n      }\n    ]\n  },\n  {\n    \"id\": \"string\",\n    \"status\": \"string\",\n    \"dataCompra\": \"2025-02-07\",\n    \"itens\": [\n      {\n        \"id\": \"string\",\n        \"pecaId\": \"string\",\n        \"codigo\": \"string\",\n        \"descricao\": \"string\",\n        \"quantidade\": 9053\n      },\n      {\n        \"id\": \"string\",\n        \"pecaId\": \"string\",\n        \"codigo\": \"string\",\n        \"descricao\": \"string\",\n        \"quantidade\": 6187\n      }\n    ]\n  }\n]"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "estoques",
+      "item": [
+        {
+          "name": "{id}",
+          "item": [
+            {
+              "name": "localizacao",
+              "item": [
+                {
+                  "name": "Atualizar localização do estoque",
+                  "request": {
+                    "method": "PATCH",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      },
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"localizacao\": \"string\"\n}",
+                      "options": {
+                        "raw": {
+                          "headerFamily": "json",
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/estoques/:id/localizacao",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "estoques",
+                        ":id",
+                        "localizacao"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                        }
+                      ]
+                    }
+                  },
+                  "response": [
+                    {
+                      "name": "OK",
+                      "originalRequest": {
+                        "method": "PATCH",
+                        "header": [
+                          {
+                            "key": "Content-Type",
+                            "value": "application/json"
+                          },
+                          {
+                            "key": "Accept",
+                            "value": "*/*"
+                          }
+                        ],
+                        "body": {
+                          "mode": "raw",
+                          "raw": "{\n  \"localizacao\": \"string\"\n}",
+                          "options": {
+                            "raw": {
+                              "headerFamily": "json",
+                              "language": "json"
+                            }
+                          }
+                        },
+                        "url": {
+                          "raw": "{{baseUrl}}/estoques/:id/localizacao",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "estoques",
+                            ":id",
+                            "localizacao"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id",
+                              "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "_postman_previewlanguage": "text",
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "*/*"
+                        }
+                      ],
+                      "cookie": [],
+                      "body": "{\n  \"id\": \"string\",\n  \"quantidadeDisponivel\": 2888,\n  \"quantidadeMinima\": 4544,\n  \"localizacao\": \"string\"\n}"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Detalhar estoque",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/estoques/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "estoques",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/estoques/:id",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "estoques",
+                        ":id"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b6c9308d-4d5f-cdbe-a485-7671b2b84a1d"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"id\": \"string\",\n  \"quantidadeDisponivel\": 3638,\n  \"quantidadeMinima\": 1936,\n  \"localizacao\": \"string\",\n  \"peca\": {\n    \"id\": \"string\",\n    \"codigo\": \"string\",\n    \"descricao\": \"string\",\n    \"marca\": \"string\"\n  }\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "listar 5",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/estoques?page=0&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estoques"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/estoques?page=0&size=20",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "estoques"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "20"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "text",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "*/*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"string\",\n      \"quantidadeDisponivel\": 2249,\n      \"quantidadeMinima\": 6538,\n      \"localizacao\": \"string\",\n      \"peca\": {\n        \"id\": \"string\",\n        \"codigo\": \"string\",\n        \"descricao\": \"string\",\n        \"marca\": \"string\"\n      }\n    },\n    {\n      \"id\": \"string\",\n      \"quantidadeDisponivel\": 7780,\n      \"quantidadeMinima\": 5193,\n      \"localizacao\": \"string\",\n      \"peca\": {\n        \"id\": \"string\",\n        \"codigo\": \"string\",\n        \"descricao\": \"string\",\n        \"marca\": \"string\"\n      }\n    }\n  ],\n  \"page\": 6127,\n  \"size\": 5573,\n  \"totalElements\": 6074,\n  \"totalPages\": 1152\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8088"
+    }
+  ]
+}
