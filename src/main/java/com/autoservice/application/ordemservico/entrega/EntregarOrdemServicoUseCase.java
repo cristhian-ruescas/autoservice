@@ -32,7 +32,7 @@ public class EntregarOrdemServicoUseCase extends UseCase<EntregarOrdemServicoCom
 
         ordemServico.entregar();
 
-        final var ordemServicoAtualizada = this.ordemServicoGateway.update(ordemServico);
+        final var ordemServicoAtualizada = this.ordemServicoGateway.create(ordemServico);
 
         ordemServicoAtualizada.getDomainEvents().forEach(this.eventPublisher::publishEvent);
         ordemServicoAtualizada.clearEvents();
