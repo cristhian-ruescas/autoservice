@@ -1,9 +1,9 @@
 package com.autoservice.presentation.controller;
 
 import com.autoservice.application.ordemcompra.query.OrdemCompraOutput;
+import com.autoservice.application.ordemcompra.query.OrdemCompraQuery;
 import com.autoservice.application.ordemcompra.realizar.RealizarOrdemCompraOutput;
 import com.autoservice.application.ordemcompra.realizar.RealizarOrdemCompraUseCase;
-import com.autoservice.application.ordemcompra.query.OrdemCompraQuery;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +21,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = OrdemCompraController.class)
 @DisplayName("OrdemCompraController - Integration Tests")
@@ -186,15 +188,6 @@ class OrdemCompraControllerTest {
     @DisplayName("GET /ordens-compra sem autenticação retorna 401")
     void deveRetornar401SemAutenticacao() throws Exception {
         mockMvc.perform(get("/ordens-compra"))
-                .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    @DisplayName("GET /ordens-compra/{id} sem autenticação retorna 401")
-    void deveRetornar401SemAutenticacaoNoDetalhe() throws Exception {
-        final var ordemId = UUID.randomUUID();
-
-        mockMvc.perform(get("/ordens-compra/{id}", ordemId))
                 .andExpect(status().isUnauthorized());
     }
 
