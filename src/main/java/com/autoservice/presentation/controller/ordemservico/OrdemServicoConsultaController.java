@@ -3,6 +3,8 @@ package com.autoservice.presentation.controller.ordemservico;
 import com.autoservice.application.PaginationOutput;
 import com.autoservice.application.ordemservico.acompanhamento.AcompanharOrdemServicoOutput;
 import com.autoservice.application.ordemservico.acompanhamento.AcompanharOrdemServicoQuery;
+import com.autoservice.application.ordemservico.status.ConsultarStatusOrdemServicoOutput;
+import com.autoservice.application.ordemservico.status.ConsultarStatusOrdemServicoQuery;
 import com.autoservice.application.ordemservico.delete.RemoverOrdemServicoCommand;
 import com.autoservice.application.ordemservico.delete.RemoverOrdemServicoUseCase;
 import com.autoservice.application.ordemservico.detail.DetailOrdemServicoOutput;
@@ -30,6 +32,7 @@ public class OrdemServicoConsultaController {
     private final ListOrdemServicoQuery listOrdemServicoQuery;
     private final DetailOrdemServicoQuery detailOrdemServicoQuery;
     private final AcompanharOrdemServicoQuery acompanharOrdemServicoQuery;
+    private final ConsultarStatusOrdemServicoQuery consultarStatusOrdemServicoQuery;
     private final AtualizarOrdemServicoUseCase atualizarOrdemServicoUseCase;
     private final RemoverOrdemServicoUseCase removerOrdemServicoUseCase;
 
@@ -37,12 +40,14 @@ public class OrdemServicoConsultaController {
             final ListOrdemServicoQuery listOrdemServicoQuery,
             final DetailOrdemServicoQuery detailOrdemServicoQuery,
             final AcompanharOrdemServicoQuery acompanharOrdemServicoQuery,
+            final ConsultarStatusOrdemServicoQuery consultarStatusOrdemServicoQuery,
             final AtualizarOrdemServicoUseCase atualizarOrdemServicoUseCase,
             final RemoverOrdemServicoUseCase removerOrdemServicoUseCase
     ) {
         this.listOrdemServicoQuery = listOrdemServicoQuery;
         this.detailOrdemServicoQuery = detailOrdemServicoQuery;
         this.acompanharOrdemServicoQuery = acompanharOrdemServicoQuery;
+        this.consultarStatusOrdemServicoQuery = consultarStatusOrdemServicoQuery;
         this.atualizarOrdemServicoUseCase = atualizarOrdemServicoUseCase;
         this.removerOrdemServicoUseCase = removerOrdemServicoUseCase;
     }
@@ -60,6 +65,12 @@ public class OrdemServicoConsultaController {
     @Operation(summary = "Detalhar ordem de serviço", description = "Inclui veículo, cliente, itens e valor total.")
     public ResponseEntity<DetailOrdemServicoOutput> detail(@PathVariable final UUID id) {
         return ResponseEntity.ok(this.detailOrdemServicoQuery.execute(id));
+    }
+
+    @GetMapping("/{id}/status")
+    @Operation(summary = "Consultar status da ordem de serviço", description = "Endpoint público para consulta do status atual da OS.")
+    public ResponseEntity<ConsultarStatusOrdemServicoOutput> status(@PathVariable final UUID id) {
+        return ResponseEntity.ok(this.consultarStatusOrdemServicoQuery.consultar(id));
     }
 
     @GetMapping("/{id}/andamento")

@@ -1,0 +1,18 @@
+cluster_name = "autoservice"
+namespace    = "autoservice"
+
+# Ajuste para a imagem publicada pela pipeline
+app_image    = "autoservice:latest"
+app_replicas = 2
+
+hpa_min_replicas  = 2
+hpa_max_replicas  = 6
+hpa_cpu_target    = 70
+hpa_memory_target = 80
+
+postgres_db       = "autoservice"
+postgres_user     = "postgres"
+postgres_password = "troque-esta-senha"
+
+jwt_secret   = "troque-por-um-segredo-forte-e-aleatorio"
+app_base_url = "http://autoservice.local"

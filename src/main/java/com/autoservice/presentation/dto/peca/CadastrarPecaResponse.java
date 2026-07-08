@@ -10,6 +10,7 @@ public record CadastrarPecaResponse(
         String codigo,
         String marca,
         BigDecimal valorUnitario,
+        Integer quantidadeEstoque,
         String tipoVeiculoId
 ) {
     public static CadastrarPecaResponse from(final CadastrarPecaOutput output) {
@@ -19,6 +20,7 @@ public record CadastrarPecaResponse(
                 output.codigo(),
                 output.marca(),
                 output.valorUnitario(),
+                output.quantidadeEstoque(),
                 output.tipoVeiculoId()
         );
     }

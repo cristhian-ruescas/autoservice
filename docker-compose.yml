@@ -1,0 +1,4 @@
+# Atalho na raiz do repositório (conforme SDD).
+# Equivalente a: docker compose -f docker/docker-compose.yaml up --build
+include:
+  - path: docker/docker-compose.yaml

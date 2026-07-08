@@ -8,6 +8,7 @@ public record CadastrarPecaCommand(
         String codigo,
         String marca,
         BigDecimal valorUnitario,
+        Integer quantidadeEstoque,
         UUID tipoVeiculoId
 ) {
     public static CadastrarPecaCommand with(
@@ -15,6 +16,7 @@ public record CadastrarPecaCommand(
             final String codigo,
             final String marca,
             final BigDecimal valorUnitario,
+            final Integer quantidadeEstoque,
             final UUID tipoVeiculoId
     ) {
         return new CadastrarPecaCommand(
@@ -22,6 +24,7 @@ public record CadastrarPecaCommand(
                 codigo,
                 marca,
                 valorUnitario,
+                quantidadeEstoque == null ? 0 : quantidadeEstoque,
                 tipoVeiculoId
         );
     }
