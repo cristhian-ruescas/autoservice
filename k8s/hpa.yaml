@@ -1,0 +1,57 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: autoservice-hpa
+  namespace: autoservice
+spec:
+  # Target the Deployment
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: autoservice-app
+  
+  # Pod replica limits
+  minReplicas: 2      # Minimum number of pods
+  maxReplicas: 10     # Maximum number of pods
+  
+  # Scaling metrics
+  metrics:
+  # Scale based on CPU usage
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70    # Scale up when CPU > 70%
+  
+  # Scale based on Memory usage
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80    # Scale up when Memory > 80%
+  
+  # Scaling behavior (optional but recommended)
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300  # Wait 5 min before scaling down
+      policies:
+      - type: Percent
+        value: 50                       # Remove max 50% of pods
+        periodSeconds: 60
+      - type: Pods
+        value: 1                        # Remove max 1 pod
+        periodSeconds: 60
+      selectPolicy: Min                 # Use most conservative policy
+    
+    scaleUp:
+      stabilizationWindowSeconds: 0     # Scale up immediately
+      policies:
+      - type: Percent
+        value: 100                      # Add max 100% of current pods
+        periodSeconds: 15
+      - type: Pods
+        value: 2                        # Add max 2 pods
+        periodSeconds: 15
+      selectPolicy: Max                 # Use most aggressive policy

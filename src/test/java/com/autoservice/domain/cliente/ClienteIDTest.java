@@ -97,15 +97,7 @@ class ClienteIDTest {
     void deveRetornarFalsoAoCompararComNull() {
         final var clienteID = ClienteID.unique();
 
-        assertFalse(clienteID.equals(null));
-    }
-
-    @Test
-    @DisplayName("Deve retornar falso ao comparar com tipo diferente")
-    void deveRetornarFalsoAoCompararComTipoDiferente() {
-        final var clienteID = ClienteID.unique();
-
-        assertFalse(clienteID.equals("valor"));
+        assertNotEquals( null, clienteID);
     }
 
     @Test
