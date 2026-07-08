@@ -42,6 +42,6 @@ public class AtualizarTipoVeiculoUseCase extends UseCase<AtualizarTipoVeiculoCom
                 Ano.from(command.ano())
         );
 
-        return TipoVeiculoOutput.from(this.tipoVeiculoGateway.create(tipoVeiculoAtualizado));
+        return TipoVeiculoOutput.from(this.tipoVeiculoGateway.update(tipoVeiculoAtualizado));
     }
 }

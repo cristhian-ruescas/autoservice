@@ -33,7 +33,7 @@ class AtualizarLocalizacaoEstoqueUseCaseTest {
         final var estoque = Estoque.with(eid, 10, 2, "Gaveta A");
 
         when(estoqueGateway.findById(eid)).thenReturn(Optional.of(estoque));
-        when(estoqueGateway.create(any(Estoque.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(estoqueGateway.update(any(Estoque.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         final var out = useCase.execute(AtualizarLocalizacaoEstoqueCommand.with(
                 UUID.fromString(eid.getValue()),

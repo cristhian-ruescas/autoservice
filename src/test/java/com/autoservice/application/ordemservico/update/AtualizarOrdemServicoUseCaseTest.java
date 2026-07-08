@@ -70,7 +70,7 @@ class AtualizarOrdemServicoUseCaseTest {
                 null);
 
         when(ordemServicoGateway.findById(osId)).thenReturn(Optional.of(os));
-        when(ordemServicoGateway.create(any(OrdemServico.class))).thenAnswer(returnsFirstArg());
+        when(ordemServicoGateway.update(any(OrdemServico.class))).thenAnswer(returnsFirstArg());
 
         final var out = useCase.execute(AtualizarOrdemServicoCommand.with(
                 UUID.fromString(osId.getValue()),
@@ -80,7 +80,7 @@ class AtualizarOrdemServicoUseCaseTest {
                 null));
 
         assertEquals("novo relato", out.relato());
-        verify(ordemServicoGateway).create(any(OrdemServico.class));
+        verify(ordemServicoGateway).update(any(OrdemServico.class));
     }
 
     @Test
@@ -104,7 +104,7 @@ class AtualizarOrdemServicoUseCaseTest {
 
         when(ordemServicoGateway.findById(osId)).thenReturn(Optional.of(os));
         when(veiculoGateway.findById(vNovo)).thenReturn(Optional.of(veiculo));
-        when(ordemServicoGateway.create(any(OrdemServico.class))).thenAnswer(returnsFirstArg());
+        when(ordemServicoGateway.update(any(OrdemServico.class))).thenAnswer(returnsFirstArg());
 
         final var out = useCase.execute(AtualizarOrdemServicoCommand.with(
                 UUID.fromString(osId.getValue()),

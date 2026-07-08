@@ -32,7 +32,7 @@ public class AprovarOrdemServicoUseCase extends UseCase<AprovarOrdemServicoComma
 
         ordemServico.aprovarOrcamento();
 
-        final var ordemServicoAtualizada = this.ordemServicoGateway.create(ordemServico);
+        final var ordemServicoAtualizada = this.ordemServicoGateway.update(ordemServico);
 
         ordemServicoAtualizada.getDomainEvents().forEach(this.eventPublisher::publishEvent);
         ordemServicoAtualizada.clearEvents();

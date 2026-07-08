@@ -2,8 +2,8 @@ package com.autoservice.application.atendimento.create;
 
 import com.autoservice.application.atendimento.create.enums.TipoPessoaAtendimento;
 import com.autoservice.application.ordemservico.itemservico.ItemServicoOrchestrator;
-import com.autoservice.application.pessoa.RepresentanteLegalOrchestrator;
 import com.autoservice.application.tipoveiculo.TipoVeiculoResolver;
+import com.autoservice.application.pessoa.RepresentanteLegalOrchestrator;
 import com.autoservice.domain.cliente.Cliente;
 import com.autoservice.domain.cliente.ClienteGateway;
 import com.autoservice.domain.events.DomainEventPublisher;
@@ -44,6 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -126,7 +127,7 @@ class AbrirAtendimentoUseCaseTest {
                 List.of()
         );
 
-        when(pessoaGateway.findPessoaFisicaByCpf(CPF.from("52998224725")))
+        when(pessoaGateway.findPessoaFisicaByCpf(eq(CPF.from("52998224725"))))
                 .thenReturn(Optional.empty());
 
         when(pessoaGateway.create(any(Pessoa.class)))
@@ -201,10 +202,10 @@ class AbrirAtendimentoUseCaseTest {
                 List.of()
         );
 
-        when(pessoaGateway.findPessoaJuridicaByCnpj(CNPJ.from("11222333000181")))
+        when(pessoaGateway.findPessoaJuridicaByCnpj(eq(CNPJ.from("11222333000181"))))
                 .thenReturn(Optional.empty());
 
-        when(pessoaGateway.findPessoaFisicaByCpf(CPF.from("52998224725")))
+        when(pessoaGateway.findPessoaFisicaByCpf(eq(CPF.from("52998224725"))))
                 .thenReturn(Optional.empty());
 
         when(pessoaGateway.create(any(Pessoa.class)))
@@ -285,10 +286,10 @@ class AbrirAtendimentoUseCaseTest {
                 List.of()
         );
 
-        when(pessoaGateway.findPessoaJuridicaByCnpj(CNPJ.from("11222333000181")))
+        when(pessoaGateway.findPessoaJuridicaByCnpj(eq(CNPJ.from("11222333000181"))))
                 .thenReturn(Optional.empty());
 
-        when(pessoaGateway.findPessoaFisicaByCpf(CPF.from("52998224725")))
+        when(pessoaGateway.findPessoaFisicaByCpf(eq(CPF.from("52998224725"))))
                 .thenReturn(Optional.of(representanteExistente));
 
         when(pessoaGateway.create(any(Pessoa.class)))
@@ -355,7 +356,7 @@ class AbrirAtendimentoUseCaseTest {
                 List.of(item)
         );
 
-        when(pessoaGateway.findPessoaFisicaByCpf(CPF.from("52998224725")))
+        when(pessoaGateway.findPessoaFisicaByCpf(eq(CPF.from("52998224725"))))
                 .thenReturn(Optional.empty());
 
         when(pessoaGateway.create(any(Pessoa.class)))
@@ -376,6 +377,9 @@ class AbrirAtendimentoUseCaseTest {
         when(ordemServicoGateway.create(any(OrdemServico.class)))
                 .thenAnswer(returnsFirstArg());
 
+        when(ordemServicoGateway.update(any(OrdemServico.class)))
+                .thenAnswer(returnsFirstArg());
+
         when(itemServicoOrchestrator.criar(any(), any()))
                 .thenAnswer(invocation -> ItemServico.newServico(
                         invocation.getArgument(1),
@@ -389,7 +393,7 @@ class AbrirAtendimentoUseCaseTest {
         final var output = useCase.execute(command);
 
         assertEquals(OrdemServicoStatus.EM_DIAGNOSTICO.name(), output.status());
-        verify(ordemServicoGateway, times(2)).create(any(OrdemServico.class));
+        verify(ordemServicoGateway, times(1)).update(any(OrdemServico.class));
         verify(itemServicoOrchestrator, times(1)).criar(any(), any());
         verify(itemServicoGateway, times(1)).create(any(ItemServico.class));
     }

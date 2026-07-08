@@ -10,10 +10,10 @@ import com.autoservice.domain.ordemservico.OrdemServicoID;
 import com.autoservice.domain.ordemservico.enums.OrdemServicoStatus;
 import com.autoservice.domain.ordemservico.valueobject.DataCriacao;
 import com.autoservice.domain.peca.Peca;
+import com.autoservice.domain.peca.PecaGateway;
 import com.autoservice.domain.peca.PecaID;
 import com.autoservice.domain.tipoveiculo.TipoVeiculoID;
 import com.autoservice.domain.veiculo.VeiculoID;
-import com.autoservice.infrastructure.peca.PecaGatewayImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -45,13 +45,14 @@ class AdicionarItensServicoUseCaseTest {
     private ItemServicoGateway itemServicoGateway;
 
     @Mock
-    private PecaGatewayImpl pecaGateway;
+    private PecaGateway pecaGateway;
 
+    private ItemServicoOrchestrator itemServicoOrchestrator;
     private AdicionarItensServicoUseCase useCase;
 
     @BeforeEach
     void setUp() {
-        ItemServicoOrchestrator itemServicoOrchestrator = new ItemServicoOrchestrator(ordemServicoGateway, pecaGateway);
+        itemServicoOrchestrator = new ItemServicoOrchestrator(ordemServicoGateway, pecaGateway);
         useCase = new AdicionarItensServicoUseCase(itemServicoOrchestrator, itemServicoGateway);
     }
 
