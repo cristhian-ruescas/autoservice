@@ -46,7 +46,7 @@ class NotificacaoSimuladaControllerTest {
                 osId,
                 null,
                 "RECEBIDO",
-                "Recebido",
+                "Recebida",
                 "cliente@test.local",
                 "Cliente",
                 "ABC1D23",

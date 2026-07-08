@@ -16,7 +16,6 @@ import com.autoservice.presentation.dto.peca.CadastrarPecaResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -97,6 +96,7 @@ public class PecaController {
                 request.codigo(),
                 request.marca(),
                 request.valorUnitario(),
+                request.quantidadeEstoque(),
                 request.tipoVeiculoId()
         ));
 

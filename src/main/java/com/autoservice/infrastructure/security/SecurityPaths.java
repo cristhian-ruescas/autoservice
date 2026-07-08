@@ -8,10 +8,14 @@ public final class SecurityPaths {
             "/auth/**",
             "/v3/api-docs/**",
             "/swagger-ui/**",
-            "/swagger-ui.html"
+            "/swagger-ui.html",
+            "/actuator/health/**",
+            "/actuator/info",
+            "/actuator/prometheus"
     };
 
     public static final String ANDAMENTO_ORDEM_SERVICO = "/ordens-servico/*/andamento";
+    public static final String STATUS_ORDEM_SERVICO = "/ordens-servico/*/status";
     public static final String APROVACAO_APROVAR = "/ordens-servico/*/aprovacao/aprovar";
     public static final String APROVACAO_REPROVAR = "/ordens-servico/*/aprovacao/reprovar";
 

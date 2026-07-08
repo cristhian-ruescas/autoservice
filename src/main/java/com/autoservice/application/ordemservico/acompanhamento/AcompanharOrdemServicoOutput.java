@@ -6,6 +6,7 @@ import com.autoservice.domain.ordemservico.acompanhamento.OrdemServicoAcompanham
 import com.autoservice.validation.Error;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,14 +22,24 @@ public record AcompanharOrdemServicoOutput(
         LocalDateTime iniciadoEm,
         LocalDateTime finalizadoEm,
         ListOrdemServicoOutput.VeiculoOutput veiculo,
-        List<EtapaOutput> etapas
+        List<EtapaOutput> etapas,
+        List<ItemOutput> itens,
+        BigDecimal valorTotal
 ) {
 
     public static AcompanharOrdemServicoOutput from(final ListOrdemServicoOutput ordemServico) {
+        return from(ordemServico, List.of());
+    }
+
+    public static AcompanharOrdemServicoOutput from(
+            final ListOrdemServicoOutput ordemServico,
+            final List<ItemOutput> itens
+    ) {
         if (ordemServico == null) {
             throw DomainException.with(new Error("Ordem de serviço é obrigatória para acompanhamento"));
         }
 
+        final var itensSeguros = itens == null ? List.<ItemOutput>of() : itens;
         final var progresso = OrdemServicoAcompanhamentoCalculator.calcular(ordemServico.status());
 
         return new AcompanharOrdemServicoOutput(
@@ -41,8 +52,17 @@ public record AcompanharOrdemServicoOutput(
                 ordemServico.iniciadoEm(),
                 ordemServico.finalizadoEm(),
                 ordemServico.veiculo(),
-                mapEtapas(progresso.etapas())
+                mapEtapas(progresso.etapas()),
+                itensSeguros,
+                calcularValorTotal(itensSeguros)
         );
+    }
+
+    private static BigDecimal calcularValorTotal(final List<ItemOutput> itens) {
+        return itens.stream()
+                .map(ItemOutput::valorTotal)
+                .filter(java.util.Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     private static List<EtapaOutput> mapEtapas(
@@ -63,6 +83,17 @@ public record AcompanharOrdemServicoOutput(
             String nome,
             String situacao,
             int percentual
+    ) {
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public record ItemOutput(
+            String tipo,
+            String descricao,
+            String pecaCodigo,
+            Integer quantidade,
+            BigDecimal valorUnitario,
+            BigDecimal valorTotal
     ) {
     }
 }

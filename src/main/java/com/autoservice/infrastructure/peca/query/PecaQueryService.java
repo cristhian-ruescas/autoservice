@@ -6,7 +6,9 @@ import com.autoservice.application.peca.query.ListPecasQuery;
 import com.autoservice.application.peca.query.PecaOutput;
 import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.peca.PecaID;
+import com.autoservice.infrastructure.persistence.entity.EstoqueJpaEntity;
 import com.autoservice.infrastructure.persistence.entity.PecaJpaEntity;
+import com.autoservice.infrastructure.persistence.mapper.EstoqueMapper;
 import com.autoservice.infrastructure.persistence.mapper.PecaMapper;
 import com.autoservice.infrastructure.query.PaginacaoValidator;
 import com.autoservice.infrastructure.query.QueryFilterNormalizer;
@@ -39,21 +41,22 @@ public class PecaQueryService implements ListPecasQuery, GetPecaByIdQuery {
         final var codigoNormalizado = QueryFilterNormalizer.buscaParcial(codigo);
 
         final var query = """
-                select peca
+                select peca, estoque
                 from PecaJpaEntity peca
+                left join EstoqueJpaEntity estoque on estoque.id = peca.estoqueId
                 where (:marca is null or lower(peca.marca) like :marca)
                   and (:codigo is null or lower(peca.codigo) like :codigo)
                 order by peca.marca asc, peca.codigo asc
                 """;
 
-        final var items = this.entityManager.createQuery(query, PecaJpaEntity.class)
+        final var items = this.entityManager.createQuery(query, Object[].class)
                 .setParameter("marca", marcaNormalizada)
                 .setParameter("codigo", codigoNormalizado)
                 .setFirstResult(page * size)
                 .setMaxResults(size)
                 .getResultList()
                 .stream()
-                .map(entity -> PecaOutput.from(PecaMapper.toDomain(entity)))
+                .map(this::mapPecaOutput)
                 .toList();
 
         return PaginationOutput.from(items, page, size, totalPecas(marcaNormalizada, codigoNormalizado));
@@ -67,12 +70,13 @@ public class PecaQueryService implements ListPecasQuery, GetPecaByIdQuery {
         }
 
         final var query = """
-                select peca
+                select peca, estoque
                 from PecaJpaEntity peca
+                left join EstoqueJpaEntity estoque on estoque.id = peca.estoqueId
                 where peca.id = :id
                 """;
 
-        final var rows = this.entityManager.createQuery(query, PecaJpaEntity.class)
+        final var rows = this.entityManager.createQuery(query, Object[].class)
                 .setParameter("id", PecaID.from(id).getValue())
                 .getResultList();
 
@@ -80,7 +84,19 @@ public class PecaQueryService implements ListPecasQuery, GetPecaByIdQuery {
             throw DomainException.with(new Error("Peça não encontrada"));
         }
 
-        return PecaOutput.from(PecaMapper.toDomain(rows.getFirst()));
+        return mapPecaOutput(rows.getFirst());
+    }
+
+    private PecaOutput mapPecaOutput(final Object[] row) {
+        final var peca = PecaMapper.toDomain((PecaJpaEntity) row[0]);
+        final var estoque = row[1] == null
+                ? null
+                : EstoqueMapper.toDomain((EstoqueJpaEntity) row[1]);
+
+        return PecaOutput.from(
+                peca,
+                estoque == null ? null : estoque.getQuantidadeDisponivel()
+        );
     }
 
     private long totalPecas(final String marca, final String codigo) {
