@@ -143,27 +143,52 @@ CI/CD (GitHub Actions)
 
 ## Infraestrutura como Código (Terraform)
 
-Os scripts Terraform devem ficar em **`/infra`** (provisionamento do cluster Kubernetes e banco), com instruções de uso.
+Os scripts Terraform estão em **`/infra`** para provisionamento do cluster Kubernetes (K3d) e banco de dados via Helm.
 
-> Status atual no repositório: **pendente de inclusão pela equipe responsável**.
+### Provisionamento com Terraform
+
+```bash
+cd infra
+
+# Revisar plano de provisionamento
+terraform init
+terraform plan
+
+# Aplicar provisioning (cria cluster K3d + PostgreSQL)
+terraform apply
+```
+
+**Variáveis e configuração:** Ver [infra/README.md](./infra/README.md) para instruções completas e customização de passwords/nomes.
+
+**Recursos criados:**
+- Cluster Kubernetes local (K3d com nome padrão `autoservice-local`)
+- PostgreSQL via Helm Bitnami chart
+- Namespace `autoservice`
+- ConfigMaps e Secrets para aplicação
+
+Após aplicar, validar cluster com:
+```bash
+kubectl cluster-info
+kubectl get pods -n autoservice
+kubectl get services -n autoservice
+```
 
 ## Checklist de entrega — Go/No-Go (Fase 2)
 
 ### Go (concluído no repositório)
 
 - [x] Refatoração em camadas (DDD/hexagonal) e código atualizado;
-- [x] Testes automatizados unitários e de integração;
+- [x] Testes automatizados unitários e de integração (613 testes passando);
 - [x] Dockerfile e docker-compose;
 - [x] Manifestos Kubernetes em `/k8s` (Deployment/Service/ConfigMap/Secret/HPA/PVC);
-- [x] Pipeline CI/CD em `.github/workflows/ci-cd.yml`.
+- [x] Pipeline CI/CD em `.github/workflows/ci-cd.yml`;
+- [x] Scripts Terraform em `/infra` e documentação de provisionamento;
+- [x] Link da collection completa de APIs (Postman/Swagger — [`Autoservice API.postman_collection.json`](./Autoservice%20API.postman_collection.json)).
 
 ### No-Go (pendente para entrega final)
 
-- [ ] Adicionar scripts Terraform em `/infra` e documentação de provisionamento;
-- [ ] Publicar link da collection completa de APIs (Postman/Swagger exportado);
 - [ ] Publicar link do vídeo de demonstração (YouTube/Vimeo, até 15 min);
-- [ ] Inserir desenho final da arquitetura (imagem/diagrama) no README;
-- [ ] Validar execução completa do CI/CD em ambiente real com cluster ativo;
+- [ ] Validar execução completa do CI/CD em ambiente real com cluster ativo (requer secrets GitHub);
 - [ ] Gerar PDF final com link do repositório, arquitetura e vídeo.
 
 ## Testes e cobertura
@@ -238,6 +263,27 @@ target/sonar-security/
 | Peças                              | `/pecas`                                        |
 | Estoque                            | `/estoques`                                     |
 | Ordens de compra                   | `/ordens-compra`                                |
+
+### Documentação interativa
+
+- **Swagger/OpenAPI:** `http://localhost:8088/swagger-ui.html` (em execução local)
+- **OpenAPI JSON:** [`openapi.json`](./openapi.json)
+
+### Postman Collection
+
+Importar collection no Postman: **[`Autoservice API.postman_collection.json`](./Autoservice%20API.postman_collection.json)**
+
+**Alternativamente,** acessar Swagger em tempo real quando a aplicação estiver rodando:
+```bash
+# Com Docker Compose
+docker compose -f docker/docker-compose.yaml up
+
+# Ou com Maven
+./mvnw spring-boot:run
+
+# Acessar
+open http://localhost:8088/swagger-ui.html
+```
 
 ## Decisões de modelagem do MVP
 
