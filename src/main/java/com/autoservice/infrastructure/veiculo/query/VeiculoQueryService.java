@@ -35,7 +35,6 @@ public class VeiculoQueryService implements
             left join PessoaFisicaJpaEntity pf on pf.id = v.proprietarioId
             left join PessoaJuridicaJpaEntity pj on pj.id = v.proprietarioId
             """;
-    public static final String PROPRIETARIO_ID = "proprietarioId";
 
     private final EntityManager entityManager;
 
@@ -70,7 +69,7 @@ public class VeiculoQueryService implements
                 .setParameter("marca", marcaNormalizada)
                 .setParameter("modelo", modeloNormalizado)
                 .setParameter("ano", ano == null ? null : Ano.from(ano))
-                .setParameter(PROPRIETARIO_ID, proprietario)
+                .setParameter("proprietarioId", proprietario)
                 .setFirstResult(page * size)
                 .setMaxResults(size)
                 .getResultList()
@@ -160,7 +159,7 @@ public class VeiculoQueryService implements
                 """;
 
         return this.entityManager.createQuery(query, Object[].class)
-                .setParameter(PROPRIETARIO_ID, proprietarioId.getValue())
+                .setParameter("proprietarioId", proprietarioId.getValue())
                 .getResultList()
                 .stream()
                 .map(VeiculoReadModelMapper::fromQueryRow)
@@ -187,7 +186,7 @@ public class VeiculoQueryService implements
                 .setParameter("marca", marca)
                 .setParameter("modelo", modelo)
                 .setParameter("ano", ano == null ? null : Ano.from(ano))
-                .setParameter(PROPRIETARIO_ID, proprietarioId)
+                .setParameter("proprietarioId", proprietarioId)
                 .getSingleResult();
     }
 }

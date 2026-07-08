@@ -32,7 +32,7 @@ public class FinalizarOrdemServicoUseCase extends UseCase<FinalizarOrdemServicoC
 
         ordemServico.finalizarExecucao();
 
-        final var ordemServicoAtualizada = this.ordemServicoGateway.create(ordemServico);
+        final var ordemServicoAtualizada = this.ordemServicoGateway.update(ordemServico);
 
         ordemServicoAtualizada.getDomainEvents().forEach(this.eventPublisher::publishEvent);
         ordemServicoAtualizada.clearEvents();

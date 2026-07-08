@@ -6,6 +6,8 @@ public interface TipoVeiculoGateway {
 
     TipoVeiculo create(TipoVeiculo tipoVeiculo);
 
+    TipoVeiculo update(TipoVeiculo tipoVeiculo);
+
     Optional<TipoVeiculo> findById(TipoVeiculoID id);
 
     Optional<TipoVeiculo> findByMarcaModeloAno(String marca, String modelo, Integer ano);

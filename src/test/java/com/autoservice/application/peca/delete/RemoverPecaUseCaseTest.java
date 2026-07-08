@@ -7,9 +7,9 @@ import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.itemservico.ItemServicoGateway;
 import com.autoservice.domain.ordemservico.enums.OrdemServicoStatus;
 import com.autoservice.domain.peca.Peca;
+import com.autoservice.domain.peca.PecaGateway;
 import com.autoservice.domain.peca.PecaID;
 import com.autoservice.domain.tipoveiculo.TipoVeiculoID;
-import com.autoservice.infrastructure.peca.PecaGatewayImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 class RemoverPecaUseCaseTest {
 
     @Mock
-    private PecaGatewayImpl pecaGateway;
+    private PecaGateway pecaGateway;
 
     @Mock
     private EstoqueGateway estoqueGateway;

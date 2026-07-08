@@ -46,7 +46,7 @@ class IniciarDiagnosticoUseCaseTest {
         final var command = IniciarDiagnosticoCommand.with(UUID.fromString(ordemServico.getId().getValue()));
 
         when(gateway.findById(ordemServico.getId())).thenReturn(Optional.of(ordemServico));
-        when(gateway.create(any(OrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(gateway.update(any(OrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         final var output = useCase.execute(command);
 
@@ -54,7 +54,7 @@ class IniciarDiagnosticoUseCaseTest {
         assertEquals(OrdemServicoStatus.EM_DIAGNOSTICO.name(), output.status());
 
         verify(gateway).findById(ordemServico.getId());
-        verify(gateway).create(ordemServico);
+        verify(gateway).update(ordemServico);
         verify(eventPublisher).publishEvent(any(OrdemServicoDiagnosticoIniciadoEvent.class));
     }
 

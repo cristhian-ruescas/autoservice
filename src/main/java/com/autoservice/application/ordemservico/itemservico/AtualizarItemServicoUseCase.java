@@ -46,6 +46,6 @@ public class AtualizarItemServicoUseCase extends UseCase<AtualizarItemServicoCom
 
         final var itemAtualizado = this.itemServicoOrchestrator.mesclar(command, itemAtual, ordemServicoId);
 
-        return AdicionarItemServicoOutput.from(this.itemServicoGateway.create(itemAtualizado));
+        return AdicionarItemServicoOutput.from(this.itemServicoGateway.update(itemAtualizado));
     }
 }

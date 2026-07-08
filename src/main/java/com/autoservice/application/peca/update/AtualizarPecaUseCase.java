@@ -4,21 +4,21 @@ import com.autoservice.application.UseCase;
 import com.autoservice.application.peca.query.PecaOutput;
 import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.peca.Peca;
+import com.autoservice.domain.peca.PecaGateway;
 import com.autoservice.domain.peca.PecaID;
 import com.autoservice.domain.tipoveiculo.TipoVeiculoGateway;
 import com.autoservice.domain.tipoveiculo.TipoVeiculoID;
-import com.autoservice.infrastructure.peca.PecaGatewayImpl;
 import com.autoservice.validation.Error;
 
 import java.util.Objects;
 
 public class AtualizarPecaUseCase extends UseCase<AtualizarPecaCommand, PecaOutput> {
 
-    private final PecaGatewayImpl pecaGateway;
+    private final PecaGateway pecaGateway;
     private final TipoVeiculoGateway tipoVeiculoGateway;
 
     public AtualizarPecaUseCase(
-            final PecaGatewayImpl pecaGateway,
+            final PecaGateway pecaGateway,
             final TipoVeiculoGateway tipoVeiculoGateway
     ) {
         this.pecaGateway = Objects.requireNonNull(pecaGateway);
@@ -48,7 +48,7 @@ public class AtualizarPecaUseCase extends UseCase<AtualizarPecaCommand, PecaOutp
                 tipoVeiculoIdOf(command, pecaAtual)
         );
 
-        return PecaOutput.from(this.pecaGateway.create(pecaAtualizada));
+        return PecaOutput.from(this.pecaGateway.update(pecaAtualizada));
     }
 
     private TipoVeiculoID tipoVeiculoIdOf(final AtualizarPecaCommand command, final Peca pecaAtual) {

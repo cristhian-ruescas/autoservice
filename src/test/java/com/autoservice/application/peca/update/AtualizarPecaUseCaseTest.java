@@ -3,6 +3,7 @@ package com.autoservice.application.peca.update;
 import com.autoservice.domain.estoque.EstoqueID;
 import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.peca.Peca;
+import com.autoservice.domain.peca.PecaGateway;
 import com.autoservice.domain.peca.PecaID;
 import com.autoservice.domain.tipoveiculo.TipoVeiculo;
 import com.autoservice.domain.tipoveiculo.TipoVeiculoGateway;
@@ -10,7 +11,6 @@ import com.autoservice.domain.tipoveiculo.TipoVeiculoID;
 import com.autoservice.domain.veiculo.valueobject.Ano;
 import com.autoservice.domain.veiculo.valueobject.Marca;
 import com.autoservice.domain.veiculo.valueobject.Modelo;
-import com.autoservice.infrastructure.peca.PecaGatewayImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -31,7 +31,7 @@ import static org.mockito.Mockito.when;
 class AtualizarPecaUseCaseTest {
 
     @Mock
-    private PecaGatewayImpl pecaGateway;
+    private PecaGateway pecaGateway;
 
     @Mock
     private TipoVeiculoGateway tipoVeiculoGateway;
@@ -53,7 +53,7 @@ class AtualizarPecaUseCaseTest {
                 tipoAtual);
 
         when(pecaGateway.findById(id)).thenReturn(Optional.of(peca));
-        when(pecaGateway.create(any(Peca.class))).thenAnswer(returnsFirstArg());
+        when(pecaGateway.update(any(Peca.class))).thenAnswer(returnsFirstArg());
 
         final var out = useCase.execute(AtualizarPecaCommand.with(
                 UUID.fromString(id.getValue()),
@@ -87,7 +87,7 @@ class AtualizarPecaUseCaseTest {
 
         when(pecaGateway.findById(id)).thenReturn(Optional.of(peca));
         when(tipoVeiculoGateway.findById(tipoNovo)).thenReturn(Optional.of(tipo));
-        when(pecaGateway.create(any(Peca.class))).thenAnswer(returnsFirstArg());
+        when(pecaGateway.update(any(Peca.class))).thenAnswer(returnsFirstArg());
 
         final var out = useCase.execute(AtualizarPecaCommand.with(
                 UUID.fromString(id.getValue()),

@@ -26,6 +26,12 @@ public class PecaGatewayImpl implements PecaGateway {
     }
 
     @Override
+    public Peca update(final Peca peca) {
+        this.repository.save(PecaMapper.toEntity(peca));
+        return peca;
+    }
+
+    @Override
     public Optional<Peca> findById(final PecaID id) {
         return this.repository.findById(id.getValue()).map(PecaMapper::toDomain);
     }

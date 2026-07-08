@@ -47,7 +47,7 @@ public class FinalizarDiagnosticoUseCase extends UseCase<FinalizarDiagnosticoCom
                 command.tempoPrevistoExecucaoHoras()
         );
 
-        final var ordemServicoAtualizada = this.ordemServicoGateway.create(ordemServico);
+        final var ordemServicoAtualizada = this.ordemServicoGateway.update(ordemServico);
 
         ordemServicoAtualizada.getDomainEvents().forEach(this.eventPublisher::publishEvent);
         ordemServicoAtualizada.clearEvents();
