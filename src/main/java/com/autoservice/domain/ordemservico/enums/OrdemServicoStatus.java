@@ -1,7 +1,7 @@
 package com.autoservice.domain.ordemservico.enums;
 
 public enum OrdemServicoStatus {
-    RECEBIDO("Recebido"),
+    RECEBIDO("Recebida"),
     EM_DIAGNOSTICO("Em Diagnóstico"),
     AGUARDANDO_APROVACAO("Aguardando Aprovação"),
     REPROVADO("Reprovado"),

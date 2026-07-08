@@ -54,7 +54,13 @@ Abra o Swagger em: **http://localhost:8088/swagger-ui.html**
 
 ### Docker (Postgres + aplicação)
 
-Na raiz do repositório:
+Na raiz do repositório (conforme SDD):
+
+```bash
+docker compose up --build
+```
+
+Alternativa com o compose da pasta `docker/`:
 
 ```bash
 docker compose -f docker/docker-compose.yaml up --build
@@ -63,7 +69,42 @@ docker compose -f docker/docker-compose.yaml up --build
 - **Postgres:** porta **5432**
 - **API:** porta **8088**
 
-O `Dockerfile` está em **`docker/Dockerfile`** (build multi-stage com Maven + JRE 21).
+O `Dockerfile` está na **raiz** e também em **`docker/Dockerfile`** (build multi-stage com Maven + JRE 21).
+
+## Kubernetes
+
+Manifestos em `k8s/` (Deployment, Service, ConfigMap, Secret, HPA, Ingress, PostgreSQL).
+
+```bash
+kubectl apply -k k8s/
+kubectl -n autoservice port-forward svc/autoservice-app 8088:80
+```
+
+Detalhes: [k8s/README.md](k8s/README.md)
+
+## Infraestrutura como Código (Terraform)
+
+Scripts em `infra/terraform/` provisionam cluster kind, PostgreSQL e recursos da aplicação.
+
+```bash
+cd infra/terraform
+cp terraform.tfvars.example terraform.tfvars
+terraform init && terraform apply
+```
+
+Detalhes: [infra/terraform/README.md](infra/terraform/README.md)
+
+## CI/CD
+
+Pipelines GitHub Actions em `.github/workflows/`:
+
+| Workflow | Gatilho | Etapas |
+|----------|---------|--------|
+| `ci.yml` | push / PR | build, testes, JaCoCo |
+| `cd.yml` | push em `main`/`master` ou tag `v*` | testes, build/push da imagem Docker, deploy no K8s |
+
+Para habilitar o deploy, configure o secret `KUBE_CONFIG` (kubeconfig em base64) no repositório.
+Gere o valor com: `./scripts/export-kubeconfig-secret.sh`
 
 ## Testes e cobertura
 
@@ -131,24 +172,25 @@ target/sonar-security/
 | Área                               | Base path                                       |
 |------------------------------------|-------------------------------------------------|
 | Atendimento / abertura de OS       | `/atendimentos`                                 |
-| Ordens de serviço                  | `/ordens-servico`                               |
+| Ordens de serviço                  | `/ordens-servico` (status público em `/status` e `/andamento`) |
 | Métricas (tempo médio de execução) | `/ordens-servico/metricas/tempo-medio-execucao` |
 | Catálogo de serviços               | `/servicos`                                     |
-| Peças                              | `/pecas`                                        |
+| Peças                              | `/pecas` (inclui `quantidadeEstoque` no cadastro) |
 | Estoque                            | `/estoques`                                     |
 | Ordens de compra                   | `/ordens-compra`                                |
 
 ## Decisões de modelagem do MVP
 
-### Criação de cliente e veículo no fluxo de atendimento
+### Criação de cliente e veículo
 
-No MVP, a criação de cliente e veículo foi centralizada em `POST /atendimentos`, que já abre a OS inicial no status
-`RECEBIDO`.
-Essa decisão evita cadastros órfãos e mantém o primeiro registro do atendimento (cliente, veículo e relato inicial) de
-forma transacional.
+O fluxo principal continua em `POST /atendimentos` (abertura transacional de atendimento + OS).
 
-Os endpoints administrativos de clientes e veículos cobrem listagem, consulta, atualização e remoção (`GET`, `PUT`,
-`DELETE`), enquanto o `create` ocorre no fluxo principal de negócio.
+Para atender o CRUD completo do SDD, também existem:
+
+- `POST /clientes` — cadastro standalone de cliente (pessoa física ou jurídica)
+- `POST /veiculos` — cadastro de veículo vinculado a um `clienteId` existente
+
+Os endpoints administrativos de clientes e veículos cobrem listagem, consulta, atualização e remoção.
 
 ### Controle de estoque orientado a eventos de negócio
 

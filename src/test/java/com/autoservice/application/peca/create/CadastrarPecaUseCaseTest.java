@@ -1,5 +1,7 @@
 package com.autoservice.application.peca.create;
 
+import com.autoservice.domain.estoque.Estoque;
+import com.autoservice.domain.estoque.EstoqueGateway;
 import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.peca.Peca;
 import com.autoservice.domain.peca.PecaGateway;
@@ -32,13 +34,17 @@ class CadastrarPecaUseCaseTest {
     private PecaGateway pecaGateway;
 
     @Mock
+    private EstoqueGateway estoqueGateway;
+
+    @Mock
     private TipoVeiculoGateway tipoVeiculoGateway;
 
     @InjectMocks
     private CadastrarPecaUseCase useCase;
 
     @Test
-    void cadastraSemTipoVeiculo() {
+    void cadastraSemTipoVeiculoComEstoqueInicial() {
+        when(estoqueGateway.create(any(Estoque.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(pecaGateway.create(any(Peca.class))).thenAnswer(returnsFirstArg());
 
         final var out = useCase.execute(CadastrarPecaCommand.with(
@@ -46,9 +52,11 @@ class CadastrarPecaUseCaseTest {
                 "F-1",
                 "Mann",
                 new BigDecimal("25.00"),
+                15,
                 null));
 
         assertEquals("Filtro", out.descricao());
+        assertEquals(15, out.quantidadeEstoque());
     }
 
     @Test
@@ -60,6 +68,7 @@ class CadastrarPecaUseCaseTest {
                 Modelo.from("Uno"),
                 Ano.from(2015));
 
+        when(estoqueGateway.create(any(Estoque.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(tipoVeiculoGateway.findById(tid)).thenReturn(Optional.of(tipo));
         when(pecaGateway.create(any(Peca.class))).thenAnswer(returnsFirstArg());
 
@@ -68,14 +77,17 @@ class CadastrarPecaUseCaseTest {
                 "P-9",
                 "Bosch",
                 new BigDecimal("40.00"),
+                0,
                 UUID.fromString(tid.getValue())));
 
         assertEquals("Pastilha", out.descricao());
+        assertEquals(0, out.quantidadeEstoque());
     }
 
     @Test
     void tipoVeiculoInexistenteFalha() {
         final var tid = TipoVeiculoID.unique();
+        when(estoqueGateway.create(any(Estoque.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(tipoVeiculoGateway.findById(tid)).thenReturn(Optional.empty());
 
         assertThrows(DomainException.class, () -> useCase.execute(CadastrarPecaCommand.with(
@@ -83,6 +95,7 @@ class CadastrarPecaUseCaseTest {
                 "c",
                 "m",
                 BigDecimal.ONE,
+                1,
                 UUID.fromString(tid.getValue()))));
     }
 }

@@ -1,13 +1,17 @@
 package com.autoservice.presentation.controller;
 
 import com.autoservice.application.PaginationOutput;
+import com.autoservice.application.veiculo.create.CadastrarVeiculoCommand;
+import com.autoservice.application.veiculo.create.CadastrarVeiculoUseCase;
 import com.autoservice.application.veiculo.delete.RemoverVeiculoCommand;
 import com.autoservice.application.veiculo.delete.RemoverVeiculoUseCase;
 import com.autoservice.application.veiculo.query.*;
 import com.autoservice.application.veiculo.update.AtualizarVeiculoCommand;
 import com.autoservice.application.veiculo.update.AtualizarVeiculoUseCase;
 import com.autoservice.presentation.dto.veiculo.AtualizarVeiculoRequest;
+import com.autoservice.presentation.dto.veiculo.CadastrarVeiculoRequest;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,6 +26,7 @@ public class VeiculoController {
     private final GetVeiculoByIdQuery getVeiculoByIdQuery;
     private final GetVeiculoByPlacaQuery getVeiculoByPlacaQuery;
     private final ListVeiculosByClienteQuery listVeiculosByClienteQuery;
+    private final CadastrarVeiculoUseCase cadastrarVeiculoUseCase;
     private final AtualizarVeiculoUseCase atualizarVeiculoUseCase;
     private final RemoverVeiculoUseCase removerVeiculoUseCase;
 
@@ -30,6 +35,7 @@ public class VeiculoController {
             final GetVeiculoByIdQuery getVeiculoByIdQuery,
             final GetVeiculoByPlacaQuery getVeiculoByPlacaQuery,
             final ListVeiculosByClienteQuery listVeiculosByClienteQuery,
+            final CadastrarVeiculoUseCase cadastrarVeiculoUseCase,
             final AtualizarVeiculoUseCase atualizarVeiculoUseCase,
             final RemoverVeiculoUseCase removerVeiculoUseCase
     ) {
@@ -37,6 +43,7 @@ public class VeiculoController {
         this.getVeiculoByIdQuery = getVeiculoByIdQuery;
         this.getVeiculoByPlacaQuery = getVeiculoByPlacaQuery;
         this.listVeiculosByClienteQuery = listVeiculosByClienteQuery;
+        this.cadastrarVeiculoUseCase = cadastrarVeiculoUseCase;
         this.atualizarVeiculoUseCase = atualizarVeiculoUseCase;
         this.removerVeiculoUseCase = removerVeiculoUseCase;
     }
@@ -58,6 +65,21 @@ public class VeiculoController {
                 ano,
                 proprietarioId
         ));
+    }
+
+    @PostMapping
+    public ResponseEntity<VeiculoOutput> cadastrar(@RequestBody @Valid final CadastrarVeiculoRequest request) {
+        final var output = this.cadastrarVeiculoUseCase.execute(CadastrarVeiculoCommand.with(
+                request.clienteId(),
+                request.placa(),
+                request.marca(),
+                request.modelo(),
+                request.ano(),
+                request.cor(),
+                request.kilometragem()
+        ));
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(output);
     }
 
     @GetMapping("/placa/{placa}")

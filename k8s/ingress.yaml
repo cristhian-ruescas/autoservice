@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: autoservice-app
+  namespace: autoservice
+  labels:
+    app.kubernetes.io/name: autoservice
+    app.kubernetes.io/part-of: autoservice
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: autoservice.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: autoservice-app
+                port:
+                  number: 80
