@@ -34,3 +34,8 @@ build/
 
 # Local environment overrides
 local.variable.env
+
+# Kubernetes Secrets (SENSITIVE - never commit!)
+k8s/11-secret-app.yaml
+k8s/21-secret-postgres.yaml
+.k8s_secrets
