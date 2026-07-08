@@ -31,17 +31,6 @@ public class JavaMailOrcamentoEmailSender implements OrcamentoEmailSender {
 
     @Override
     public void send(final DetailOrdemServicoOutput ordemServico, final byte[] pdf) {
-
-        String text = """
-                Olá,
-                
-                Segue em anexo o orçamento da sua ordem de serviço.
-                
-                Para aprovar ou reprovar o orçamento, abra este email em um cliente com suporte a HTML.
-                
-                AutoService
-                """;
-
         final String email = ordemServico.cliente().email();
 
         if (email == null || email.isBlank()) {
@@ -55,7 +44,7 @@ public class JavaMailOrcamentoEmailSender implements OrcamentoEmailSender {
             helper.setFrom(this.from);
             helper.setTo(email);
             helper.setSubject("Orçamento da Ordem de Serviço " + ordemServico.ordemServicoId());
-            helper.setText(text, htmlBody(ordemServico));
+            helper.setText(plainTextBody(), htmlBody(ordemServico));
             helper.addAttachment(
                     "orcamento-" + ordemServico.ordemServicoId() + ".pdf",
                     new ByteArrayDataSource(pdf, "application/pdf")
@@ -65,6 +54,18 @@ public class JavaMailOrcamentoEmailSender implements OrcamentoEmailSender {
         } catch (MessagingException | MailException exception) {
             throw new IllegalStateException("Não foi possível enviar o email do orçamento", exception);
         }
+    }
+
+    private String plainTextBody() {
+        return """
+                Olá,
+                
+                Segue em anexo o orçamento da sua ordem de serviço.
+                
+                Para aprovar ou reprovar o orçamento, abra este email em um cliente com suporte a HTML.
+                
+                AutoService
+                """;
     }
 
     private String htmlBody(final DetailOrdemServicoOutput ordemServico) {

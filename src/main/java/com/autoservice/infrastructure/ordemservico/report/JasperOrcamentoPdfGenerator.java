@@ -2,6 +2,8 @@ package com.autoservice.infrastructure.ordemservico.report;
 
 import com.autoservice.application.ordemservico.detail.DetailOrdemServicoOutput;
 import com.autoservice.application.ordemservico.orcamento.OrcamentoPdfGenerator;
+import jakarta.annotation.PostConstruct;
+import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperReport;
@@ -18,6 +20,13 @@ public class JasperOrcamentoPdfGenerator implements OrcamentoPdfGenerator {
     private static final String LOGO_PATH = "assets/logo.png";
 
     private JasperReport compiledReport;
+
+    @PostConstruct
+    void compilarRelatorio() throws Exception {
+        try (InputStream reportStream = new ClassPathResource(REPORT_PATH).getInputStream()) {
+            this.compiledReport = JasperCompileManager.compileReport(reportStream);
+        }
+    }
 
     @Override
     public byte[] generate(final DetailOrdemServicoOutput ordemServico) {
