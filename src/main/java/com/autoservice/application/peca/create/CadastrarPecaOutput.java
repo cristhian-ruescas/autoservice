@@ -10,15 +10,17 @@ public record CadastrarPecaOutput(
         String codigo,
         String marca,
         BigDecimal valorUnitario,
+        Integer quantidadeEstoque,
         String tipoVeiculoId
 ) {
-    public static CadastrarPecaOutput from(final Peca peca) {
+    public static CadastrarPecaOutput from(final Peca peca, final Integer quantidadeEstoque) {
         return new CadastrarPecaOutput(
                 peca.getId().getValue(),
                 peca.getDescricao(),
                 peca.getCodigo(),
                 peca.getMarca(),
                 peca.getValorUnitario(),
+                quantidadeEstoque,
                 peca.getTipoVeiculoId() == null ? null : peca.getTipoVeiculoId().getValue()
         );
     }

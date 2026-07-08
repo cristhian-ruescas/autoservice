@@ -45,7 +45,10 @@ class AtendimentoIntegrationTest extends AbstractIntegrationTest {
         final var pecaBody = """
                 {
                   "descricao": "Filtro de óleo integração",
-                  "valorUnitario": 45.90
+                  "codigo": "FLT-INT-001",
+                  "marca": "Mann",
+                  "valorUnitario": 45.90,
+                  "quantidadeEstoque": 10
                 }
                 """;
 

@@ -12,7 +12,7 @@ class OrdemServicoStatusTest {
     @Test
     @DisplayName("Deve verificar as descrições dos status")
     void deveVerificarDescricoes() {
-        assertEquals("Recebido", OrdemServicoStatus.RECEBIDO.getDescricao());
+        assertEquals("Recebida", OrdemServicoStatus.RECEBIDO.getDescricao());
         assertEquals("Em Diagnóstico", OrdemServicoStatus.EM_DIAGNOSTICO.getDescricao());
         assertEquals("Aguardando Aprovação", OrdemServicoStatus.AGUARDANDO_APROVACAO.getDescricao());
         assertEquals("Reprovado", OrdemServicoStatus.REPROVADO.getDescricao());

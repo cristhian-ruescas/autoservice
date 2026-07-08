@@ -9,7 +9,7 @@ import java.util.List;
 public final class OrdemServicoAcompanhamentoCalculator {
 
     private static final List<Etapa> ETAPAS = List.of(
-            new Etapa(OrdemServicoStatus.RECEBIDO, "Recebimento", 10),
+            new Etapa(OrdemServicoStatus.RECEBIDO, "Recebida", 10),
             new Etapa(OrdemServicoStatus.EM_DIAGNOSTICO, "Diagnostico", 30),
             new Etapa(OrdemServicoStatus.AGUARDANDO_APROVACAO, "Aguardando aprovacao", 50),
             new Etapa(OrdemServicoStatus.EM_EXECUCAO, "Execucao", 75),

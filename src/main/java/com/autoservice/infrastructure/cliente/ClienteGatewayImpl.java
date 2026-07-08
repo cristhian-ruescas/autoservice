@@ -3,6 +3,7 @@ package com.autoservice.infrastructure.cliente;
 import com.autoservice.domain.cliente.Cliente;
 import com.autoservice.domain.cliente.ClienteGateway;
 import com.autoservice.domain.cliente.ClienteID;
+import com.autoservice.domain.pessoa.PessoaID;
 import com.autoservice.infrastructure.cliente.persistence.ClienteRepository;
 import com.autoservice.infrastructure.persistence.mapper.ClienteMapper;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,11 @@ public class ClienteGatewayImpl implements ClienteGateway {
     @Override
     public Optional<Cliente> findById(final ClienteID id) {
         return this.repository.findById(id.getValue()).map(ClienteMapper::toDomain);
+    }
+
+    @Override
+    public Optional<Cliente> findByPessoaId(final PessoaID pessoaId) {
+        return this.repository.findByPessoaId(pessoaId.getValue()).map(ClienteMapper::toDomain);
     }
 
     @Override

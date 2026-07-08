@@ -4,6 +4,7 @@ import com.autoservice.application.atendimento.create.AbrirAtendimentoUseCase;
 import com.autoservice.application.atendimento.create.AtendimentoDomainEventPublisher;
 import com.autoservice.application.atendimento.create.PessoaAtendimentoOrchestrator;
 import com.autoservice.application.atendimento.create.TipoVeiculoAtendimentoResolver;
+import com.autoservice.application.cliente.create.CadastrarClienteUseCase;
 import com.autoservice.application.cliente.delete.RemoverClienteUseCase;
 import com.autoservice.application.cliente.update.AtualizarClienteUseCase;
 import com.autoservice.application.estoque.localizacao.AtualizarLocalizacaoEstoqueUseCase;
@@ -32,6 +33,7 @@ import com.autoservice.application.tipoveiculo.TipoVeiculoResolver;
 import com.autoservice.application.tipoveiculo.create.CadastrarTipoVeiculoUseCase;
 import com.autoservice.application.tipoveiculo.delete.RemoverTipoVeiculoUseCase;
 import com.autoservice.application.tipoveiculo.update.AtualizarTipoVeiculoUseCase;
+import com.autoservice.application.veiculo.create.CadastrarVeiculoUseCase;
 import com.autoservice.application.veiculo.delete.RemoverVeiculoUseCase;
 import com.autoservice.application.veiculo.update.AtualizarVeiculoUseCase;
 import com.autoservice.domain.cliente.ClienteGateway;
@@ -113,6 +115,14 @@ public class ApplicationUseCaseConfiguration {
                 itemServicoGateway,
                 eventPublisher
         );
+    }
+
+    @Bean
+    CadastrarClienteUseCase cadastrarClienteUseCase(
+            final PessoaAtendimentoOrchestrator pessoaAtendimentoOrchestrator,
+            final ClienteGateway clienteGateway
+    ) {
+        return new CadastrarClienteUseCase(pessoaAtendimentoOrchestrator, clienteGateway);
     }
 
     @Bean
@@ -242,9 +252,10 @@ public class ApplicationUseCaseConfiguration {
     @Bean
     CadastrarPecaUseCase cadastrarPecaUseCase(
             final PecaGateway pecaGateway,
+            final EstoqueGateway estoqueGateway,
             final TipoVeiculoGateway tipoVeiculoGateway
     ) {
-        return new CadastrarPecaUseCase(pecaGateway, tipoVeiculoGateway);
+        return new CadastrarPecaUseCase(pecaGateway, estoqueGateway, tipoVeiculoGateway);
     }
 
     @Bean
@@ -292,6 +303,15 @@ public class ApplicationUseCaseConfiguration {
     @Bean
     AtualizarTipoVeiculoUseCase atualizarTipoVeiculoUseCase(final TipoVeiculoGateway tipoVeiculoGateway) {
         return new AtualizarTipoVeiculoUseCase(tipoVeiculoGateway);
+    }
+
+    @Bean
+    CadastrarVeiculoUseCase cadastrarVeiculoUseCase(
+            final VeiculoGateway veiculoGateway,
+            final ClienteGateway clienteGateway,
+            final TipoVeiculoResolver tipoVeiculoResolver
+    ) {
+        return new CadastrarVeiculoUseCase(veiculoGateway, clienteGateway, tipoVeiculoResolver);
     }
 
     @Bean

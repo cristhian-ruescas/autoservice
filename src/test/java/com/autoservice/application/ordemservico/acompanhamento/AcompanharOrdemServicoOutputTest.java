@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -52,6 +54,46 @@ class AcompanharOrdemServicoOutputTest {
         assertEquals("CONCLUIDA", output.etapas().get(2).situacao());
         assertEquals("ATUAL", output.etapas().get(3).situacao());
         assertEquals("PENDENTE", output.etapas().get(4).situacao());
+    }
+
+    @Test
+    @DisplayName("Deve incluir itens e valor total no andamento")
+    void deveIncluirItensEValorTotal() {
+        final var ordemServico = new ListOrdemServicoOutput(
+                "ordem-id",
+                "AGUARDANDO_APROVACAO",
+                LocalDate.of(2026, 5, 3),
+                "Cliente relata barulho ao frear",
+                1,
+                2,
+                null,
+                null,
+                null,
+                null
+        );
+        final var itens = List.of(
+                new AcompanharOrdemServicoOutput.ItemOutput(
+                        "SERVICO",
+                        "Troca de óleo",
+                        null,
+                        1,
+                        new BigDecimal("199.90"),
+                        new BigDecimal("199.90")
+                ),
+                new AcompanharOrdemServicoOutput.ItemOutput(
+                        "PECA",
+                        "Filtro de óleo",
+                        "FLT-001",
+                        1,
+                        new BigDecimal("45.00"),
+                        new BigDecimal("45.00")
+                )
+        );
+
+        final var output = AcompanharOrdemServicoOutput.from(ordemServico, itens);
+
+        assertEquals(2, output.itens().size());
+        assertEquals(0, output.valorTotal().compareTo(new BigDecimal("244.90")));
     }
 
     @Test

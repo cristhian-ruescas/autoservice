@@ -3,6 +3,8 @@ package com.autoservice.infrastructure.ordemservico.query;
 import com.autoservice.application.PaginationOutput;
 import com.autoservice.application.ordemservico.acompanhamento.AcompanharOrdemServicoOutput;
 import com.autoservice.application.ordemservico.acompanhamento.AcompanharOrdemServicoQuery;
+import com.autoservice.application.ordemservico.status.ConsultarStatusOrdemServicoOutput;
+import com.autoservice.application.ordemservico.status.ConsultarStatusOrdemServicoQuery;
 import com.autoservice.application.ordemservico.detail.DetailOrdemServicoOutput;
 import com.autoservice.application.ordemservico.detail.DetailOrdemServicoQuery;
 import com.autoservice.application.ordemservico.list.ListOrdemServicoOutput;
@@ -27,7 +29,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-public class OrdemServicoQueryService implements ListOrdemServicoQuery, DetailOrdemServicoQuery, AcompanharOrdemServicoQuery {
+public class OrdemServicoQueryService implements ListOrdemServicoQuery, DetailOrdemServicoQuery, AcompanharOrdemServicoQuery, ConsultarStatusOrdemServicoQuery {
 
     private static final String RESUMO_ORDEM_SERVICO_QUERY = """
             select os, v, tipoVeiculo, c, pf, pj, representante
@@ -92,7 +94,25 @@ public class OrdemServicoQueryService implements ListOrdemServicoQuery, DetailOr
     @Override
     @Transactional(readOnly = true)
     public AcompanharOrdemServicoOutput acompanhar(final UUID ordemServicoId) {
-        return AcompanharOrdemServicoOutput.from(buscarResumo(OrdemServicoID.from(ordemServicoId)));
+        final var id = OrdemServicoID.from(ordemServicoId);
+        final var itens = buscarItens(id).stream()
+                .map(item -> new AcompanharOrdemServicoOutput.ItemOutput(
+                        item.tipo(),
+                        item.descricao(),
+                        item.peca() == null ? null : item.peca().codigo(),
+                        item.quantidade(),
+                        item.valorUnitario(),
+                        item.valorTotal()
+                ))
+                .toList();
+
+        return AcompanharOrdemServicoOutput.from(buscarResumo(id), itens);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ConsultarStatusOrdemServicoOutput consultar(final UUID ordemServicoId) {
+        return ConsultarStatusOrdemServicoOutput.from(buscarResumo(OrdemServicoID.from(ordemServicoId)));
     }
 
     private ListOrdemServicoOutput buscarResumo(final OrdemServicoID id) {
