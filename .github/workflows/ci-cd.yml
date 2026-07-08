@@ -5,6 +5,14 @@ on:
     branches: [ "main", "master", "develop" ]
   pull_request:
     branches: [ "main", "master" ]
+  workflow_dispatch:
+
+concurrency:
+  group: autoservice-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 env:
   REGISTRY: ghcr.io
@@ -15,6 +23,7 @@ jobs:
   build-and-test:
     name: Build & Test
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     services:
       postgres:
@@ -41,6 +50,15 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: maven
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Validate Kubernetes manifests (kustomize render)
+        run: |
+          set -euo pipefail
+          kubectl kustomize k8s > /tmp/k8s-rendered.yaml
+          test -s /tmp/k8s-rendered.yaml
 
       - name: Build & run tests
         env:
@@ -69,6 +87,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-and-test
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    timeout-minutes: 30
 
     permissions:
       contents: read
@@ -115,6 +134,7 @@ jobs:
     needs: docker
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     environment: production
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
@@ -123,13 +143,27 @@ jobs:
       - name: Set up kubectl
         uses: azure/setup-kubectl@v4
 
-      - name: Configure kubectl
+      - name: Verify required deploy secrets
+        env:
+          KUBECONFIG_B64: ${{ secrets.KUBECONFIG }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         run: |
+          set -euo pipefail
+          test -n "${KUBECONFIG_B64}"
+          test -n "${POSTGRES_PASSWORD}"
+
+      - name: Configure kubectl
+        env:
+          KUBECONFIG_B64: ${{ secrets.KUBECONFIG }}
+        run: |
+          set -euo pipefail
           mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBECONFIG }}" | base64 -d > $HOME/.kube/config
+          echo "${KUBECONFIG_B64}" | base64 -d > $HOME/.kube/config
+          kubectl config current-context
 
       - name: Apply namespace & postgres manifests
         run: |
+          set -euo pipefail
           kubectl apply -f k8s/00-namespace.yaml
           kubectl apply -f k8s/20-configmap-postgres.yaml
           kubectl apply -f k8s/22-pvc-postgres.yaml
@@ -137,10 +171,13 @@ jobs:
           kubectl apply -f k8s/24-service-postgres.yaml
 
       - name: Create/update postgres secret
+        env:
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         run: |
+          set -euo pipefail
           kubectl create secret generic autoservice-postgres-secret \
             --namespace=autoservice \
-            --from-literal=POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}" \
+            --from-literal=POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
             --save-config --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Wait for postgres rollout
@@ -153,6 +190,7 @@ jobs:
     needs: [ docker, deploy-db ]
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     environment: production
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
@@ -161,22 +199,45 @@ jobs:
       - name: Set up kubectl
         uses: azure/setup-kubectl@v4
 
-      - name: Configure kubectl
+      - name: Verify required deploy secrets
+        env:
+          KUBECONFIG_B64: ${{ secrets.KUBECONFIG }}
+          AUTOSERVICE_JWT_SECRET: ${{ secrets.AUTOSERVICE_JWT_SECRET }}
+          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
         run: |
+          set -euo pipefail
+          test -n "${KUBECONFIG_B64}"
+          test -n "${AUTOSERVICE_JWT_SECRET}"
+          test -n "${MAIL_USERNAME}"
+          test -n "${MAIL_PASSWORD}"
+
+      - name: Configure kubectl
+        env:
+          KUBECONFIG_B64: ${{ secrets.KUBECONFIG }}
+        run: |
+          set -euo pipefail
           mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBECONFIG }}" | base64 -d > $HOME/.kube/config
+          echo "${KUBECONFIG_B64}" | base64 -d > $HOME/.kube/config
+          kubectl config current-context
 
       - name: Create/update app secret
+        env:
+          AUTOSERVICE_JWT_SECRET: ${{ secrets.AUTOSERVICE_JWT_SECRET }}
+          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
         run: |
+          set -euo pipefail
           kubectl create secret generic autoservice-app-secret \
             --namespace=autoservice \
-            --from-literal=AUTOSERVICE_JWT_SECRET="${{ secrets.AUTOSERVICE_JWT_SECRET }}" \
-            --from-literal=MAIL_USERNAME="${{ secrets.MAIL_USERNAME }}" \
-            --from-literal=MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD }}" \
+            --from-literal=AUTOSERVICE_JWT_SECRET="${AUTOSERVICE_JWT_SECRET}" \
+            --from-literal=MAIL_USERNAME="${MAIL_USERNAME}" \
+            --from-literal=MAIL_PASSWORD="${MAIL_PASSWORD}" \
             --save-config --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Apply app manifests
         run: |
+          set -euo pipefail
           kubectl apply -f k8s/10-configmap-app.yaml
           kubectl apply -f k8s/30-deployment-app.yaml
           kubectl apply -f k8s/31-service-app.yaml
@@ -184,6 +245,7 @@ jobs:
 
       - name: Update image tag
         run: |
+          set -euo pipefail
           kubectl set image deployment/autoservice-app \
             autoservice-app=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }} \
             -n autoservice

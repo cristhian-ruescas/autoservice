@@ -105,6 +105,67 @@ kubectl -n autoservice rollout status deployment/autoservice-postgres
 kubectl -n autoservice rollout status deployment/autoservice-app
 ```
 
+### CI/CD (GitHub Actions)
+
+Pipeline em **`.github/workflows/ci-cd.yml`** com etapas de:
+
+- build da aplicação;
+- execução dos testes automatizados;
+- build/push da imagem Docker no GHCR;
+- deploy do banco no Kubernetes;
+- deploy da aplicação no Kubernetes;
+- aplicação dos manifests YAML e validação de rollout.
+
+Secrets obrigatórios no ambiente `production`:
+
+- `KUBECONFIG` (arquivo kubeconfig em base64);
+- `POSTGRES_PASSWORD`;
+- `AUTOSERVICE_JWT_SECRET`;
+- `MAIL_USERNAME`;
+- `MAIL_PASSWORD`.
+
+## Arquitetura proposta (Fase 2)
+
+```text
+Cliente/Front
+    |
+    v
+Ingress/Service (K8s) ---> autoservice-app (Deployment + HPA)
+                                |
+                                v
+                        autoservice-postgres (Deployment + PVC)
+
+CI/CD (GitHub Actions)
+    -> build/test
+    -> build/push imagem
+    -> apply k8s (db + app)
+```
+
+## Infraestrutura como Código (Terraform)
+
+Os scripts Terraform devem ficar em **`/infra`** (provisionamento do cluster Kubernetes e banco), com instruções de uso.
+
+> Status atual no repositório: **pendente de inclusão pela equipe responsável**.
+
+## Checklist de entrega — Go/No-Go (Fase 2)
+
+### Go (concluído no repositório)
+
+- [x] Refatoração em camadas (DDD/hexagonal) e código atualizado;
+- [x] Testes automatizados unitários e de integração;
+- [x] Dockerfile e docker-compose;
+- [x] Manifestos Kubernetes em `/k8s` (Deployment/Service/ConfigMap/Secret/HPA/PVC);
+- [x] Pipeline CI/CD em `.github/workflows/ci-cd.yml`.
+
+### No-Go (pendente para entrega final)
+
+- [ ] Adicionar scripts Terraform em `/infra` e documentação de provisionamento;
+- [ ] Publicar link da collection completa de APIs (Postman/Swagger exportado);
+- [ ] Publicar link do vídeo de demonstração (YouTube/Vimeo, até 15 min);
+- [ ] Inserir desenho final da arquitetura (imagem/diagrama) no README;
+- [ ] Validar execução completa do CI/CD em ambiente real com cluster ativo;
+- [ ] Gerar PDF final com link do repositório, arquitetura e vídeo.
+
 ## Testes e cobertura
 
 - **Unitários** e **integração** (Testcontainers + Postgres quando o Docker está disponível).
