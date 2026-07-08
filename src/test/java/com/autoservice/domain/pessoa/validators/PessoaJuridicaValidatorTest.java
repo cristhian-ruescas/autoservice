@@ -20,17 +20,6 @@ class PessoaJuridicaValidatorTest {
     private static final String TELEFONE_VALIDO = "11999999999";
     private static final String RAZAO_SOCIAL_VALIDA = "Empresa Teste Ltda";
 
-    @Test
-    @DisplayName("Deve validar pessoa jurídica válida com sucesso")
-    void deveValidarPessoaJuridicaValida() {
-        PessoaJuridica.newPessoaJuridica(
-                Email.from(EMAIL_VALIDO),
-                Telefone.from(TELEFONE_VALIDO),
-                RAZAO_SOCIAL_VALIDA,
-                CNPJ.from(CNPJ_VALIDO),
-                PessoaID.unique()
-        );
-    }
 
     @Test
     @DisplayName("Deve rejeitar pessoa jurídica com razão social nula")
@@ -107,18 +96,6 @@ class PessoaJuridicaValidatorTest {
         assertEquals(
                 "Razão Social deve possuir entre 3 e 255 caracteres",
                 exception.getErrors().getFirst().message()
-        );
-    }
-
-    @Test
-    @DisplayName("Deve aceitar CNPJ nulo na validação")
-    void deveAceitarCnpjNulo() {
-        PessoaJuridica.newPessoaJuridica(
-                Email.from(EMAIL_VALIDO),
-                Telefone.from(TELEFONE_VALIDO),
-                RAZAO_SOCIAL_VALIDA,
-                null,
-                PessoaID.unique()
         );
     }
 

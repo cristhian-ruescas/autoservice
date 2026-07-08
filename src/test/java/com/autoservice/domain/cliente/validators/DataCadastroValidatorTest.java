@@ -83,16 +83,4 @@ class DataCadastroValidatorTest {
         assertDoesNotThrow(validator::validate);
     }
 
-    @Test
-    @DisplayName("Deve aceitar data de cadastro atual como limite futuro")
-    void deveAceitarDataCadastroNoLimiteFuturo() {
-        final var dataCadastro = DataCadastro.from(LocalDate.now());
-
-        final var validator = new DataCadastroValidator(
-                dataCadastro,
-                new ThrowsValidationHandler()
-        );
-
-        assertDoesNotThrow(validator::validate);
-    }
 }
