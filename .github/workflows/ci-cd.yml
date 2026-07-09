@@ -54,6 +54,9 @@ jobs:
       - name: Set up kubectl
         uses: azure/setup-kubectl@v4
 
+      - name: Ensure Maven Wrapper is executable
+        run: chmod +x ./mvnw
+
       - name: Validate Kubernetes manifests (kustomize render)
         run: |
           set -euo pipefail
