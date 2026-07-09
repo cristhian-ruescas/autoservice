@@ -4,6 +4,7 @@ resources:
   - 00-namespace.yaml
   - 10-configmap-app.yaml
   - 20-configmap-postgres.yaml
+  - 21-initdb-postgres.yaml
   - 22-pvc-postgres.yaml
   - 23-deployment-postgres.yaml
   - 24-service-postgres.yaml

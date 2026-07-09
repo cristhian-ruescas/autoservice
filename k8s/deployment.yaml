@@ -26,54 +26,45 @@ spec:
           containerPort: 8088
           protocol: TCP
         
-        # Resource requests and limits for HPA
-        # Requests: guaranteed resources; Limits: max resources
         resources:
           requests:
-            cpu: 250m              # 250 milliCPU (0.25 CPU)
-            memory: 512Mi          # 512 MiB
+            cpu: 250m
+            memory: 512Mi
           limits:
-            cpu: 1000m             # 1 CPU (limit)
-            memory: 1Gi            # 1 GiB (limit)
-        
-        # Readiness probe: determines if pod is ready to receive traffic
-        # Checks if app is ready to handle requests
+            cpu: 1000m
+            memory: 1Gi
+
         readinessProbe:
           httpGet:
             path: /actuator/health/readiness
             port: http
             scheme: HTTP
-          initialDelaySeconds: 30  # Wait 30s before first check
-          periodSeconds: 10        # Check every 10s
-          timeoutSeconds: 5        # Timeout after 5s
-          successThreshold: 1      # Need 1 successful check
-          failureThreshold: 3      # Fail after 3 consecutive failures
-        
-        # Liveness probe: determines if pod should be restarted
-        # Checks if app is running correctly
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+
         livenessProbe:
           httpGet:
             path: /actuator/health/liveness
             port: http
             scheme: HTTP
-          initialDelaySeconds: 60  # Wait 60s before first check
-          periodSeconds: 15        # Check every 15s
-          timeoutSeconds: 5        # Timeout after 5s
-          failureThreshold: 3      # Restart after 3 consecutive failures
-        
-        # Startup probe: ensures app has time to start
-        # Prevents liveness probe from killing startup containers
+          initialDelaySeconds: 60
+          periodSeconds: 15
+          timeoutSeconds: 5
+          failureThreshold: 3
+
         startupProbe:
           httpGet:
-            path: /actuator/health
+            path: /actuator/health/liveness
             port: http
             scheme: HTTP
           initialDelaySeconds: 0
           periodSeconds: 10
           timeoutSeconds: 5
-          failureThreshold: 30     # Allow up to 5 minutes (30 * 10s) for startup
-        
-        # Environment variables
+          failureThreshold: 30
+
         env:
         - name: SPRING_DATASOURCE_URL
           value: "jdbc:postgresql://postgresql.autoservice.svc.cluster.local:5432/autoservicedb"
@@ -92,28 +83,22 @@ spec:
         - name: SPRING_JPA_HIBERNATE_DDL_AUTO
           value: "validate"
         
-        # Volume mounts for logs/temp
         volumeMounts:
         - name: tmp
           mountPath: /tmp
-      
-      # Pod restart policy
+
       restartPolicy: Always
-      
-      # Volumes
+
       volumes:
       - name: tmp
         emptyDir:
           medium: Memory
           sizeLimit: 256Mi
-      
-      # DNS policy for service discovery
+
       dnsPolicy: ClusterFirst
-      
-      # Termination grace period
+
       terminationGracePeriodSeconds: 30
-      
-      # Affinity rules (optional: for pod distribution)
+
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:

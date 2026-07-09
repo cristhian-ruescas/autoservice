@@ -27,6 +27,9 @@ spec:
           volumeMounts:
             - name: postgres-data
               mountPath: /var/lib/postgresql/data
+            - name: postgres-init
+              mountPath: /docker-entrypoint-initdb.d
+              readOnly: true
           livenessProbe:
             tcpSocket:
               port: 5432
@@ -41,4 +44,7 @@ spec:
         - name: postgres-data
           persistentVolumeClaim:
             claimName: autoservice-postgres-pvc
+        - name: postgres-init
+          configMap:
+            name: autoservice-postgres-init
 
