@@ -34,6 +34,8 @@ build/
 
 # Local environment overrides
 local.variable.env
+.env
+.env.*
 
 # Kubernetes Secrets (SENSITIVE - never commit!)
 k8s/11-secret-app.yaml
