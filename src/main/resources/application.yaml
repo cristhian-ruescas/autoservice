@@ -66,3 +66,5 @@ management:
       enabled: true
     readinessState:
       enabled: true
+    mail:
+      enabled: false

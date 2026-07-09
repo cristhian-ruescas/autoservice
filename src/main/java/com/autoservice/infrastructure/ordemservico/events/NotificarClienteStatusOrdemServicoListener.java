@@ -30,7 +30,7 @@ public class NotificarClienteStatusOrdemServicoListener {
         this.appBaseUrl = appBaseUrl;
     }
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
     public void on(final OrdemServicoStatusAlteradoEvent event) {
         final var ordemServico = this.detailOrdemServicoQuery.execute(
                 UUID.fromString(event.getOrdemServicoId().getValue())

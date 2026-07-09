@@ -1,11 +1,15 @@
 resource "null_resource" "k3d_cluster" {
+  triggers = {
+    cluster_name = var.cluster_name
+  }
+
   provisioner "local-exec" {
-    command = "k3d cluster create ${var.cluster_name} --wait"
+    command = "k3d cluster create ${self.triggers.cluster_name} --wait"
   }
 
   provisioner "local-exec" {
     when    = destroy
-    command = "k3d cluster delete ${var.cluster_name} || true"
+    command = "k3d cluster delete ${self.triggers.cluster_name} || true"
   }
 }
 
@@ -64,14 +68,16 @@ resource "helm_release" "metrics_server" {
   namespace        = "kube-system"
   create_namespace = true
   
-  set {
-    name  = "args[0]"
-    value = "--kubelet-insecure-tls"
-  }
-  set {
-    name  = "args[1]"
-    value = "--kubelet-preferred-address-types=InternalIP"
-  }
+  set = [
+    {
+      name  = "args[0]"
+      value = "--kubelet-insecure-tls"
+    },
+    {
+      name  = "args[1]"
+      value = "--kubelet-preferred-address-types=InternalIP"
+    }
+  ]
   
   depends_on = [null_resource.k3d_cluster]
 }

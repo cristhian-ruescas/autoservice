@@ -37,7 +37,7 @@ public class AdicionarPecaAoEstoqueAoRealizarOrdemCompraListener {
         this.itemOrdemCompraGateway = Objects.requireNonNull(itemOrdemCompraGateway);
     }
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void on(final OrdemCompraRealizadaEvent event) {
         final var itens = this.itemOrdemCompraGateway.findByOrdemCompraId(event.getOrdemCompraId());
