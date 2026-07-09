@@ -18,7 +18,8 @@ spec:
           image: ghcr.io/cristhian-ruescas/autoservice:latest
           imagePullPolicy: Always
           ports:
-            - containerPort: 8088
+            - name: http
+              containerPort: 8088
           envFrom:
             - configMapRef:
                 name: autoservice-app-config
@@ -30,14 +31,22 @@ spec:
                 secretKeyRef:
                   name: autoservice-postgres-secret
                   key: POSTGRES_PASSWORD
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            failureThreshold: 30
+            periodSeconds: 10
           readinessProbe:
-            tcpSocket:
-              port: 8088
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
             initialDelaySeconds: 20
             periodSeconds: 10
           livenessProbe:
-            tcpSocket:
-              port: 8088
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
             initialDelaySeconds: 40
             periodSeconds: 20
           resources:

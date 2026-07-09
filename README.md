@@ -43,6 +43,8 @@ Por padrão (`src/main/resources/application.yaml`):
 
 Crie o banco `autoservice` no Postgres ou use o `docker-compose` da pasta `docker/`.
 
+Copie `local.variable.env.example` para `local.variable.env` e ajuste os valores (JWT, mail, datasource).
+
 ### Build e execução
 
 ```bash
@@ -73,11 +75,19 @@ Os manifestos para deploy estão em **`/k8s`**, incluindo:
 - `Deployment`, `Service`, `ConfigMap`, `Secret` e `PVC` do PostgreSQL;
 - `kustomization.yaml` para aplicar todos os recursos de uma vez.
 
-Antes do deploy, ajuste os valores sensíveis em:
+Antes do deploy, crie os secrets a partir dos exemplos:
 
-- `k8s/11-secret-app.yaml` (`AUTOSERVICE_JWT_SECRET`, `MAIL_USERNAME`, `MAIL_PASSWORD`);
-- `k8s/21-secret-postgres.yaml` (`POSTGRES_PASSWORD`);
-- `k8s/30-deployment-app.yaml` (`image`, caso use outro registry/tag).
+```bash
+cp k8s/11-secret-app.example.yaml k8s/11-secret-app.yaml
+cp k8s/21-secret-postgres.example.yaml k8s/21-secret-postgres.yaml
+# edite os arquivos com valores reais (não commitar)
+kubectl apply -f k8s/11-secret-app.yaml
+kubectl apply -f k8s/21-secret-postgres.yaml
+```
+
+Ou use `kubectl create secret generic` (como no pipeline CI/CD).
+
+Ajuste também `k8s/30-deployment-app.yaml` (`image`, caso use outro registry/tag).
 
 Imagem padrão da aplicação no manifesto:
 
@@ -111,10 +121,11 @@ Pipeline em **`.github/workflows/ci-cd.yml`** com etapas de:
 
 - build da aplicação;
 - execução dos testes automatizados;
-- build/push da imagem Docker no GHCR;
-- deploy do banco no Kubernetes;
-- deploy da aplicação no Kubernetes;
-- aplicação dos manifests YAML e validação de rollout.
+- validação dos manifestos Kubernetes (`kubectl kustomize`);
+- build/push da imagem Docker no GHCR (push em `main`/`master`);
+- deploy do banco e da aplicação no Kubernetes (push em `main`/`master`).
+
+Dispara em `push`/`pull_request` para `main`, `master` e `develop` (deploy completo apenas em `main`/`master`).
 
 Secrets obrigatórios no ambiente `production`:
 
@@ -178,7 +189,7 @@ kubectl get services -n autoservice
 ### Go (concluído no repositório)
 
 - [x] Refatoração em camadas (DDD/hexagonal) e código atualizado;
-- [x] Testes automatizados unitários e de integração (613 testes passando);
+- [x] Testes automatizados unitários e de integração (613 testes; 2 integrações com schema Testcontainers pendentes no ambiente WSL);
 - [x] Dockerfile e docker-compose;
 - [x] Manifestos Kubernetes em `/k8s` (Deployment/Service/ConfigMap/Secret/HPA/PVC);
 - [x] Pipeline CI/CD em `.github/workflows/ci-cd.yml`;
