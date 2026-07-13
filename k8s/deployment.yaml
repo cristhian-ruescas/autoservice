@@ -40,7 +40,7 @@ spec:
               path: /actuator/health/readiness
               port: http
               scheme: HTTP
-            initialDelaySeconds: 30
+            initialDelaySeconds: 60
             periodSeconds: 10
             timeoutSeconds: 5
             successThreshold: 1
@@ -50,7 +50,7 @@ spec:
               path: /actuator/health/liveness
               port: http
               scheme: HTTP
-            initialDelaySeconds: 60
+            initialDelaySeconds: 120
             periodSeconds: 15
             timeoutSeconds: 5
             failureThreshold: 3
@@ -84,6 +84,8 @@ spec:
               value: "update"
             - name: SPRING_SQL_INIT_MODE
               value: "always"
+            - name: SPRING_JPA_DEFER_DATASOURCE_INITIALIZATION
+              value: "true"
           volumeMounts:
             - name: tmp
               mountPath: /tmp
