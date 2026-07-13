@@ -28,15 +28,24 @@ resource "helm_release" "postgres" {
   create_namespace = false
   values = [
     yamlencode({
-      global = { postgresql = {} }
+      auth = {
+        username = var.postgres_username
+        password = var.postgres_password
+        database = var.postgres_database
+      }
       primary = {
-        postgresUser     = var.postgres_username
-        postgresPassword = var.postgres_password
-        postgresDatabase = var.postgres_database
         service = { port = var.postgres_port }
+        initdb  = {
+          scriptsConfigMap = "autoservice-postgres-init"
+        }
       }
     })
   ]
+  depends_on = [kubernetes_namespace.app, kubernetes_manifest.postgres_initdb]
+}
+
+resource "kubernetes_manifest" "postgres_initdb" {
+  manifest = yamldecode(file("${path.module}/../k8s/21-initdb-postgres.yaml"))
   depends_on = [kubernetes_namespace.app]
 }
 
@@ -67,6 +76,7 @@ resource "helm_release" "metrics_server" {
   chart            = "metrics-server"
   namespace        = "kube-system"
   create_namespace = true
+  take_ownership   = true
   
   set = [
     {
