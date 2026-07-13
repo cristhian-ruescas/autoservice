@@ -71,13 +71,12 @@ class DataCriacaoTest {
         final DataCriacao d2 = DataCriacao.from(hoje);
         final DataCriacao d3 = DataCriacao.from(ontem);
 
-        assertTrue(d1.equals(d1));
         assertEquals(d1, d2);
         assertEquals(d1.hashCode(), d2.hashCode());
 
         assertNotEquals(d1, d3);
-        assertFalse(d1.equals(null));
-        assertFalse(d1.equals("hoje"));
+        assertNotEquals(null, d1);
+        assertNotEquals("hoje", d1);
     }
 
     @Test

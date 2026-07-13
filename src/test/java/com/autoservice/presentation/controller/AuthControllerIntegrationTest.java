@@ -23,7 +23,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -83,8 +82,8 @@ class AuthControllerIntegrationTest {
         UserDetails userDetails = User.withUsername("admin").password("admin123").roles("ADMIN").build();
         Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, "admin123", userDetails.getAuthorities());
         Mockito.when(authenticationManager.authenticate(any(Authentication.class))).thenReturn(auth);
-        Mockito.when(userDetailsService.loadUserByUsername(eq("admin"))).thenReturn(userDetails);
-        Mockito.when(jwtUtil.generateToken(eq("admin"))).thenReturn("dummy-token");
+        Mockito.when(userDetailsService.loadUserByUsername("admin")).thenReturn(userDetails);
+        Mockito.when(jwtUtil.generateToken("admin")).thenReturn("dummy-token");
 
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)

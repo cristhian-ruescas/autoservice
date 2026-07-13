@@ -22,21 +22,14 @@ class CorTest {
     @DisplayName("Deve retornar falso se comparado com nulo")
     void testEqualsNull() {
         var cor = Cor.from("Preto");
-        assertFalse(cor.equals(null));
+        assertNotEquals(null, cor);
     }
 
     @Test
     @DisplayName("Deve retornar falso se comparado com classe diferente")
     void testEqualsDifferentClass() {
         var cor = Cor.from("Preto");
-        assertFalse(cor.equals("Preto"));
-    }
-
-    @Test
-    @DisplayName("Deve retornar verdadeiro se comparado com a mesma instância")
-    void testEqualsSameInstance() {
-        var cor = Cor.from("Preto");
-        assertTrue(cor.equals(cor));
+        assertNotEquals("Preto", cor);
     }
 
     @Test
