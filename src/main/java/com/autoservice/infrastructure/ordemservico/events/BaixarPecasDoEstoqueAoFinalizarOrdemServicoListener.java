@@ -38,7 +38,7 @@ public class BaixarPecasDoEstoqueAoFinalizarOrdemServicoListener {
         this.estoqueGateway = Objects.requireNonNull(estoqueGateway);
     }
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void on(final OrdemServicoFinalizadaEvent event) {
         final Map<PecaID, Integer> quantidadesPorPeca = ItemServicoPecaAggregator.quantidadesPorPeca(

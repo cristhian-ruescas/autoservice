@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: autoservice-postgres-init
+  namespace: autoservice
+data:
+  01-init.sql: |
+    CREATE SCHEMA IF NOT EXISTS cadastro;
+    CREATE SCHEMA IF NOT EXISTS estoque;
+    CREATE SCHEMA IF NOT EXISTS servico;

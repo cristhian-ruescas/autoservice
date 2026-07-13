@@ -40,7 +40,7 @@ public class CriarOrdemCompraAoAprovarOrcamentoListener {
         this.itemOrdemCompraGateway = Objects.requireNonNull(itemOrdemCompraGateway);
     }
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void on(final OrdemServicoOrcamentoAprovadoEvent event) {
         final OrdemServicoID ordemServicoId = event.getOrdemServicoId();
