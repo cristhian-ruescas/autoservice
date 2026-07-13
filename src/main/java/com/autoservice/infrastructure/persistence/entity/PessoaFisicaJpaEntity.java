@@ -6,9 +6,12 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "pessoa_fisica", schema = "cadastro")
+@Getter @Setter
 public class PessoaFisicaJpaEntity extends PessoaJpaEntity {
 
     @Column(name = "nome", nullable = false)
@@ -18,11 +21,19 @@ public class PessoaFisicaJpaEntity extends PessoaJpaEntity {
     @Convert(converter = CPFConverter.class)
     private CPF cpf;
 
-    public PessoaFisicaJpaEntity() {
+    public String getNome() {
+        return nome;
     }
 
-    public String getNome() { return nome; }
-    public void setNome(String nome) { this.nome = nome; }
-    public CPF getCpf() { return cpf; }
-    public void setCpf(CPF cpf) { this.cpf = cpf; }
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public CPF getCpf() {
+        return cpf;
+    }
+
+    public void setCpf(CPF cpf) {
+        this.cpf = cpf;
+    }
 }

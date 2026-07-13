@@ -23,6 +23,7 @@ class DataCriacaoValidatorTest {
             constructor.setAccessible(true);
             dataCriacao = constructor.newInstance();
         } catch (Exception e) {
+            throw new RuntimeException(e);
         }
 
         final DataCriacao dataFinal = dataCriacao;

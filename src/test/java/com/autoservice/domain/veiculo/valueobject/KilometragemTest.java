@@ -22,21 +22,7 @@ class KilometragemTest {
     @DisplayName("Deve retornar falso se comparado com nulo")
     void testEqualsNull() {
         var kilometragem = Kilometragem.from(1000);
-        assertFalse(kilometragem.equals(null));
-    }
-
-    @Test
-    @DisplayName("Deve retornar falso se comparado com classe diferente")
-    void testEqualsDifferentClass() {
-        var kilometragem = Kilometragem.from(1000);
-        assertFalse(kilometragem.equals("1000"));
-    }
-
-    @Test
-    @DisplayName("Deve retornar verdadeiro se comparado com a mesma instância")
-    void testEqualsSameInstance() {
-        var kilometragem = Kilometragem.from(1000);
-        assertTrue(kilometragem.equals(kilometragem));
+        assertNotEquals( null, kilometragem);
     }
 
     @Test

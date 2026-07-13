@@ -45,6 +45,8 @@ class AtendimentoIntegrationTest extends AbstractIntegrationTest {
         final var pecaBody = """
                 {
                   "descricao": "Filtro de óleo integração",
+                  "codigo": "FILTRO-001",
+                  "marca": "Mann",
                   "valorUnitario": 45.90
                 }
                 """;

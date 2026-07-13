@@ -43,6 +43,8 @@ Por padrão (`src/main/resources/application.yaml`):
 
 Crie o banco `autoservice` no Postgres ou use o `docker-compose` da pasta `docker/`.
 
+Copie `local.variable.env.example` para `local.variable.env` e ajuste os valores (JWT, mail, datasource).
+
 ### Build e execução
 
 ```bash
@@ -64,6 +66,141 @@ docker compose -f docker/docker-compose.yaml up --build
 - **API:** porta **8088**
 
 O `Dockerfile` está em **`docker/Dockerfile`** (build multi-stage com Maven + JRE 21).
+
+### Kubernetes (K8s)
+
+Os manifestos para deploy estão em **`/k8s`**, incluindo:
+
+- `Deployment`, `Service`, `ConfigMap`, `Secret` e `HPA` da aplicação;
+- `Deployment`, `Service`, `ConfigMap`, `Secret` e `PVC` do PostgreSQL;
+- `kustomization.yaml` para aplicar todos os recursos de uma vez.
+
+Antes do deploy, crie os secrets a partir dos exemplos:
+
+```bash
+cp k8s/11-secret-app.example.yaml k8s/11-secret-app.yaml
+cp k8s/21-secret-postgres.example.yaml k8s/21-secret-postgres.yaml
+# edite os arquivos com valores reais (não commitar)
+kubectl apply -f k8s/11-secret-app.yaml
+kubectl apply -f k8s/21-secret-postgres.yaml
+```
+
+Ou use `kubectl create secret generic` (como no pipeline CI/CD).
+
+Ajuste também `k8s/30-deployment-app.yaml` (`image`, caso use outro registry/tag).
+
+Imagem padrão da aplicação no manifesto:
+
+- `ghcr.io/cristhian-ruescas/autoservice:latest`
+
+Validação local dos manifestos (sem aplicar no cluster):
+
+```bash
+kubectl apply --dry-run=client -k k8s
+```
+
+Aplicar no cluster:
+
+```bash
+kubectl apply -k k8s
+```
+
+Verificar rollout:
+
+```bash
+kubectl -n autoservice get pods
+kubectl -n autoservice get svc
+kubectl -n autoservice get hpa
+kubectl -n autoservice rollout status deployment/autoservice-postgres
+kubectl -n autoservice rollout status deployment/autoservice-app
+```
+
+### CI/CD (GitHub Actions)
+
+Pipeline em **`.github/workflows/ci-cd.yml`** com etapas de:
+
+- build da aplicação;
+- execução dos testes automatizados;
+- validação dos manifestos Kubernetes (`kubectl kustomize`);
+- build/push da imagem Docker no GHCR (push em `main`/`master`);
+- deploy do banco e da aplicação no Kubernetes (push em `main`/`master`).
+
+Dispara em `push`/`pull_request` para `main`, `master` e `develop` (deploy completo apenas em `main`/`master`).
+
+Secrets obrigatórios no ambiente `production`:
+
+- `KUBECONFIG` (arquivo kubeconfig em base64);
+- `POSTGRES_PASSWORD`;
+- `AUTOSERVICE_JWT_SECRET`;
+- `MAIL_USERNAME`;
+- `MAIL_PASSWORD`.
+
+## Arquitetura proposta (Fase 2)
+
+```text
+Cliente/Front
+    |
+    v
+Ingress/Service (K8s) ---> autoservice-app (Deployment + HPA)
+                                |
+                                v
+                        autoservice-postgres (Deployment + PVC)
+
+CI/CD (GitHub Actions)
+    -> build/test
+    -> build/push imagem
+    -> apply k8s (db + app)
+```
+
+## Infraestrutura como Código (Terraform)
+
+Os scripts Terraform estão em **`/infra`** para provisionamento do cluster Kubernetes (K3d) e banco de dados via Helm.
+
+### Provisionamento com Terraform
+
+```bash
+cd infra
+
+# Revisar plano de provisionamento
+terraform init
+terraform plan
+
+# Aplicar provisioning (cria cluster K3d + PostgreSQL)
+terraform apply
+```
+
+**Variáveis e configuração:** Ver [infra/README.md](./infra/README.md) para instruções completas e customização de passwords/nomes.
+
+**Recursos criados:**
+- Cluster Kubernetes local (K3d com nome padrão `autoservice-local`)
+- PostgreSQL via Helm Bitnami chart
+- Namespace `autoservice`
+- ConfigMaps e Secrets para aplicação
+
+Após aplicar, validar cluster com:
+```bash
+kubectl cluster-info
+kubectl get pods -n autoservice
+kubectl get services -n autoservice
+```
+
+## Checklist de entrega — Go/No-Go (Fase 2)
+
+### Go (concluído no repositório)
+
+- [x] Refatoração em camadas (DDD/hexagonal) e código atualizado;
+- [x] Testes automatizados unitários e de integração (613 testes; 2 integrações com schema Testcontainers pendentes no ambiente WSL);
+- [x] Dockerfile e docker-compose;
+- [x] Manifestos Kubernetes em `/k8s` (Deployment/Service/ConfigMap/Secret/HPA/PVC);
+- [x] Pipeline CI/CD em `.github/workflows/ci-cd.yml`;
+- [x] Scripts Terraform em `/infra` e documentação de provisionamento;
+- [x] Link da collection completa de APIs (Postman/Swagger — [`Autoservice API.postman_collection.json`](./Autoservice%20API.postman_collection.json)).
+
+### No-Go (pendente para entrega final)
+
+- [ ] Publicar link do vídeo de demonstração (YouTube/Vimeo, até 15 min);
+- [ ] Validar execução completa do CI/CD em ambiente real com cluster ativo (requer secrets GitHub);
+- [ ] Gerar PDF final com link do repositório, arquitetura e vídeo.
 
 ## Testes e cobertura
 
@@ -137,6 +274,27 @@ target/sonar-security/
 | Peças                              | `/pecas`                                        |
 | Estoque                            | `/estoques`                                     |
 | Ordens de compra                   | `/ordens-compra`                                |
+
+### Documentação interativa
+
+- **Swagger/OpenAPI:** `http://localhost:8088/swagger-ui.html` (em execução local)
+- **OpenAPI JSON:** [`openapi.json`](./openapi.json)
+
+### Postman Collection
+
+Importar collection no Postman: **[`Autoservice API.postman_collection.json`](./Autoservice%20API.postman_collection.json)**
+
+**Alternativamente,** acessar Swagger em tempo real quando a aplicação estiver rodando:
+```bash
+# Com Docker Compose
+docker compose -f docker/docker-compose.yaml up
+
+# Ou com Maven
+./mvnw spring-boot:run
+
+# Acessar
+open http://localhost:8088/swagger-ui.html
+```
 
 ## Decisões de modelagem do MVP
 
