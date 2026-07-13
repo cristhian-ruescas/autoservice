@@ -34,7 +34,7 @@ services:
     container_name: autoservice-app
     restart: unless-stopped
     env_file:
-      - ../.env
+      - ../local.variable.env
     ports:
       - "8088:8088"
     environment:
