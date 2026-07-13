@@ -133,7 +133,7 @@ jobs:
   # ─── DEPLOY BANCO (K8s secret + manifests) ──────────────────────
   deploy-db:
     name: Deploy Database (K8s)
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: docker
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     environment: production
@@ -160,9 +160,11 @@ jobs:
           KUBECONFIG_B64: ${{ secrets.KUBECONFIG }}
         run: |
           set -euo pipefail
-          mkdir -p $HOME/.kube
-          echo "${KUBECONFIG_B64}" | base64 -d > $HOME/.kube/config
+          mkdir -p "$HOME/.kube"
+          echo "${KUBECONFIG_B64}" | base64 -d > "$HOME/.kube/config"
+          chmod 600 "$HOME/.kube/config"
           kubectl config current-context
+          kubectl cluster-info
 
       - name: Apply namespace & postgres manifests
         run: |
@@ -187,13 +189,18 @@ jobs:
         run: kubectl rollout status deployment/autoservice-postgres -n autoservice --timeout=120s
 
   # ─── DEPLOY APLICAÇÃO (K8s) ─────────────────────────────────────
+  # Roda no self-hosted runner (seu PC) para alcançar o k3d em 127.0.0.1
   deploy-app:
     name: Deploy Application (K8s)
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: [ docker, deploy-db ]
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     environment: production
     timeout-minutes: 20
+
+    permissions:
+      contents: read
+      packages: read
 
     steps:
       - name: Checkout
@@ -220,9 +227,24 @@ jobs:
           KUBECONFIG_B64: ${{ secrets.KUBECONFIG }}
         run: |
           set -euo pipefail
-          mkdir -p $HOME/.kube
-          echo "${KUBECONFIG_B64}" | base64 -d > $HOME/.kube/config
+          mkdir -p "$HOME/.kube"
+          echo "${KUBECONFIG_B64}" | base64 -d > "$HOME/.kube/config"
+          chmod 600 "$HOME/.kube/config"
           kubectl config current-context
+          kubectl cluster-info
+
+      - name: Create/update GHCR pull secret
+        env:
+          GHCR_USER: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          kubectl create secret docker-registry ghcr-pull-secret \
+            --namespace=autoservice \
+            --docker-server=ghcr.io \
+            --docker-username="${GHCR_USER}" \
+            --docker-password="${GHCR_TOKEN}" \
+            --save-config --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Create/update app secret
         env:
@@ -245,12 +267,16 @@ jobs:
           kubectl apply -f k8s/30-deployment-app.yaml
           kubectl apply -f k8s/31-service-app.yaml
           kubectl apply -f k8s/32-hpa-app.yaml
+          kubectl patch deployment autoservice-app -n autoservice \
+            --type=strategic \
+            -p '{"spec":{"template":{"spec":{"imagePullSecrets":[{"name":"ghcr-pull-secret"}]}}}}'
 
       - name: Update image tag
         run: |
           set -euo pipefail
+          IMAGE="${{ env.REGISTRY }}/$(echo '${{ env.IMAGE_NAME }}' | tr '[:upper:]' '[:lower:]'):sha-${{ github.sha }}"
           kubectl set image deployment/autoservice-app \
-            autoservice-app=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }} \
+            autoservice-app="${IMAGE}" \
             -n autoservice
 
       - name: Wait for app rollout
