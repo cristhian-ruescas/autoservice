@@ -5,8 +5,11 @@ import com.autoservice.application.tipoveiculo.query.GetTipoVeiculoByIdQuery;
 import com.autoservice.application.tipoveiculo.query.ListTipoVeiculoQuery;
 import com.autoservice.application.tipoveiculo.query.TipoVeiculoOutput;
 import com.autoservice.domain.exceptions.DomainException;
-import com.autoservice.domain.tipoveiculo.TipoVeiculo;
 import com.autoservice.domain.tipoveiculo.TipoVeiculoID;
+import com.autoservice.infrastructure.persistence.entity.TipoVeiculoJpaEntity;
+import com.autoservice.infrastructure.persistence.mapper.TipoVeiculoMapper;
+import com.autoservice.infrastructure.query.PaginacaoValidator;
+import com.autoservice.infrastructure.query.QueryFilterNormalizer;
 import com.autoservice.validation.Error;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
@@ -33,20 +36,20 @@ public class TipoVeiculoQueryService implements ListTipoVeiculoQuery, GetTipoVei
             final String modelo,
             final Integer ano
     ) {
-        validarPaginacao(page, size);
-        final var marcaNormalizada = normalize(marca);
-        final var modeloNormalizado = normalize(modelo);
+        PaginacaoValidator.validar(page, size);
+        final var marcaNormalizada = QueryFilterNormalizer.buscaParcial(marca);
+        final var modeloNormalizado = QueryFilterNormalizer.buscaParcial(modelo);
 
         final var query = """
                 select tipo
-                from TipoVeiculo tipo
-                where (:marca is null or lower(tipo.marca.value) like :marca)
-                  and (:modelo is null or lower(tipo.modelo.value) like :modelo)
-                  and (:ano is null or tipo.ano.value = :ano)
-                order by tipo.marca.value asc, tipo.modelo.value asc, tipo.ano.value desc
+                from TipoVeiculoJpaEntity tipo
+                where (:marca is null or lower(tipo.marca) like :marca)
+                  and (:modelo is null or lower(tipo.modelo) like :modelo)
+                  and (:ano is null or tipo.ano = :ano)
+                order by tipo.marca asc, tipo.modelo asc, tipo.ano desc
                 """;
 
-        final List<TipoVeiculoOutput> items = this.entityManager.createQuery(query, TipoVeiculo.class)
+        final List<TipoVeiculoOutput> items = this.entityManager.createQuery(query, TipoVeiculoJpaEntity.class)
                 .setParameter("marca", marcaNormalizada)
                 .setParameter("modelo", modeloNormalizado)
                 .setParameter("ano", ano)
@@ -54,7 +57,7 @@ public class TipoVeiculoQueryService implements ListTipoVeiculoQuery, GetTipoVei
                 .setMaxResults(size)
                 .getResultList()
                 .stream()
-                .map(TipoVeiculoOutput::from)
+                .map(entity -> TipoVeiculoOutput.from(TipoVeiculoMapper.toDomain(entity)))
                 .toList();
 
         return PaginationOutput.from(
@@ -74,19 +77,19 @@ public class TipoVeiculoQueryService implements ListTipoVeiculoQuery, GetTipoVei
 
         final var query = """
                 select tipo
-                from TipoVeiculo tipo
+                from TipoVeiculoJpaEntity tipo
                 where tipo.id = :id
                 """;
 
-        final var rows = this.entityManager.createQuery(query, TipoVeiculo.class)
-                .setParameter("id", TipoVeiculoID.from(id))
+        final var rows = this.entityManager.createQuery(query, TipoVeiculoJpaEntity.class)
+                .setParameter("id", TipoVeiculoID.from(id).getValue())
                 .getResultList();
 
         if (rows.isEmpty()) {
             throw DomainException.with(new Error("Tipo de veículo não encontrado"));
         }
 
-        return TipoVeiculoOutput.from(rows.getFirst());
+        return TipoVeiculoOutput.from(TipoVeiculoMapper.toDomain(rows.getFirst()));
     }
 
     private long totalTiposVeiculo(
@@ -96,10 +99,10 @@ public class TipoVeiculoQueryService implements ListTipoVeiculoQuery, GetTipoVei
     ) {
         final var query = """
                 select count(tipo)
-                from TipoVeiculo tipo
-                where (:marca is null or lower(tipo.marca.value) like :marca)
-                  and (:modelo is null or lower(tipo.modelo.value) like :modelo)
-                  and (:ano is null or tipo.ano.value = :ano)
+                from TipoVeiculoJpaEntity tipo
+                where (:marca is null or lower(tipo.marca) like :marca)
+                  and (:modelo is null or lower(tipo.modelo) like :modelo)
+                  and (:ano is null or tipo.ano = :ano)
                 """;
 
         return this.entityManager.createQuery(query, Long.class)
@@ -107,25 +110,5 @@ public class TipoVeiculoQueryService implements ListTipoVeiculoQuery, GetTipoVei
                 .setParameter("modelo", modelo)
                 .setParameter("ano", ano)
                 .getSingleResult();
-    }
-
-    private String normalize(final String value) {
-        if (value == null || value.isBlank()) {
-            return null;
-        }
-
-        return "%" + value.trim().toLowerCase() + "%";
-    }
-
-    private void validarPaginacao(final int page, final int size) {
-        if (page < 0) {
-            throw DomainException.with(new Error("Página não deve ser menor que zero"));
-        }
-        if (size <= 0) {
-            throw DomainException.with(new Error("Tamanho da página deve ser maior que zero"));
-        }
-        if (size > 100) {
-            throw DomainException.with(new Error("Tamanho da página não deve ser maior que 100"));
-        }
     }
 }

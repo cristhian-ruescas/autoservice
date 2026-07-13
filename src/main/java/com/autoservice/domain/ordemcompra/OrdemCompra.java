@@ -9,23 +9,16 @@ import com.autoservice.domain.ordemcompra.valueobject.DataCompra;
 import com.autoservice.validation.Error;
 import com.autoservice.validation.ValidationHandler;
 import com.autoservice.validation.handler.NotificationValidationHandler;
-import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.util.List;
 
-@Entity
-@Table(name = "ordem_compra", schema = "estoque")
 public class OrdemCompra extends AggregateRoot<OrdemCompraID> {
 
-    @EmbeddedId
     private OrdemCompraID id;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
     private OrdemCompraStatus status;
 
-    @Embedded
     private DataCompra dataCompra;
 
     protected OrdemCompra() {

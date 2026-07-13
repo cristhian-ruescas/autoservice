@@ -7,12 +7,9 @@ import com.autoservice.domain.peca.PecaGateway;
 import com.autoservice.domain.tipoveiculo.TipoVeiculoGateway;
 import com.autoservice.domain.tipoveiculo.TipoVeiculoID;
 import com.autoservice.validation.Error;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
-@Service
 public class CadastrarPecaUseCase extends UseCase<CadastrarPecaCommand, CadastrarPecaOutput> {
 
     private final PecaGateway pecaGateway;
@@ -27,7 +24,6 @@ public class CadastrarPecaUseCase extends UseCase<CadastrarPecaCommand, Cadastra
     }
 
     @Override
-    @Transactional
     public CadastrarPecaOutput execute(final CadastrarPecaCommand command) {
         final var peca = Peca.newPeca(
                 command.descricao(),

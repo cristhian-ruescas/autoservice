@@ -9,6 +9,7 @@ import com.autoservice.presentation.dto.estoque.AtualizarLocalizacaoEstoqueRespo
 import com.autoservice.presentation.dto.estoque.EstoqueResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -59,7 +60,7 @@ public class EstoqueController {
     @Operation(summary = "Atualizar localização do estoque")
     public ResponseEntity<AtualizarLocalizacaoEstoqueResponse> atualizarLocalizacao(
             @PathVariable final UUID id,
-            @RequestBody final AtualizarLocalizacaoEstoqueRequest request
+            @RequestBody @Valid final AtualizarLocalizacaoEstoqueRequest request
     ) {
         final var output = this.atualizarLocalizacaoEstoqueUseCase.execute(
                 AtualizarLocalizacaoEstoqueCommand.with(id, request.localizacao())

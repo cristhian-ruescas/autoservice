@@ -2,6 +2,8 @@ package com.autoservice.application.atendimento.create;
 
 import com.autoservice.application.atendimento.create.enums.TipoPessoaAtendimento;
 
+import java.util.List;
+
 public record AbrirAtendimentoCommand(
         TipoPessoaAtendimento tipoPessoa,
         String nome,
@@ -20,7 +22,8 @@ public record AbrirAtendimentoCommand(
         Integer ano,
         String cor,
         Integer kilometragem,
-        String relato
+        String relato,
+        List<AbrirAtendimentoItemCommand> itens
 ) {
     public static AbrirAtendimentoCommand with(
             final TipoPessoaAtendimento tipoPessoa,
@@ -40,7 +43,8 @@ public record AbrirAtendimentoCommand(
             final Integer ano,
             final String cor,
             final Integer kilometragem,
-            final String relato
+            final String relato,
+            final List<AbrirAtendimentoItemCommand> itens
     ) {
         return new AbrirAtendimentoCommand(
                 tipoPessoa,
@@ -60,7 +64,8 @@ public record AbrirAtendimentoCommand(
                 ano,
                 cor,
                 kilometragem,
-                relato
+                relato,
+                itens == null ? List.of() : List.copyOf(itens)
         );
     }
 }

@@ -8,13 +8,10 @@ import com.autoservice.domain.itemservico.ItemServicoGateway;
 import com.autoservice.domain.ordemservico.OrdemServicoGateway;
 import com.autoservice.domain.ordemservico.OrdemServicoID;
 import com.autoservice.validation.Error;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Objects;
 
-@Service
 public class FinalizarDiagnosticoUseCase extends UseCase<FinalizarDiagnosticoCommand, OrdemServicoStatusOutput> {
 
     private final OrdemServicoGateway ordemServicoGateway;
@@ -32,7 +29,6 @@ public class FinalizarDiagnosticoUseCase extends UseCase<FinalizarDiagnosticoCom
     }
 
     @Override
-    @Transactional
     public OrdemServicoStatusOutput execute(final FinalizarDiagnosticoCommand command) {
         final var id = OrdemServicoID.from(command.ordemServicoId());
 

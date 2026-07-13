@@ -116,8 +116,9 @@ class TelefoneTest {
     @DisplayName("Deve retornar false ao comparar com outro tipo")
     void deveSerDiferenteDeOutroTipo() {
         final Telefone telefone = Telefone.from("11999999999");
+        final Object outroTipo = "11999999999";
 
-        assertNotEquals(telefone, "11999999999");
+        assertNotEquals(telefone, outroTipo);
     }
 
     @Test

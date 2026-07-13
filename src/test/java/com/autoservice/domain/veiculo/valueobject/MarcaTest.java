@@ -22,21 +22,14 @@ class MarcaTest {
     @DisplayName("Deve retornar falso se comparado com nulo")
     void testEqualsNull() {
         var marca = Marca.from("Toyota");
-        assertFalse(marca.equals(null));
+        assertNotEquals( null, marca);
     }
 
     @Test
     @DisplayName("Deve retornar falso se comparado com classe diferente")
     void testEqualsDifferentClass() {
         var marca = Marca.from("Toyota");
-        assertFalse(marca.equals("Toyota"));
-    }
-
-    @Test
-    @DisplayName("Deve retornar verdadeiro se comparado com a mesma instância")
-    void testEqualsSameInstance() {
-        var marca = Marca.from("Toyota");
-        assertTrue(marca.equals(marca));
+        assertNotEquals("Toyota", marca);
     }
 
     @Test

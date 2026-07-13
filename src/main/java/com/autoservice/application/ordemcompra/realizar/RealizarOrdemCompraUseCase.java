@@ -6,12 +6,9 @@ import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.ordemcompra.OrdemCompraGateway;
 import com.autoservice.domain.ordemcompra.OrdemCompraID;
 import com.autoservice.validation.Error;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
-@Service
 public class RealizarOrdemCompraUseCase extends UseCase<RealizarOrdemCompraCommand, RealizarOrdemCompraOutput> {
 
     private final OrdemCompraGateway ordemCompraGateway;
@@ -26,7 +23,6 @@ public class RealizarOrdemCompraUseCase extends UseCase<RealizarOrdemCompraComma
     }
 
     @Override
-    @Transactional
     public RealizarOrdemCompraOutput execute(final RealizarOrdemCompraCommand command) {
         final var id = OrdemCompraID.from(command.ordemCompraId());
 

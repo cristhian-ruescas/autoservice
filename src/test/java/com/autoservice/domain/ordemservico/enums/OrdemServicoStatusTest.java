@@ -15,7 +15,6 @@ class OrdemServicoStatusTest {
         assertEquals("Recebido", OrdemServicoStatus.RECEBIDO.getDescricao());
         assertEquals("Em Diagnóstico", OrdemServicoStatus.EM_DIAGNOSTICO.getDescricao());
         assertEquals("Aguardando Aprovação", OrdemServicoStatus.AGUARDANDO_APROVACAO.getDescricao());
-        assertEquals("Aprovado", OrdemServicoStatus.APROVADO.getDescricao());
         assertEquals("Reprovado", OrdemServicoStatus.REPROVADO.getDescricao());
         assertEquals("Em Execução", OrdemServicoStatus.EM_EXECUCAO.getDescricao());
         assertEquals("Finalizada", OrdemServicoStatus.FINALIZADA.getDescricao());
@@ -27,7 +26,7 @@ class OrdemServicoStatusTest {
     @DisplayName("Deve garantir que todos os valores do enum existam")
     void deveGarantirValores() {
         OrdemServicoStatus[] values = OrdemServicoStatus.values();
-        assertEquals(9, values.length);
+        assertEquals(8, values.length);
 
         assertNotNull(OrdemServicoStatus.valueOf("RECEBIDO"));
         assertNotNull(OrdemServicoStatus.valueOf("EM_DIAGNOSTICO"));

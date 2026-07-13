@@ -9,12 +9,9 @@ import com.autoservice.domain.peca.PecaID;
 import com.autoservice.domain.tipoveiculo.TipoVeiculoGateway;
 import com.autoservice.domain.tipoveiculo.TipoVeiculoID;
 import com.autoservice.validation.Error;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
-@Service
 public class AtualizarPecaUseCase extends UseCase<AtualizarPecaCommand, PecaOutput> {
 
     private final PecaGateway pecaGateway;
@@ -29,7 +26,6 @@ public class AtualizarPecaUseCase extends UseCase<AtualizarPecaCommand, PecaOutp
     }
 
     @Override
-    @Transactional
     public PecaOutput execute(final AtualizarPecaCommand command) {
         if (command == null) {
             throw DomainException.with(new Error("Comando para atualizar peça não deve ser nulo"));

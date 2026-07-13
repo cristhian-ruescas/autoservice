@@ -126,8 +126,9 @@ class CPFTest {
     @DisplayName("Deve retornar false ao comparar com outro tipo")
     void deveSerDiferenteDeOutroTipo() {
         final CPF cpf = CPF.from("52998224725");
+        final Object outroTipo = "52998224725";
 
-        assertNotEquals(cpf, "52998224725");
+        assertNotEquals(cpf, outroTipo);
     }
 
     @Test

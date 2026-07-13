@@ -65,7 +65,7 @@ public class PecaController {
     @PutMapping("/{id}")
     public ResponseEntity<PecaOutput> atualizar(
             @PathVariable final UUID id,
-            @RequestBody final AtualizarPecaRequest request
+            @RequestBody @Valid final AtualizarPecaRequest request
     ) {
         final var output = this.atualizarPecaUseCase.execute(AtualizarPecaCommand.with(
                 id,

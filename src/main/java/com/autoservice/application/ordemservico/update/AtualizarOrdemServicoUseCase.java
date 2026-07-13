@@ -9,12 +9,9 @@ import com.autoservice.domain.veiculo.VeiculoGateway;
 import com.autoservice.domain.veiculo.VeiculoID;
 import com.autoservice.validation.Error;
 import com.autoservice.validation.handler.NotificationValidationHandler;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
-@Service
 public class AtualizarOrdemServicoUseCase extends UseCase<AtualizarOrdemServicoCommand, AtualizarOrdemServicoOutput> {
 
     private final OrdemServicoGateway ordemServicoGateway;
@@ -29,7 +26,6 @@ public class AtualizarOrdemServicoUseCase extends UseCase<AtualizarOrdemServicoC
     }
 
     @Override
-    @Transactional
     public AtualizarOrdemServicoOutput execute(final AtualizarOrdemServicoCommand command) {
         if (command == null) {
             throw DomainException.with(new Error("Comando para atualizar ordem de serviço não deve ser nulo"));
