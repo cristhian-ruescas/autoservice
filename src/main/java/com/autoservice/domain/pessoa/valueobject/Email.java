@@ -4,19 +4,11 @@ import com.autoservice.domain.ValueObject;
 import com.autoservice.domain.pessoa.validators.EmailValidator;
 import com.autoservice.validation.ValidationHandler;
 import com.autoservice.validation.handler.NotificationValidationHandler;
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
 
 import java.util.Objects;
 
-@Embeddable
 public class Email extends ValueObject {
 
-    @Column(
-            name = "email",
-            nullable = false,
-            updatable = false
-    )
     private final String valor;
 
     protected Email() {

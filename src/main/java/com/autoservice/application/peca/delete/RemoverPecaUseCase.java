@@ -8,12 +8,9 @@ import com.autoservice.domain.ordemservico.enums.OrdemServicoStatus;
 import com.autoservice.domain.peca.PecaGateway;
 import com.autoservice.domain.peca.PecaID;
 import com.autoservice.validation.Error;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
-@Service
 public class RemoverPecaUseCase extends UnitUseCase<RemoverPecaCommand> {
 
     private final PecaGateway pecaGateway;
@@ -31,7 +28,6 @@ public class RemoverPecaUseCase extends UnitUseCase<RemoverPecaCommand> {
     }
 
     @Override
-    @Transactional
     public void execute(final RemoverPecaCommand command) {
         if (command == null) {
             throw DomainException.with(new Error("Comando para remover peça não deve ser nulo"));

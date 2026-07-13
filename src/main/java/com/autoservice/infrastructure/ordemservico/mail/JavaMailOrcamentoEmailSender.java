@@ -6,6 +6,8 @@ import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.validation.Error;
 import jakarta.mail.MessagingException;
 import jakarta.mail.util.ByteArrayDataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -14,6 +16,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class JavaMailOrcamentoEmailSender implements OrcamentoEmailSender {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(JavaMailOrcamentoEmailSender.class);
 
     private final JavaMailSender mailSender;
     private final String from;
@@ -52,7 +56,11 @@ public class JavaMailOrcamentoEmailSender implements OrcamentoEmailSender {
 
             this.mailSender.send(message);
         } catch (MessagingException | MailException exception) {
-            throw new IllegalStateException("Não foi possível enviar o email do orçamento", exception);
+            LOGGER.error(
+                    "Não foi possível enviar o email do orçamento da OS {}",
+                    ordemServico.ordemServicoId(),
+                    exception
+            );
         }
     }
 

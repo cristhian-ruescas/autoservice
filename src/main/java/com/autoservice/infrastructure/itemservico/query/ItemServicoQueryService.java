@@ -3,6 +3,8 @@ package com.autoservice.infrastructure.itemservico.query;
 import com.autoservice.application.ordemservico.itemservico.AdicionarItemServicoOutput;
 import com.autoservice.application.ordemservico.itemservico.ListItensServicoQuery;
 import com.autoservice.domain.ordemservico.OrdemServicoID;
+import com.autoservice.infrastructure.persistence.entity.ItemServicoJpaEntity;
+import com.autoservice.infrastructure.persistence.mapper.ItemServicoMapper;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,15 +26,16 @@ public class ItemServicoQueryService implements ListItensServicoQuery {
     public List<AdicionarItemServicoOutput> execute(final UUID ordemServicoId) {
         final var query = """
                 select item
-                from ItemServico item
+                from ItemServicoJpaEntity item
                 where item.ordemServicoId = :ordemServicoId
                 order by item.tipo asc, item.descricao asc
                 """;
 
-        return this.entityManager.createQuery(query, com.autoservice.domain.itemservico.ItemServico.class)
-                .setParameter("ordemServicoId", OrdemServicoID.from(ordemServicoId))
+        return this.entityManager.createQuery(query, ItemServicoJpaEntity.class)
+                .setParameter("ordemServicoId", OrdemServicoID.from(ordemServicoId).getValue())
                 .getResultList()
                 .stream()
+                .map(ItemServicoMapper::toDomain)
                 .map(AdicionarItemServicoOutput::from)
                 .toList();
     }

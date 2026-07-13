@@ -7,12 +7,9 @@ import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.ordemservico.OrdemServicoGateway;
 import com.autoservice.domain.ordemservico.OrdemServicoID;
 import com.autoservice.validation.Error;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
-@Service
 public class FinalizarOrdemServicoUseCase extends UseCase<FinalizarOrdemServicoCommand, OrdemServicoStatusOutput> {
 
     private final OrdemServicoGateway ordemServicoGateway;
@@ -27,7 +24,6 @@ public class FinalizarOrdemServicoUseCase extends UseCase<FinalizarOrdemServicoC
     }
 
     @Override
-    @Transactional
     public OrdemServicoStatusOutput execute(final FinalizarOrdemServicoCommand command) {
         final var id = OrdemServicoID.from(command.ordemServicoId());
 

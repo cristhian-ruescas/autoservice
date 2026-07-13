@@ -32,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -53,10 +54,10 @@ class OrdemServicoComandosSimplesUseCaseTest {
     @BeforeEach
     void setUp() {
         this.aprovarOrdemServicoUseCase = new AprovarOrdemServicoUseCase(ordemServicoGateway, eventPublisher);
-        this.reprovarOrdemServicoUseCase = new ReprovarOrdemServicoUseCase(ordemServicoGateway);
+        this.reprovarOrdemServicoUseCase = new ReprovarOrdemServicoUseCase(ordemServicoGateway, eventPublisher);
         this.finalizarOrdemServicoUseCase = new FinalizarOrdemServicoUseCase(ordemServicoGateway, eventPublisher);
-        this.entregarOrdemServicoUseCase = new EntregarOrdemServicoUseCase(ordemServicoGateway);
-        this.removerOrdemServicoUseCase = new RemoverOrdemServicoUseCase(ordemServicoGateway);
+        this.entregarOrdemServicoUseCase = new EntregarOrdemServicoUseCase(ordemServicoGateway, eventPublisher);
+        this.removerOrdemServicoUseCase = new RemoverOrdemServicoUseCase(ordemServicoGateway, eventPublisher);
     }
 
     @Test
@@ -75,7 +76,7 @@ class OrdemServicoComandosSimplesUseCaseTest {
         final var out = aprovarOrdemServicoUseCase.execute(AprovarOrdemServicoCommand.with(UUID.fromString(id.getValue())));
 
         assertEquals(OrdemServicoStatus.EM_EXECUCAO.name(), out.status());
-        verify(eventPublisher).publishEvent(any());
+        verify(eventPublisher, times(2)).publishEvent(any());
     }
 
     @Test
@@ -112,7 +113,7 @@ class OrdemServicoComandosSimplesUseCaseTest {
         final var out = finalizarOrdemServicoUseCase.execute(FinalizarOrdemServicoCommand.with(UUID.fromString(id.getValue())));
 
         assertEquals(OrdemServicoStatus.FINALIZADA.name(), out.status());
-        verify(eventPublisher).publishEvent(any());
+        verify(eventPublisher, times(2)).publishEvent(any());
     }
 
     @Test

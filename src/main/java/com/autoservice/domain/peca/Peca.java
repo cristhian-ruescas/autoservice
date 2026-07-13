@@ -7,35 +7,23 @@ import com.autoservice.domain.tipoveiculo.TipoVeiculoID;
 import com.autoservice.validation.Error;
 import com.autoservice.validation.ValidationHandler;
 import com.autoservice.validation.handler.NotificationValidationHandler;
-import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 
-@Entity
-@Table(name = "peca", schema = "estoque")
 public class Peca extends AggregateRoot<PecaID> {
 
-    @EmbeddedId
     private PecaID id;
 
-    @Column(name = "descricao", nullable = false, length = 180)
     private String descricao;
 
-    @Column(name = "codigo", nullable = false, unique = true, length = 80)
     private String codigo;
 
-    @Column(name = "marca", nullable = false, length = 120)
     private String marca;
 
-    @Column(name = "valor_unitario", nullable = false, precision = 10, scale = 2)
     private BigDecimal valorUnitario;
 
-    @Embedded
-    @AttributeOverride(name = "valor", column = @Column(name = "estoque_id"))
     private EstoqueID estoqueId;
 
-    @Embedded
-    @AttributeOverride(name = "valor", column = @Column(name = "tipo_veiculo_id"))
     private TipoVeiculoID tipoVeiculoId;
 
     protected Peca() {

@@ -4,17 +4,12 @@ import com.autoservice.domain.ValueObject;
 import com.autoservice.domain.pessoa.validators.CNPJValidator;
 import com.autoservice.validation.ValidationHandler;
 import com.autoservice.validation.handler.NotificationValidationHandler;
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
 
 import java.util.Objects;
 
-@Embeddable
 public class CNPJ extends ValueObject {
 
-    @Column(name = "cnpj")
     private final String valor;
-
 
     protected CNPJ() {
         this.valor = null;

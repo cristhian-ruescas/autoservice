@@ -10,9 +10,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -73,20 +75,54 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(errorResponse);
     }
 
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadable(
+            final HttpMessageNotReadableException ex,
+            final HttpServletRequest request
+    ) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                "Corpo da requisição JSON inválido",
+                request.getRequestURI(),
+                LocalDateTime.now(),
+                List.of()
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatch(
+            final MethodArgumentTypeMismatchException ex,
+            final HttpServletRequest request
+    ) {
+        final var message = "Parâmetro inválido: " + ex.getName();
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                message,
+                request.getRequestURI(),
+                LocalDateTime.now(),
+                List.of()
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
             IllegalArgumentException ex,
             HttpServletRequest request) {
 
         ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.NOT_FOUND.value(),
-                ex.getMessage(),
+                HttpStatus.BAD_REQUEST.value(),
+                ex.getMessage() == null ? "Requisição inválida" : ex.getMessage(),
                 request.getRequestURI(),
                 LocalDateTime.now(),
                 List.of()
         );
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
@@ -123,12 +159,13 @@ public class GlobalExceptionHandler {
     }
 
     private String resolveDataIntegrityMessage(final DataIntegrityViolationException ex) {
-        final var rootMessage = ex.getMostSpecificCause() == null
-                ? null
-                : ex.getMostSpecificCause().getMessage();
+        final var rootMessage = ex.getMostSpecificCause().getMessage();
 
-        if (rootMessage != null && !rootMessage.isBlank()) {
-            return rootMessage;
+        if (rootMessage != null && rootMessage.toLowerCase().contains("duplicate")) {
+            return "Registro duplicado para os dados informados";
+        }
+        if (rootMessage != null && rootMessage.toLowerCase().contains("foreign key")) {
+            return "Operação inválida por dependência de outro registro";
         }
 
         return "Dados inválidos para gravação";

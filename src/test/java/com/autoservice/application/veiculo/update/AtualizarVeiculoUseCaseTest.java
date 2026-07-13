@@ -1,5 +1,6 @@
 package com.autoservice.application.veiculo.update;
 
+import com.autoservice.application.tipoveiculo.TipoVeiculoResolver;
 import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.pessoa.PessoaID;
 import com.autoservice.domain.tipoveiculo.TipoVeiculo;
@@ -9,9 +10,9 @@ import com.autoservice.domain.veiculo.Veiculo;
 import com.autoservice.domain.veiculo.VeiculoGateway;
 import com.autoservice.domain.veiculo.VeiculoID;
 import com.autoservice.domain.veiculo.valueobject.*;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -34,8 +35,15 @@ class AtualizarVeiculoUseCaseTest {
     @Mock
     private TipoVeiculoGateway tipoVeiculoGateway;
 
-    @InjectMocks
     private AtualizarVeiculoUseCase useCase;
+
+    @BeforeEach
+    void setUp() {
+        useCase = new AtualizarVeiculoUseCase(
+                veiculoGateway,
+                new TipoVeiculoResolver(tipoVeiculoGateway)
+        );
+    }
 
     @Test
     void atualizaVeiculoReutilizandoTipoCadastrado() {

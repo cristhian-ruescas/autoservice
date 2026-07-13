@@ -5,17 +5,13 @@ import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.ordemcompra.validators.DataCompraValidator;
 import com.autoservice.validation.ValidationHandler;
 import com.autoservice.validation.handler.NotificationValidationHandler;
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
-@Embeddable
 public class DataCompra extends ValueObject {
 
-    @Column(name = "data_compra", nullable = false)
     private final LocalDate value;
 
     protected DataCompra() {

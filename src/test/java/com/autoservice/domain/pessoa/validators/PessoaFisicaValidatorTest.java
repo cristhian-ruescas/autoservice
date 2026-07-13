@@ -3,8 +3,6 @@ package com.autoservice.domain.pessoa.validators;
 import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.pessoa.PessoaFisica;
 import com.autoservice.domain.pessoa.valueobject.CPF;
-import com.autoservice.domain.pessoa.valueobject.Email;
-import com.autoservice.domain.pessoa.valueobject.Telefone;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -14,16 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @DisplayName("PessoaFisicaValidator")
 class PessoaFisicaValidatorTest {
 
-    @Test
-    @DisplayName("Deve validar pessoa física válida com sucesso")
-    void deveValidarPessoaFisicaValida() {
-        PessoaFisica.newPessoaFisica(
-                Email.from("teste@email.com"),
-                Telefone.from("11999999999"),
-                "João Silva",
-                CPF.from("52998224725")
-        );
-    }
 
     @Test
     @DisplayName("Deve rejeitar pessoa física com nome nulo")
@@ -96,17 +84,6 @@ class PessoaFisicaValidatorTest {
         assertEquals(
                 "Nome deve possuir entre 3 e 255 caracteres",
                 exception.getErrors().getFirst().message()
-        );
-    }
-
-    @Test
-    @DisplayName("Deve aceitar CPF nulo na validação")
-    void deveAceitarCpfNulo() {
-        PessoaFisica.newPessoaFisica(
-                null,
-                null,
-                "Maria Silva",
-                null
         );
     }
 

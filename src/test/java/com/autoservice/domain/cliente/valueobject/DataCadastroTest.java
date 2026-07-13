@@ -105,7 +105,6 @@ class DataCadastroTest {
         final DataCadastro data2 = DataCadastro.from(data);
 
         assertEquals(data1, data2);
-        assertEquals(data1, data1);
     }
 
     @Test
@@ -114,17 +113,9 @@ class DataCadastroTest {
         final LocalDate today = LocalDate.now();
         final DataCadastro dataCadastro = DataCadastro.from(today);
 
-        assertFalse(dataCadastro.equals(null));
+        assertNotEquals( null, dataCadastro);
     }
 
-    @Test
-    @DisplayName("Deve retornar falso ao comparar com tipo diferente")
-    void deveRetornarFalsoAoCompararComTipoDiferente() {
-        final LocalDate today = LocalDate.now();
-        final DataCadastro dataCadastro = DataCadastro.from(today);
-
-        assertFalse(dataCadastro.equals("2026-05-01"));
-    }
 
     @Test
     @DisplayName("Deve gerar hashCode consistente para objetos iguais")

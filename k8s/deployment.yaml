@@ -1,0 +1,111 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: autoservice-app
+  namespace: autoservice
+  labels:
+    app: autoservice
+    version: v1
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: autoservice
+  template:
+    metadata:
+      labels:
+        app: autoservice
+        version: v1
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: autoservice
+          image: meu-spring-boot:v1
+          imagePullPolicy: Never
+          ports:
+            - name: http
+              containerPort: 8088
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+              ephemeral-storage: "50Mi"
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+              ephemeral-storage: "256Mi"
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 120
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 0
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 30
+          env:
+            - name: AUTOSERVICE_JWT_SECRET
+              value: "chave_secreta_local_de_teste_para_o_jwt_funcionar_no_minikube"
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://postgresql.autoservice.svc.cluster.local:5432/autoservicedb"
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: username
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: password
+            - name: SERVER_PORT
+              value: "8088"
+            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+              value: "update"
+            - name: SPRING_SQL_INIT_MODE
+              value: "always"
+            - name: SPRING_JPA_DEFER_DATASOURCE_INITIALIZATION
+              value: "true"
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      restartPolicy: Always
+      volumes:
+        - name: tmp
+          emptyDir:
+            medium: Memory
+            sizeLimit: 256Mi
+      dnsPolicy: ClusterFirst
+      terminationGracePeriodSeconds: 30
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - autoservice
+                topologyKey: kubernetes.io/hostname

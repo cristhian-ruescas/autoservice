@@ -2,26 +2,28 @@ package com.autoservice.application.ordemservico.entrega;
 
 import com.autoservice.application.UseCase;
 import com.autoservice.application.ordemservico.status.OrdemServicoStatusOutput;
+import com.autoservice.domain.events.DomainEventPublisher;
 import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.ordemservico.OrdemServicoGateway;
 import com.autoservice.domain.ordemservico.OrdemServicoID;
 import com.autoservice.validation.Error;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
-@Service
 public class EntregarOrdemServicoUseCase extends UseCase<EntregarOrdemServicoCommand, OrdemServicoStatusOutput> {
 
     private final OrdemServicoGateway ordemServicoGateway;
+    private final DomainEventPublisher eventPublisher;
 
-    public EntregarOrdemServicoUseCase(final OrdemServicoGateway ordemServicoGateway) {
+    public EntregarOrdemServicoUseCase(
+            final OrdemServicoGateway ordemServicoGateway,
+            final DomainEventPublisher eventPublisher
+    ) {
         this.ordemServicoGateway = Objects.requireNonNull(ordemServicoGateway);
+        this.eventPublisher = Objects.requireNonNull(eventPublisher);
     }
 
     @Override
-    @Transactional
     public OrdemServicoStatusOutput execute(final EntregarOrdemServicoCommand command) {
         final var id = OrdemServicoID.from(command.ordemServicoId());
 
@@ -30,6 +32,11 @@ public class EntregarOrdemServicoUseCase extends UseCase<EntregarOrdemServicoCom
 
         ordemServico.entregar();
 
-        return OrdemServicoStatusOutput.from(this.ordemServicoGateway.update(ordemServico));
+        final var ordemServicoAtualizada = this.ordemServicoGateway.update(ordemServico);
+
+        ordemServicoAtualizada.getDomainEvents().forEach(this.eventPublisher::publishEvent);
+        ordemServicoAtualizada.clearEvents();
+
+        return OrdemServicoStatusOutput.from(ordemServicoAtualizada);
     }
 }

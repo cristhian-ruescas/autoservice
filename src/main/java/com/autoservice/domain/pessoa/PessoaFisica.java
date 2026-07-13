@@ -7,15 +7,9 @@ import com.autoservice.domain.pessoa.valueobject.Email;
 import com.autoservice.domain.pessoa.valueobject.Telefone;
 import com.autoservice.validation.ValidationHandler;
 import com.autoservice.validation.handler.NotificationValidationHandler;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
 
-@Entity
-@Table(name = "pessoa_fisica", schema = "cadastro")
 public class PessoaFisica extends Pessoa {
 
-    @Column(name = "nome", nullable = false)
     private String nome;
 
     private CPF cpf;

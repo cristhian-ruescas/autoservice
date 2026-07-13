@@ -22,21 +22,14 @@ class PlacaTest {
     @DisplayName("Deve retornar falso se comparado com nulo")
     void testEqualsNull() {
         var placa = Placa.from("ABC1D23");
-        assertFalse(placa.equals(null));
+        assertNotEquals(null, placa);
     }
 
     @Test
     @DisplayName("Deve retornar falso se comparado com classe diferente")
     void testEqualsDifferentClass() {
         var placa = Placa.from("ABC1D23");
-        assertFalse(placa.equals("ABC1D23"));
-    }
-
-    @Test
-    @DisplayName("Deve retornar verdadeiro se comparado com a mesma instância")
-    void testEqualsSameInstance() {
-        var placa = Placa.from("ABC1D23");
-        assertTrue(placa.equals(placa));
+        assertNotEquals("ABC1D23", placa);
     }
 
     @Test

@@ -6,12 +6,9 @@ import com.autoservice.domain.tipoveiculo.TipoVeiculoGateway;
 import com.autoservice.domain.veiculo.valueobject.Ano;
 import com.autoservice.domain.veiculo.valueobject.Marca;
 import com.autoservice.domain.veiculo.valueobject.Modelo;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
-@Service
 public class CadastrarTipoVeiculoUseCase extends UseCase<CadastrarTipoVeiculoCommand, CadastrarTipoVeiculoOutput> {
 
     private final TipoVeiculoGateway tipoVeiculoGateway;
@@ -21,7 +18,6 @@ public class CadastrarTipoVeiculoUseCase extends UseCase<CadastrarTipoVeiculoCom
     }
 
     @Override
-    @Transactional
     public CadastrarTipoVeiculoOutput execute(final CadastrarTipoVeiculoCommand command) {
         final var tipoVeiculo = this.tipoVeiculoGateway.findByMarcaModeloAno(
                 command.marca(),
