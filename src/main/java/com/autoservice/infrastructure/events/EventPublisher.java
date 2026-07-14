@@ -4,8 +4,6 @@ import com.autoservice.domain.events.DomainEvent;
 import com.autoservice.domain.events.DomainEventPublisher;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.Objects;
 
@@ -20,16 +18,7 @@ public class EventPublisher implements DomainEventPublisher {
 
     @Override
     public void publishEvent(final DomainEvent event) {
-        if (TransactionSynchronizationManager.isSynchronizationActive()) {
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-                @Override
-                public void afterCommit() {
-                    EventPublisher.this.publisher.publishEvent(event);
-                }
-            });
-            return;
-        }
-
+        // Publica na hora: @TransactionalEventListener (BEFORE/AFTER_COMMIT) decide a fase.
         this.publisher.publishEvent(event);
     }
 }

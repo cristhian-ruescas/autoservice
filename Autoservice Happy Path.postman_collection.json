@@ -1,0 +1,760 @@
+{
+  "info": {
+    "name": "Autoservice — Happy Path (Apresentação)",
+    "description": "Coleção organizada para demonstração do fluxo completo da oficina.\n\n## Como usar na apresentação\n\n1. Selecione o environment **Autoservice Local**\n2. Execute as pastas **na ordem numerada** (1 → 10)\n3. Os scripts salvam automaticamente `token`, `ordemServicoId`, `pecaId` e `ordemCompraId`\n\n## Fluxo de status da OS\n\n`RECEBIDO` → `EM_DIAGNOSTICO` → `AGUARDANDO_APROVACAO` → `EM_EXECUCAO` → `FINALIZADA` → `ENTREGUE`\n\n## Credenciais seed\n\n- Usuário: `admin@autoservice.local`\n- Senha: `admin123`\n- Base URL: `http://localhost:8088`",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8088" },
+    { "key": "token", "value": "" },
+    { "key": "ordemServicoId", "value": "" },
+    { "key": "clienteId", "value": "" },
+    { "key": "veiculoId", "value": "" },
+    { "key": "pecaId", "value": "" },
+    { "key": "servicoId", "value": "" },
+    { "key": "tipoVeiculoId", "value": "" },
+    { "key": "ordemCompraId", "value": "" },
+    { "key": "estoqueId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Autenticação",
+      "description": "Obtém o JWT de administrador. Execute primeiro.",
+      "item": [
+        {
+          "name": "1.1 Login (JWT)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login retornou 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.test('Token presente', function () {",
+                  "    pm.expect(body.token).to.be.a('string').and.not.empty;",
+                  "});",
+                  "pm.collectionVariables.set('token', body.token);",
+                  "pm.environment.set('token', body.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin@autoservice.local\",\n  \"password\": \"admin123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/auth/login",
+            "description": "Autentica o admin e salva `token` automaticamente."
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Abrir atendimento",
+      "description": "Abre OS com cliente PF + veículo. Status inicial: RECEBIDO (sem itens no corpo).",
+      "item": [
+        {
+          "name": "2.1 Abrir atendimento (PF + OS) — CONFIRA CONSOLE EMAIL",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const L = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';",
+                  "const letter = () => L[Math.floor(Math.random() * 26)];",
+                  "const digit = () => Math.floor(Math.random() * 10);",
+                  "const placa = `${letter()}${letter()}${letter()}${digit()}${letter()}${digit()}${digit()}`;",
+                  "pm.variables.set('placaDemo', placa);",
+                  "",
+                  "const bodyObj = {",
+                  "  tipoPessoa: 'FISICA',",
+                  "  nome: 'Cristhian Demo',",
+                  "  cpf: '10000000280',",
+                  "  email: 'cliente.demo@example.com',",
+                  "  telefone: '11999990000',",
+                  "  placa,",
+                  "  marca: 'Volkswagen',",
+                  "  modelo: 'Gol',",
+                  "  ano: 2019,",
+                  "  cor: 'Prata',",
+                  "  kilometragem: 62000,",
+                  "  relato: 'Barulho no freio dianteiro e vibracao em alta velocidade'",
+                  "};",
+                  "const raw = JSON.stringify(bodyObj);",
+                  "pm.request.body.mode = 'raw';",
+                  "pm.request.body.raw = raw;",
+                  "try { pm.request.body.update(raw); } catch (e) {}",
+                  "console.log('>>> DESTINO EMAIL =', bodyObj.email);",
+                  "console.log('>>> DESTINO CPF   =', bodyObj.cpf);",
+                  "console.log('>>> PLACA         =', placa);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Atendimento criado (201)', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('ordemServicoId', body.ordemServicoId);",
+                  "pm.environment.set('ordemServicoId', body.ordemServicoId);",
+                  "if (body.clienteId) {",
+                  "    pm.collectionVariables.set('clienteId', body.clienteId);",
+                  "    pm.environment.set('clienteId', body.clienteId);",
+                  "}",
+                  "if (body.veiculoId) {",
+                  "    pm.collectionVariables.set('veiculoId', body.veiculoId);",
+                  "    pm.environment.set('veiculoId', body.veiculoId);",
+                  "}",
+                  "pm.sendRequest({",
+                  "  url: pm.environment.get('baseUrl') + '/ordens-servico/' + body.ordemServicoId,",
+                  "  method: 'GET',",
+                  "  header: {",
+                  "    Authorization: 'Bearer ' + pm.environment.get('token'),",
+                  "    Accept: 'application/json'",
+                  "  }",
+                  "}, function (err, res) {",
+                  "  if (err) { console.error(err); return; }",
+                  "  const os = res.json();",
+                  "  const email = os.cliente && os.cliente.email;",
+                  "  const cpf = os.cliente && os.cliente.cpf;",
+                  "  console.log('>>> OS CLIENTE EMAIL =', email);",
+                  "  console.log('>>> OS CLIENTE CPF   =', cpf);",
+                  "  pm.test('Cliente DEMO (nao Admin)', function () {",
+                  "    pm.expect(email).to.eql('cliente.demo@example.com');",
+                  "    pm.expect(cpf).to.eql('10000000280');",
+                  "  });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoPessoa\": \"FISICA\",\n  \"nome\": \"Cristhian Demo\",\n  \"cpf\": \"10000000280\",\n  \"email\": \"cliente.demo@example.com\",\n  \"telefone\": \"11999990000\",\n  \"placa\": \"{{placaDemo}}\",\n  \"marca\": \"Volkswagen\",\n  \"modelo\": \"Gol\",\n  \"ano\": 2019,\n  \"cor\": \"Prata\",\n  \"kilometragem\": 62000,\n  \"relato\": \"Barulho no freio dianteiro e vibracao em alta velocidade\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/atendimentos",
+            "description": "IMPORTANTE: o pre-request FORÇA email/CPF da demo. Se o teste 'Cliente DEMO' falhar, o body ainda está mandando Admin."
+          }
+        },
+        {
+          "name": "2.2 Consultar OS aberta",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/ordens-servico/{{ordemServicoId}}",
+            "description": "Confirma status RECEBIDO e dados do atendimento."
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Diagnóstico",
+      "description": "Inicia o diagnóstico: RECEBIDO → EM_DIAGNOSTICO.",
+      "item": [
+        {
+          "name": "3.1 Iniciar diagnóstico",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Diagnóstico iniciado', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/ordens-servico/{{ordemServicoId}}/diagnostico",
+            "description": "Transição RECEBIDO → EM_DIAGNOSTICO."
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Catálogos",
+      "description": "Cadastra tipo de veículo, peça e serviço usados no orçamento.",
+      "item": [
+        {
+          "name": "4.1 Criar tipo de veículo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Tipo veículo criado', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "if (body.id) {",
+                  "    pm.collectionVariables.set('tipoVeiculoId', body.id);",
+                  "    pm.environment.set('tipoVeiculoId', body.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"marca\": \"Volkswagen\",\n  \"modelo\": \"Gol\",\n  \"ano\": 2019\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/tipos-veiculo",
+            "description": "Cadastro idempotente de marca/modelo/ano."
+          }
+        },
+        {
+          "name": "4.2 Criar peça",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.variables.set('codigoPeca', 'PAST' + Date.now().toString().slice(-6));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Peça criada (201)', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('pecaId', body.id);",
+                  "pm.environment.set('pecaId', body.id);",
+                  "console.log('pecaId:', body.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descricao\": \"Pastilha de freio dianteira\",\n  \"codigo\": \"{{codigoPeca}}\",\n  \"marca\": \"Bosch\",\n  \"valorUnitario\": 189.90,\n  \"tipoVeiculoId\": \"{{tipoVeiculoId}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/pecas",
+            "description": "Cria peça e salva `pecaId` para o orçamento."
+          }
+        },
+        {
+          "name": "4.3 Criar serviço (catálogo)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Serviço criado', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "if (body.id) {",
+                  "    pm.collectionVariables.set('servicoId', body.id);",
+                  "    pm.environment.set('servicoId', body.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Troca de pastilhas de freio\",\n  \"descricao\": \"Substituição das pastilhas dianteiras e verificação do disco\",\n  \"valorReferencia\": 250.00\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/servicos",
+            "description": "Cadastro de serviço ofertado pela oficina."
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Itens do orçamento",
+      "description": "Inclui serviço e peça na OS (somente em EM_DIAGNOSTICO).",
+      "item": [
+        {
+          "name": "5.1 Adicionar itens (serviço + peça)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Itens adicionados', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"itens\": [\n    {\n      \"tipo\": \"SERVICO\",\n      \"descricao\": \"Troca de pastilhas de freio\",\n      \"quantidade\": 1,\n      \"valorUnitario\": 250.00\n    },\n    {\n      \"tipo\": \"PECA\",\n      \"pecaId\": \"{{pecaId}}\",\n      \"quantidade\": 1,\n      \"valorUnitario\": 189.90\n    }\n  ]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/ordens-servico/{{ordemServicoId}}/itens",
+            "description": "Monta o orçamento com mão de obra + peça."
+          }
+        },
+        {
+          "name": "5.2 Listar itens da OS",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/ordens-servico/{{ordemServicoId}}/itens",
+            "description": "Confere os itens do orçamento."
+          }
+        },
+        {
+          "name": "5.3 Consultar estoques",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "const list = Array.isArray(body) ? body : (body.content || body.items || []);",
+                  "if (list.length > 0 && list[0].id) {",
+                  "    pm.collectionVariables.set('estoqueId', list[0].id);",
+                  "    pm.environment.set('estoqueId', list[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/estoques?page=0&size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["estoques"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "10" }
+              ]
+            },
+            "description": "Consulta disponibilidade de estoque (opcional na demo)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Finalizar diagnóstico",
+      "description": "Fecha o orçamento: EM_DIAGNOSTICO → AGUARDANDO_APROVACAO.",
+      "item": [
+        {
+          "name": "6.1 Finalizar diagnóstico / orçamento",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Orçamento finalizado', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tempoPrevistoExecucaoDias\": 1,\n  \"tempoPrevistoExecucaoHoras\": 4\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/ordens-servico/{{ordemServicoId}}/diagnostico/finalizar",
+            "description": "Total do orçamento deve ser > 0. Envia notificação ao cliente."
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Acompanhamento do cliente",
+      "description": "Endpoint público — sem JWT — para o cliente acompanhar o andamento.",
+      "item": [
+        {
+          "name": "7.1 Andamento da OS (público)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Andamento público OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/ordens-servico/{{ordemServicoId}}/andamento",
+            "description": "Demonstra acesso público de acompanhamento (sem Authorization)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Aprovação do orçamento",
+      "description": "Cliente aprova: AGUARDANDO_APROVACAO → EM_EXECUCAO. Pode gerar ordem de compra.",
+      "item": [
+        {
+          "name": "8.1 Aprovar orçamento",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Orçamento aprovado', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/ordens-servico/{{ordemServicoId}}/aprovacao/aprovar",
+            "description": "Aprova via API admin. Alternativa pública: GET .../aprovacao/aprovar (link de e-mail)."
+          }
+        },
+        {
+          "name": "8.2 Consultar OS após aprovação",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/ordens-servico/{{ordemServicoId}}",
+            "description": "Status esperado: EM_EXECUCAO."
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Ordem de compra",
+      "description": "Após aprovação, pode existir OC de peças. Liste e realize a compra.",
+      "item": [
+        {
+          "name": "9.1 Listar ordens de compra",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Lista OC OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "const list = Array.isArray(body) ? body : (body.content || body.items || []);",
+                  "const pecaId = pm.collectionVariables.get('pecaId') || pm.environment.get('pecaId');",
+                  "const pendentes = list.filter(o => String(o.status || '').toUpperCase() === 'PENDENTE');",
+                  "let oc = null;",
+                  "if (pecaId) {",
+                  "  oc = pendentes.find(o => (o.itens || []).some(i => i.pecaId === pecaId)) || null;",
+                  "}",
+                  "if (!oc && pendentes.length > 0) {",
+                  "  oc = pendentes[pendentes.length - 1];",
+                  "}",
+                  "pm.test('Existe ordem de compra PENDENTE para a peça', function () {",
+                  "  pm.expect(oc, 'OC PENDENTE nao encontrada — rode 8.1 aprovar antes').to.be.ok;",
+                  "  pm.expect(oc.id).to.be.ok;",
+                  "});",
+                  "if (oc && oc.id) {",
+                  "  pm.collectionVariables.set('ordemCompraId', oc.id);",
+                  "  pm.environment.set('ordemCompraId', oc.id);",
+                  "  console.log('ordemCompraId:', oc.id, 'status:', oc.status);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/ordens-compra",
+            "description": "Salva automaticamente o `ordemCompraId` da OS atual (se existir)."
+          }
+        },
+        {
+          "name": "9.2 Detalhe da ordem de compra",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const id = pm.collectionVariables.get('ordemCompraId') || pm.environment.get('ordemCompraId');",
+                  "if (!id) {",
+                  "  throw new Error('ordemCompraId vazio — o passo 9.1 precisa achar a OC PENDENTE');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/ordens-compra/{{ordemCompraId}}",
+            "description": "Detalha itens da OC. Requer `ordemCompraId` do passo 9.1."
+          }
+        },
+        {
+          "name": "9.3 Realizar ordem de compra",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('OC realizada', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/ordens-compra/{{ordemCompraId}}/realizar",
+            "description": "Confirma compra e atualiza estoque."
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. Finalizar e entregar",
+      "description": "Encerra a execução e entrega o veículo: EM_EXECUCAO → FINALIZADA → ENTREGUE.",
+      "item": [
+        {
+          "name": "10.1 Finalizar execução",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('OS finalizada', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/ordens-servico/{{ordemServicoId}}/finalizar",
+            "description": "EM_EXECUCAO → FINALIZADA."
+          }
+        },
+        {
+          "name": "10.2 Entregar veículo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Veículo entregue', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/ordens-servico/{{ordemServicoId}}/entregar",
+            "description": "FINALIZADA → ENTREGUE. Fim do happy path."
+          }
+        },
+        {
+          "name": "10.3 Conferir OS final",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/ordens-servico/{{ordemServicoId}}",
+            "description": "Status esperado: ENTREGUE."
+          }
+        }
+      ]
+    },
+    {
+      "name": "11. Extras (consultas)",
+      "description": "Endpoints úteis para complementar a apresentação.",
+      "item": [
+        {
+          "name": "11.1 Listar ordens de serviço",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/ordens-servico?page=0&size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["ordens-servico"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "11.2 Métrica tempo médio de execução",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/ordens-servico/metricas/tempo-medio-execucao",
+            "description": "Tempo médio entre aprovação e finalização."
+          }
+        },
+        {
+          "name": "11.3 Notificações simuladas",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/integracoes/notificacoes/simuladas?limite=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["integracoes", "notificacoes", "simuladas"],
+              "query": [
+                { "key": "limite", "value": "20" }
+              ]
+            },
+            "description": "Mostra e-mails/webhooks simulados dos status da OS."
+          }
+        },
+        {
+          "name": "11.4 Listar clientes",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/clientes?page=0&size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["clientes"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "10" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
