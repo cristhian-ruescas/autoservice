@@ -24,7 +24,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/ordens-servico")
-@Tag(name = "Ordens de serviço", description = "Consulta e manutenção básica da ordem de serviço.")
+@Tag(name = "Ordens de serviço", description = "Consulta, acompanhamento, listagem operacional e manutenção da OS.")
 public class OrdemServicoConsultaController {
 
     private final ListOrdemServicoQuery listOrdemServicoQuery;
@@ -48,6 +48,12 @@ public class OrdemServicoConsultaController {
     }
 
     @GetMapping
+    @Operation(
+            summary = "Listar ordens de serviço (operacional)",
+            description = "Ordena por prioridade de status (Em Execução > Aguardando Aprovação > Diagnóstico > Recebida) "
+                    + "e, empate, pelas mais antigas. Exclui FINALIZADA e ENTREGUE da listagem operacional. "
+                    + "Filtro opcional por status."
+    )
     public ResponseEntity<PaginationOutput<ListOrdemServicoOutput>> list(
             @RequestParam(defaultValue = "0") final int page,
             @RequestParam(defaultValue = "20") final int size,
@@ -63,11 +69,16 @@ public class OrdemServicoConsultaController {
     }
 
     @GetMapping("/{id}/andamento")
+    @Operation(
+            summary = "Consultar status / andamento (público)",
+            description = "Situação atual da OS para o cliente. Não exige JWT."
+    )
     public ResponseEntity<AcompanharOrdemServicoOutput> acompanhar(@PathVariable final UUID id) {
         return ResponseEntity.ok(this.acompanharOrdemServicoQuery.acompanhar(id));
     }
 
     @PutMapping("/{id}")
+    @Operation(summary = "Atualizar dados básicos da OS")
     public ResponseEntity<AtualizarOrdemServicoOutput> atualizar(
             @PathVariable final UUID id,
             @RequestBody @Valid final AtualizarOrdemServicoRequest request
@@ -82,6 +93,7 @@ public class OrdemServicoConsultaController {
     }
 
     @DeleteMapping("/{id}")
+    @Operation(summary = "Remover ordem de serviço (exclusão lógica/regra de negócio)")
     public ResponseEntity<Void> remover(@PathVariable final UUID id) {
         this.removerOrdemServicoUseCase.execute(RemoverOrdemServicoCommand.with(id));
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

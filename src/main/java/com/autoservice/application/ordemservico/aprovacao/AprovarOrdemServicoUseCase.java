@@ -7,6 +7,7 @@ import com.autoservice.domain.exceptions.DomainException;
 import com.autoservice.domain.ordemservico.OrdemServicoGateway;
 import com.autoservice.domain.ordemservico.OrdemServicoID;
 import com.autoservice.validation.Error;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
@@ -24,6 +25,7 @@ public class AprovarOrdemServicoUseCase extends UseCase<AprovarOrdemServicoComma
     }
 
     @Override
+    @Transactional
     public OrdemServicoStatusOutput execute(final AprovarOrdemServicoCommand command) {
         final var id = OrdemServicoID.from(command.ordemServicoId());
 

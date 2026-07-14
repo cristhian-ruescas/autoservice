@@ -5,15 +5,17 @@ import com.autoservice.application.ordemservico.list.ListOrdemServicoOutput;
 import com.autoservice.domain.ordemservico.enums.OrdemServicoStatus;
 import com.autoservice.domain.ordemservico.valueobject.TempoPrevistoExecucao;
 
-import java.math.BigDecimal;
+import java.text.NumberFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 final class OrcamentoReportParametersBuilder {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final NumberFormat MONEY_FORMAT = NumberFormat.getCurrencyInstance(Locale.of("pt", "BR"));
 
     private OrcamentoReportParametersBuilder() {
     }
@@ -47,22 +49,28 @@ final class OrcamentoReportParametersBuilder {
         parameters.put("VEICULO_ANO", String.valueOf(veiculo.ano()));
         parameters.put("VEICULO_COR", veiculo.cor());
         parameters.put("VEICULO_KM", String.valueOf(veiculo.kilometragem()));
-        parameters.put("VALOR_TOTAL", ordemServico.valorTotal());
+        parameters.put("VALOR_TOTAL", formatMoney(ordemServico.valorTotal()));
 
         return parameters;
     }
 
-    static List<ItemReportRow> itens(final DetailOrdemServicoOutput ordemServico) {
-        return ordemServico.itens().stream()
-                .map(item -> new ItemReportRow(
-                        item.tipo(),
-                        item.descricao(),
-                        item.peca() == null ? null : item.peca().codigo(),
-                        item.quantidade(),
-                        item.valorUnitario(),
-                        item.valorTotal()
-                ))
-                .toList();
+    static java.util.Collection<Map<String, ?>> itens(final DetailOrdemServicoOutput ordemServico) {
+        final java.util.List<Map<String, ?>> rows = new java.util.ArrayList<>();
+        for (final var item : ordemServico.itens()) {
+            final Map<String, Object> row = new HashMap<>();
+            row.put("tipo", item.tipo());
+            row.put("descricao", item.descricao());
+            row.put("pecaCodigo", item.peca() == null ? null : item.peca().codigo());
+            row.put("quantidade", item.quantidade());
+            row.put("valorUnitario", formatMoney(item.valorUnitario()));
+            row.put("valorTotal", formatMoney(item.valorTotal()));
+            rows.add(row);
+        }
+        return rows;
+    }
+
+    private static String formatMoney(final java.math.BigDecimal value) {
+        return MONEY_FORMAT.format(value == null ? java.math.BigDecimal.ZERO : value);
     }
 
     private static String formatarTempoPrevisto(final Integer dias, final Integer horas) {
@@ -85,36 +93,4 @@ final class OrcamentoReportParametersBuilder {
         return cliente.cnpj() == null ? cliente.cpf() : cliente.cnpj();
     }
 
-    record ItemReportRow(
-            String tipo,
-            String descricao,
-            String pecaCodigo,
-            Integer quantidade,
-            BigDecimal valorUnitario,
-            BigDecimal valorTotal
-    ) {
-        public String getTipo() {
-            return tipo;
-        }
-
-        public String getDescricao() {
-            return descricao;
-        }
-
-        public String getPecaCodigo() {
-            return pecaCodigo;
-        }
-
-        public Integer getQuantidade() {
-            return quantidade;
-        }
-
-        public BigDecimal getValorUnitario() {
-            return valorUnitario;
-        }
-
-        public BigDecimal getValorTotal() {
-            return valorTotal;
-        }
-    }
 }

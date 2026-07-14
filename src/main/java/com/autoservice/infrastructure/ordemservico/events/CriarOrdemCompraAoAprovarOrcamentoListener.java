@@ -13,8 +13,6 @@ import com.autoservice.domain.peca.PecaID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -40,8 +38,7 @@ public class CriarOrdemCompraAoAprovarOrcamentoListener {
         this.itemOrdemCompraGateway = Objects.requireNonNull(itemOrdemCompraGateway);
     }
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT, fallbackExecution = true)
     public void on(final OrdemServicoOrcamentoAprovadoEvent event) {
         final OrdemServicoID ordemServicoId = event.getOrdemServicoId();
 

@@ -7,6 +7,8 @@ import com.autoservice.application.cliente.query.*;
 import com.autoservice.application.cliente.update.AtualizarClienteCommand;
 import com.autoservice.application.cliente.update.AtualizarClienteUseCase;
 import com.autoservice.presentation.dto.cliente.AtualizarClienteRequest;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +17,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/clientes")
+@Tag(name = "Clientes", description = "Consulta e manutenção de clientes (criação ocorre em POST /atendimentos).")
 public class ClienteController {
 
     private final ListClientesQuery listClientesQuery;
@@ -38,6 +41,7 @@ public class ClienteController {
     }
 
     @GetMapping
+    @Operation(summary = "Listar clientes")
     public ResponseEntity<PaginationOutput<ClienteOutput>> listar(
             @RequestParam(defaultValue = "0") final int page,
             @RequestParam(defaultValue = "20") final int size,
@@ -47,16 +51,19 @@ public class ClienteController {
     }
 
     @GetMapping("/cpf/{cpf}")
+    @Operation(summary = "Buscar cliente por CPF")
     public ResponseEntity<ClienteOutput> buscarPorCpf(@PathVariable final String cpf) {
         return ResponseEntity.ok(this.getClienteByCpfQuery.buscarPorCpf(cpf));
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "Detalhar cliente")
     public ResponseEntity<ClienteDetailOutput> buscarPorId(@PathVariable final UUID id) {
         return ResponseEntity.ok(this.getClienteByIdQuery.buscarPorId(id));
     }
 
     @PutMapping("/{id}")
+    @Operation(summary = "Atualizar cliente")
     public ResponseEntity<ClienteOutput> atualizar(
             @PathVariable final UUID id,
             @RequestBody @Valid final AtualizarClienteRequest request
@@ -77,6 +84,7 @@ public class ClienteController {
     }
 
     @DeleteMapping("/{id}")
+    @Operation(summary = "Remover cliente")
     public ResponseEntity<Void> remover(@PathVariable final UUID id) {
         this.removerClienteUseCase.execute(RemoverClienteCommand.with(id));
 

@@ -1,62 +1,135 @@
-# Autoservice — API da oficina (MVP)
+# Autoservice — Tech Challenge (Fase 2)
 
-Back-end monolítico em camadas (**Spring Boot 3**, **Java 21**) para gestão de **ordens de serviço**, **clientes**, *
-*veículos**, **peças**, **estoque**, **ordens de compra**, **catálogo de serviços** e **métricas de tempo de execução**.
-
+API da oficina mecânica em **Spring Boot 3** / **Java 21**, com persistência em **PostgreSQL**.  
 Documentação interativa: **`/swagger-ui.html`** (OpenAPI em **`/v3/api-docs`**).
 
-## Objetivos do projeto
+## Descrição da solução e dos objetivos desta fase
 
-- Formalizar o fluxo de **atendimento → diagnóstico → orçamento → aprovação → execução → entrega**.
-- Centralizar **cadastros** e **estoque** com rastreabilidade.
-- Oferecer **acompanhamento da OS** por API (`GET /ordens-servico/{id}/andamento`).
-- Dar suporte à disciplina de **DDD** (domínio, aplicação, infraestrutura, apresentação) e qualidade (testes, cobertura
-  nos pacotes de domínio/aplicação).
+### Contexto
 
-## Por que PostgreSQL?
+Na **Fase 1** foi implantado o sistema inicial de gestão de ordens de serviço, veículos, clientes e controle de peças. Com o aumento da demanda, a perspectiva de novas unidades e a necessidade de **alta disponibilidade**, a oficina precisa evoluir a aplicação para:
 
-Foi adotado **PostgreSQL** por ser **open-source**, amplamente usado em produção, com forte suporte a **integridade
-referencial**, **transações ACID**, tipos numéricos/decimais para valores monetários e adequação a dados relacionais (
-clientes, veículos, OS, itens, estoque). O driver oficial integra-se bem com **Spring Data JPA** e com ambientes
-containerizados.
+- reduzir riscos operacionais com **infraestrutura escalável**;
+- **automatizar** o provisionamento e o deploy do ambiente;
+- melhorar **qualidade** e organização do código, com evolução sustentável;
+- suportar **grandes volumes de OS em horários de pico**, com **escalabilidade dinâmica**.
 
-## Como rodar localmente
+### Solução (Fase 2)
 
-### Pré-requisitos
+Esta fase evolui a aplicação da Fase 1 com foco em **qualidade**, **resiliência** e **escalabilidade**, unindo:
 
-- **JDK 21**
-- **Maven** (ou use o wrapper `./mvnw` na raiz do projeto)
-- **PostgreSQL** acessível (ou **Docker** — ver pasta `docker/`)
+1. **Código** — refatoração com Clean Code e arquitetura em camadas (hexagonal / Clean Architecture), testes automatizados e APIs do fluxo crítico da OS;
+2. **Plataforma** — containerização (Docker / Compose), orquestração (Kubernetes + HPA), infraestrutura como código (Terraform) e pipeline CI/CD (GitHub Actions).
 
-### Variáveis e porta
+No domínio, a API cobre atendimento (abertura de OS), diagnóstico e orçamento, aprovação/reprovação (incluindo canal por e-mail), execução, estoque, ordens de compra, entrega e consultas/listagens de status.
 
-Por padrão (`src/main/resources/application.yaml`):
+### Objetivos desta fase
 
-| Variável / propriedade       | Exemplo                                        | Descrição                                                      |
-|------------------------------|------------------------------------------------|----------------------------------------------------------------|
-| `server.port`                | `8088`                                         | Porta HTTP                                                     |
-| `SPRING_DATASOURCE_URL`      | `jdbc:postgresql://localhost:5432/autoservice` | JDBC                                                           |
-| `SPRING_DATASOURCE_USERNAME` | `postgres`                                     | Usuário                                                        |
-| `SPRING_DATASOURCE_PASSWORD` | `postgres`                                     | Senha                                                          |
-| `APP_BASE_URL`               | `http://localhost:8088`                        | Base URL nos links de orçamento                                |
-| `MAIL_*`                     | opcional                                       | SMTP para envio de orçamento (defaults apontam para localhost) |
+| Pilar | Objetivo |
+|-------|----------|
+| **Aplicação** | Refatorar mantendo Clean Code e separação de camadas; cobrir fluxos críticos com testes unitários e/ou de integração; evoluir as APIs de OS (abertura, status, aprovação, listagem priorizada, atualização via e-mail). |
+| **Conteinerização** | Garantir build reprodutível com Dockerfile e ambiente local com docker-compose. |
+| **Kubernetes** | Deploy com Deployments, Services, ConfigMaps, Secrets e **HPA** (CPU/memória) para escala sob pico. |
+| **IaC** | Provisionar cluster (local/cloud) e banco com **Terraform**, documentando recursos e como aplicar. |
+| **CI/CD** | Automatizar build, testes, imagem Docker, deploy do banco e aplicação dos manifestos no cluster. |
 
-Crie o banco `autoservice` no Postgres ou use o `docker-compose` da pasta `docker/`.
+## Arquitetura proposta
 
-Copie `local.variable.env.example` para `local.variable.env` e ajuste os valores (JWT, mail, datasource).
+### Componentes da aplicação
 
-### Build e execução
+Monólito em camadas (dependências apontando para o domínio):
+
+```text
+presentation/     Controllers REST, DTOs, security (JWT), OpenAPI/Swagger
+       |
+application/      Casos de uso (comandos/queries) e orquestração de fluxos
+       |
+domain/           Entidades, regras de negócio, eventos e políticas de status da OS
+       |
+infrastructure/   JPA, e-mail, PDF (orçamento), listeners de eventos, integrações
+```
+
+| Componente | Responsabilidade |
+|------------|------------------|
+| **Atendimento / abertura de OS** | Recebe cliente, veículo, serviços e peças; retorna o identificador único da OS |
+| **Consulta de status** | Situação atual: Recebida, Diagnóstico, Aguardando Aprovação, Execução, Finalizada, Entregue (`GET .../andamento` e detalhe da OS) |
+| **Aprovação de orçamento** | Endpoints de aprovação/recusa (API e links externos/e-mail) |
+| **Listagem de OS** | Ordenação por prioridade de status (Em Execução > Aguardando Aprovação > Diagnóstico > Recebida), mais antigas primeiro; exclui finalizadas/entregues da listagem operacional |
+| **Catálogos** | Peças, tipos de veículo, serviços |
+| **Estoque e ordem de compra** | Entrada/baixa alinhadas ao ciclo da OS |
+| **Autenticação** | Login JWT para rotas administrativas |
+| **Notificações** | E-mail com andamento / links de orçamento (atualização de status via ferramenta externa) |
+| **Métricas** | Tempo médio de execução das OS |
+
+### Infraestrutura provisionada
+
+| Camada | Recursos |
+|--------|----------|
+| **Local (Compose)** | Postgres + API (`docker/`) — desenvolvimento |
+| **Terraform (`/infra`)** | Cluster Kubernetes local (**K3d**), namespace `autoservice`, **PostgreSQL** (Helm) |
+| **Kubernetes (`/k8s`)** | App: Deployment, Service, ConfigMap, Secret, **HPA** · Banco: Deployment, Service, ConfigMap, Secret, **PVC**, initdb |
+
+```text
+Cliente / Postman / Swagger / e-mail (links)
+              |
+              v
+       Service (K8s)  ------->  autoservice-app  (Deployment + HPA CPU/memória)
+                                       |
+                                       v
+                              autoservice-postgres  (Deployment + PVC)
+```
+
+O **HPA** escala as réplicas da API conforme consumo de CPU e memória, preparando o sistema para picos de ordens de serviço.
+
+### Fluxo de deploy
+
+```text
+Push no GitHub (main / master / develop)
+        |
+        v
+GitHub Actions (.github/workflows/ci-cd.yml)
+        |-- build da aplicação
+        |-- testes automatizados
+        |-- validação dos manifestos (kustomize)
+        |-- build + push da imagem Docker (GHCR)     [main/master]
+        |-- deploy do banco + app no Kubernetes      [main/master]
+        v
+Cluster consome: ghcr.io/cristhian-ruescas/autoservice:latest
+```
+
+Secrets no ambiente GitHub `production`: `KUBECONFIG`, `POSTGRES_PASSWORD`, `AUTOSERVICE_JWT_SECRET`, `MAIL_USERNAME`, `MAIL_PASSWORD`.
+
+---
+
+## Instruções
+
+### Execução local
+
+**Pré-requisitos:** JDK 21, Maven (ou `./mvnw`), PostgreSQL acessível **ou** Docker.
+
+**Variáveis principais** (`src/main/resources/application.yaml`):
+
+| Variável / propriedade       | Exemplo                                        | Descrição                                       |
+|------------------------------|------------------------------------------------|-------------------------------------------------|
+| `server.port`                | `8088`                                         | Porta HTTP                                      |
+| `SPRING_DATASOURCE_URL`      | `jdbc:postgresql://localhost:5432/autoservice` | JDBC                                            |
+| `SPRING_DATASOURCE_USERNAME` | `postgres`                                     | Usuário                                         |
+| `SPRING_DATASOURCE_PASSWORD` | `postgres`                                     | Senha                                           |
+| `APP_BASE_URL`               | `http://localhost:8088`                        | Base URL dos links de orçamento                 |
+| `MAIL_*`                     | opcional                                       | SMTP (defaults apontam para localhost)          |
+| `AUTOSERVICE_JWT_SECRET`     | (secreto)                                      | Assinatura do JWT                               |
+
+1. Copie `local.variable.env.example` para `local.variable.env` e ajuste JWT/mail (e demais valores necessários).
+2. Crie o banco `autoservice` no Postgres **ou** use o Compose abaixo.
+
+**Maven:**
 
 ```bash
 ./mvnw clean verify    # testes + relatório JaCoCo em target/site/jacoco
 ./mvnw spring-boot:run
 ```
 
-Abra o Swagger em: **http://localhost:8088/swagger-ui.html**
-
-### Docker (Postgres + aplicação)
-
-Na raiz do repositório:
+**Docker (Postgres + aplicação)** — na raiz do repositório:
 
 ```bash
 docker compose -f docker/docker-compose.yaml up --build
@@ -64,48 +137,41 @@ docker compose -f docker/docker-compose.yaml up --build
 
 - **Postgres:** porta **5432**
 - **API:** porta **8088**
+- **Swagger:** http://localhost:8088/swagger-ui.html
 
 O `Dockerfile` está em **`docker/Dockerfile`** (build multi-stage com Maven + JRE 21).
 
-### Kubernetes (K8s)
+### Deploy em Kubernetes
 
-Os manifestos para deploy estão em **`/k8s`**, incluindo:
+Manifestos em **`/k8s`** (aplicados via `kustomization.yaml`):
 
-- `Deployment`, `Service`, `ConfigMap`, `Secret` e `HPA` da aplicação;
-- `Deployment`, `Service`, `ConfigMap`, `Secret` e `PVC` do PostgreSQL;
-- `kustomization.yaml` para aplicar todos os recursos de uma vez.
+- App: Deployment, Service, ConfigMap, Secret (exemplo), HPA
+- Postgres: Deployment, Service, ConfigMap, Secret (exemplo), PVC, initdb
 
-Antes do deploy, crie os secrets a partir dos exemplos:
+**1. Secrets** (não versionar valores reais):
 
 ```bash
 cp k8s/11-secret-app.example.yaml k8s/11-secret-app.yaml
 cp k8s/21-secret-postgres.example.yaml k8s/21-secret-postgres.yaml
-# edite os arquivos com valores reais (não commitar)
+# edite os arquivos com valores reais
 kubectl apply -f k8s/11-secret-app.yaml
 kubectl apply -f k8s/21-secret-postgres.yaml
 ```
 
 Ou use `kubectl create secret generic` (como no pipeline CI/CD).
 
-Ajuste também `k8s/30-deployment-app.yaml` (`image`, caso use outro registry/tag).
+**2. Imagem:** ajuste `k8s/30-deployment-app.yaml` se usar outro registry/tag. Padrão:
 
-Imagem padrão da aplicação no manifesto:
+`ghcr.io/cristhian-ruescas/autoservice:latest`
 
-- `ghcr.io/cristhian-ruescas/autoservice:latest`
-
-Validação local dos manifestos (sem aplicar no cluster):
+**3. Validar e aplicar:**
 
 ```bash
 kubectl apply --dry-run=client -k k8s
-```
-
-Aplicar no cluster:
-
-```bash
 kubectl apply -k k8s
 ```
 
-Verificar rollout:
+**4. Verificar:**
 
 ```bash
 kubectl -n autoservice get pods
@@ -115,158 +181,59 @@ kubectl -n autoservice rollout status deployment/autoservice-postgres
 kubectl -n autoservice rollout status deployment/autoservice-app
 ```
 
-### CI/CD (GitHub Actions)
+Pré-requisito: cluster acessível via `kubectl` (pode ser o provisionado com Terraform/K3d abaixo, ou outro cluster).
 
-Pipeline em **`.github/workflows/ci-cd.yml`** com etapas de:
+### Provisionamento da infraestrutura com Terraform
 
-- build da aplicação;
-- execução dos testes automatizados;
-- validação dos manifestos Kubernetes (`kubectl kustomize`);
-- build/push da imagem Docker no GHCR (push em `main`/`master`);
-- deploy do banco e da aplicação no Kubernetes (push em `main`/`master`).
+Os scripts estão em **`/infra`**: cluster Kubernetes local (**K3d**), namespace e **PostgreSQL** via Helm Bitnami.
 
-Dispara em `push`/`pull_request` para `main`, `master` e `develop` (deploy completo apenas em `main`/`master`).
-
-Secrets obrigatórios no ambiente `production`:
-
-- `KUBECONFIG` (arquivo kubeconfig em base64);
-- `POSTGRES_PASSWORD`;
-- `AUTOSERVICE_JWT_SECRET`;
-- `MAIL_USERNAME`;
-- `MAIL_PASSWORD`.
-
-## Arquitetura proposta (Fase 2)
-
-```text
-Cliente/Front
-    |
-    v
-Ingress/Service (K8s) ---> autoservice-app (Deployment + HPA)
-                                |
-                                v
-                        autoservice-postgres (Deployment + PVC)
-
-CI/CD (GitHub Actions)
-    -> build/test
-    -> build/push imagem
-    -> apply k8s (db + app)
-```
-
-## Infraestrutura como Código (Terraform)
-
-Os scripts Terraform estão em **`/infra`** para provisionamento do cluster Kubernetes (K3d) e banco de dados via Helm.
-
-### Provisionamento com Terraform
+**Pré-requisitos:** Terraform 1.3+, [k3d](https://k3d.io/) no `PATH`, `kubectl` (recomendado).
 
 ```bash
 cd infra
-
-# Revisar plano de provisionamento
+cp terraform.tfvars.example terraform.tfvars   # ajuste senhas/nomes
 terraform init
 terraform plan
-
-# Aplicar provisioning (cria cluster K3d + PostgreSQL)
 terraform apply
 ```
 
-**Variáveis e configuração:** Ver [infra/README.md](./infra/README.md) para instruções completas e customização de passwords/nomes.
-
 **Recursos criados:**
-- Cluster Kubernetes local (K3d com nome padrão `autoservice-local`)
-- PostgreSQL via Helm Bitnami chart
-- Namespace `autoservice`
-- ConfigMaps e Secrets para aplicação
 
-Após aplicar, validar cluster com:
+- Cluster K3d (`autoservice-local` por padrão)
+- Namespace `autoservice`
+- PostgreSQL (Helm)
+- ConfigMaps/Secrets auxiliares conforme o módulo
+
+Validação:
+
 ```bash
 kubectl cluster-info
 kubectl get pods -n autoservice
 kubectl get services -n autoservice
 ```
 
-## Checklist de entrega — Go/No-Go (Fase 2)
+Detalhes e customização: **[infra/README.md](./infra/README.md)**.  
+Para destruir: `terraform destroy` (dentro de `infra/`).
 
-### Go (concluído no repositório)
+Após o cluster existir, o deploy da API segue a seção **Deploy em Kubernetes** (ou o CI/CD em `main`/`master`).
 
-- [x] Refatoração em camadas (DDD/hexagonal) e código atualizado;
-- [x] Testes automatizados unitários e de integração (613 testes; 2 integrações com schema Testcontainers pendentes no ambiente WSL);
-- [x] Dockerfile e docker-compose;
-- [x] Manifestos Kubernetes em `/k8s` (Deployment/Service/ConfigMap/Secret/HPA/PVC);
-- [x] Pipeline CI/CD em `.github/workflows/ci-cd.yml`;
-- [x] Scripts Terraform em `/infra` e documentação de provisionamento;
-- [x] Link da collection completa de APIs (Postman/Swagger — [`Autoservice API.postman_collection.json`](./Autoservice%20API.postman_collection.json)).
+---
 
-### No-Go (pendente para entrega final)
+## Collection completa das APIs
 
-- [ ] Publicar link do vídeo de demonstração (YouTube/Vimeo, até 15 min);
-- [ ] Validar execução completa do CI/CD em ambiente real com cluster ativo (requer secrets GitHub);
-- [ ] Gerar PDF final com link do repositório, arquitetura e vídeo.
+| Canal | Link |
+|-------|------|
+| **Postman (collection completa)** | [`Autoservice API.postman_collection.json`](./Autoservice%20API.postman_collection.json) |
+| **Swagger UI** (app em execução) | http://localhost:8088/swagger-ui.html |
+| **OpenAPI JSON** (gerado / snapshot) | [`openapi.json`](./openapi.json) · runtime: `/v3/api-docs` |
 
-## Testes e cobertura
+Importe o arquivo Postman no cliente Postman (Import → arquivo) ou use o Swagger após subir a API.
 
-- **Unitários** e **integração** (Testcontainers + Postgres quando o Docker está disponível).
-- Testes de integração com `@EnabledIf` ignoram o ambiente sem Docker.
-- **JaCoCo** (`pom.xml`): relatório na fase `test`; regra de cobertura aplicada ao bundle configurado (exclui, entre
-  outros, `presentation` e `infrastructure` do relatório de verificação — alinhado ao foco em **domínio** e **casos de
-  uso**).
-
-## Qualidade e vulnerabilidades com SonarQube
-
-O projeto possui SonarScanner for Maven configurado no `pom.xml` e um SonarQube local no Docker Compose via profile
-`quality`.
-
-Suba o SonarQube:
-
-```bash
-docker compose -f docker/docker-compose.yaml --profile quality up -d sonarqube
-```
-
-
-
-Acesse `http://localhost:9000`. Caso credenciais de acesso sejam solicitadas pelo Sonar, utilize o login padrão:
-```bash
-usuario: admin
-senha: admin
-```
-
-Crie um token de análise como na imagem abaixo. Clique no seu perfil e vá para **My Account > Security**:
-<img src="readme.assets/criando-sonar-token.png" width="400">
-
-Para publicar a análise no SonarQube, execute:
-
-```bash
-export SONAR_TOKEN=<token-gerado-no-sonarqube>
-./mvnw clean verify sonar:sonar
-```
-
-O projeto é publicado com a chave `com.autoservice:autoservice`.
-
-Para gerar o relatório de vulnerabilidades usado na entrega, utilize um **User Token** do SonarQube, pois tokens apenas
-de análise podem não ter permissão para consultar Security Hotspots pela API:
-
-```bash
-export SONAR_TOKEN=<user-token-gerado-no-sonarqube>
-./scripts/generate-sonar-security-report.sh
-```
-
-O relatório consolidado é gerado em:
-
-[docs/security/sonar-vulnerability-report.md](docs/security/sonar-vulnerability-report.md)
-
-O script responsável pela geração está em:
-
-[scripts/generate-sonar-security-report.sh](scripts/generate-sonar-security-report.sh)
-
-As respostas brutas da API do SonarQube são salvas em:
-
-```text
-target/sonar-security/
-```
-
-## Principais recursos da API
+### Principais bases path
 
 | Área                               | Base path                                       |
 |------------------------------------|-------------------------------------------------|
+| Autenticação                       | `/auth`                                         |
 | Atendimento / abertura de OS       | `/atendimentos`                                 |
 | Ordens de serviço                  | `/ordens-servico`                               |
 | Métricas (tempo médio de execução) | `/ordens-servico/metricas/tempo-medio-execucao` |
@@ -275,38 +242,82 @@ target/sonar-security/
 | Estoque                            | `/estoques`                                     |
 | Ordens de compra                   | `/ordens-compra`                                |
 
-### Documentação interativa
+---
 
-- **Swagger/OpenAPI:** `http://localhost:8088/swagger-ui.html` (em execução local)
-- **OpenAPI JSON:** [`openapi.json`](./openapi.json)
+## CI/CD (GitHub Actions)
 
-### Postman Collection
+Pipeline em **`.github/workflows/ci-cd.yml`**:
 
-Importar collection no Postman: **[`Autoservice API.postman_collection.json`](./Autoservice%20API.postman_collection.json)**
+- build da aplicação e testes;
+- validação dos manifestos Kubernetes (`kubectl kustomize`);
+- build/push da imagem Docker no GHCR (push em `main`/`master`);
+- deploy do banco e da aplicação no Kubernetes (push em `main`/`master`).
 
-**Alternativamente,** acessar Swagger em tempo real quando a aplicação estiver rodando:
+Dispara em `push`/`pull_request` para `main`, `master` e `develop` (deploy completo apenas em `main`/`master`).
+
+## Checklist de entrega — Go/No-Go (Fase 2)
+
+### Go (concluído no repositório)
+
+- [x] Refatoração em camadas (DDD/hexagonal) e código atualizado;
+- [x] Testes automatizados unitários e de integração;
+- [x] Dockerfile e docker-compose;
+- [x] Manifestos Kubernetes em `/k8s` (Deployment/Service/ConfigMap/Secret/HPA/PVC);
+- [x] Pipeline CI/CD em `.github/workflows/ci-cd.yml`;
+- [x] Scripts Terraform em `/infra` e documentação de provisionamento;
+- [x] Link da collection completa de APIs (Postman/Swagger — [`Autoservice API.postman_collection.json`](./Autoservice%20API.postman_collection.json)).
+
+### No-Go / entrega acadêmica
+
+- [x] Vídeo de demonstração;
+- [x] PDF final com link do repositório, arquitetura e vídeo;
+- [x] Validar execução completa do CI/CD em ambiente real com cluster ativo (evidência no vídeo de demonstração — esteira passando na `main`).
+
+## Testes e cobertura
+
+- **Unitários** e **integração** (Testcontainers + Postgres quando o Docker está disponível).
+- Testes de integração com `@EnabledIf` ignoram o ambiente sem Docker.
+- **JaCoCo** (`pom.xml`): relatório na fase `test`; regra de cobertura aplicada ao bundle configurado (exclui, entre outros, `presentation` e `infrastructure` do relatório de verificação — alinhado ao foco em **domínio** e **casos de uso**).
+
+## Qualidade e vulnerabilidades com SonarQube
+
+O projeto possui SonarScanner for Maven no `pom.xml` e SonarQube local no Docker Compose (profile `quality`).
+
 ```bash
-# Com Docker Compose
-docker compose -f docker/docker-compose.yaml up
-
-# Ou com Maven
-./mvnw spring-boot:run
-
-# Acessar
-open http://localhost:8088/swagger-ui.html
+docker compose -f docker/docker-compose.yaml --profile quality up -d sonarqube
 ```
+
+Acesse `http://localhost:9000` (padrão: usuário `admin` / senha `admin`).
+
+Crie um token em **My Account > Security**:
+
+<img src="readme.assets/criando-sonar-token.png" width="400">
+
+```bash
+export SONAR_TOKEN=<token-gerado-no-sonarqube>
+./mvnw clean verify sonar:sonar
+```
+
+Chave do projeto: `com.autoservice:autoservice`.
+
+Para o relatório de vulnerabilidades da entrega, use um **User Token** (tokens só de análise podem não consultar Security Hotspots):
+
+```bash
+export SONAR_TOKEN=<user-token-gerado-no-sonarqube>
+./scripts/generate-sonar-security-report.sh
+```
+
+- Relatório: [docs/security/sonar-vulnerability-report.md](docs/security/sonar-vulnerability-report.md)
+- Script: [scripts/generate-sonar-security-report.sh](scripts/generate-sonar-security-report.sh)
+- Respostas brutas da API: `target/sonar-security/`
 
 ## Decisões de modelagem do MVP
 
 ### Criação de cliente e veículo no fluxo de atendimento
 
-No MVP, a criação de cliente e veículo foi centralizada em `POST /atendimentos`, que já abre a OS inicial no status
-`RECEBIDO`.
-Essa decisão evita cadastros órfãos e mantém o primeiro registro do atendimento (cliente, veículo e relato inicial) de
-forma transacional.
+No MVP, a criação de cliente e veículo foi centralizada em `POST /atendimentos`, que já abre a OS inicial no status `RECEBIDO`. Essa decisão evita cadastros órfãos e mantém o primeiro registro do atendimento de forma transacional.
 
-Os endpoints administrativos de clientes e veículos cobrem listagem, consulta, atualização e remoção (`GET`, `PUT`,
-`DELETE`), enquanto o `create` ocorre no fluxo principal de negócio.
+Os endpoints administrativos de clientes e veículos cobrem listagem, consulta, atualização e remoção (`GET`, `PUT`, `DELETE`); o `create` ocorre no fluxo principal de negócio.
 
 ### Controle de estoque orientado a eventos de negócio
 
@@ -315,7 +326,11 @@ O controle de estoque é atualizado automaticamente por eventos do domínio:
 - entrada ao realizar ordem de compra;
 - baixa ao finalizar execução da OS.
 
-Assim, o saldo de estoque permanece consistente com o ciclo operacional da oficina.
+Assim, o saldo permanece consistente com o ciclo operacional da oficina.
+
+## Por que PostgreSQL?
+
+**PostgreSQL** foi adotado por ser open-source, amplamente usado em produção, com forte suporte a integridade referencial, transações ACID e tipos adequados a valores monetários e ao modelo relacional (clientes, veículos, OS, itens, estoque). Integra-se bem com **Spring Data JPA** e ambientes containerizados.
 
 ## Licença / uso acadêmico
 
