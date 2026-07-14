@@ -140,7 +140,7 @@ jobs:
     timeout-minutes: 20
     defaults:
       run:
-        shell: bash
+        shell: '"C:/Program Files/Git/bin/bash.exe" -e {0}'
 
     steps:
       - name: Checkout
@@ -202,7 +202,7 @@ jobs:
     timeout-minutes: 20
     defaults:
       run:
-        shell: bash
+        shell: '"C:/Program Files/Git/bin/bash.exe" -e {0}'
 
     permissions:
       contents: read
