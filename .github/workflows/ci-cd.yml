@@ -151,24 +151,27 @@ jobs:
 
       - name: Verify required deploy secrets
         env:
-          KUBECONFIG_B64: ${{ secrets.KUBECONFIG }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         run: |
-          if ([string]::IsNullOrWhiteSpace($env:KUBECONFIG_B64)) { throw "KUBECONFIG secret is empty" }
           if ([string]::IsNullOrWhiteSpace($env:POSTGRES_PASSWORD)) { throw "POSTGRES_PASSWORD secret is empty" }
 
       - name: Configure kubectl
-        env:
-          KUBECONFIG_B64: ${{ secrets.KUBECONFIG }}
         run: |
-          $kubeDir = Join-Path $HOME ".kube"
-          New-Item -ItemType Directory -Force -Path $kubeDir | Out-Null
-          $configPath = Join-Path $kubeDir "config"
-          $b64 = ($env:KUBECONFIG_B64 -replace '\s', '')
-          [IO.File]::WriteAllBytes($configPath, [Convert]::FromBase64String($b64))
+          # Self-hosted: usa o kubeconfig local do k3d (nao sobrescreve com secret)
+          $configPath = Join-Path $HOME ".kube\config"
+          if (-not (Test-Path $configPath)) {
+            throw "Kubeconfig local nao encontrado em $configPath. Rode: k3d cluster create autoservice-local --wait --agents 1"
+          }
+          # k3d no Windows as vezes grava host.docker.internal; no host precisa ser 127.0.0.1
+          $cfg = Get-Content $configPath -Raw
+          if ($cfg -match 'host\.docker\.internal') {
+            ($cfg -replace 'https://host\.docker\.internal:','https://127.0.0.1:') | Set-Content $configPath -NoNewline
+          }
           $env:KUBECONFIG = $configPath
           kubectl config current-context
+          if ($LASTEXITCODE -ne 0) { throw "kubectl context invalido" }
           kubectl cluster-info
+          if ($LASTEXITCODE -ne 0) { throw "cluster inacessivel. Verifique Docker Desktop e: k3d cluster list" }
 
       - name: Apply namespace & postgres manifests
         run: |
@@ -226,28 +229,31 @@ jobs:
 
       - name: Verify required deploy secrets
         env:
-          KUBECONFIG_B64: ${{ secrets.KUBECONFIG }}
           AUTOSERVICE_JWT_SECRET: ${{ secrets.AUTOSERVICE_JWT_SECRET }}
           MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
           MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
         run: |
-          if ([string]::IsNullOrWhiteSpace($env:KUBECONFIG_B64)) { throw "KUBECONFIG secret is empty" }
           if ([string]::IsNullOrWhiteSpace($env:AUTOSERVICE_JWT_SECRET)) { throw "AUTOSERVICE_JWT_SECRET secret is empty" }
           if ([string]::IsNullOrWhiteSpace($env:MAIL_USERNAME)) { throw "MAIL_USERNAME secret is empty" }
           if ([string]::IsNullOrWhiteSpace($env:MAIL_PASSWORD)) { throw "MAIL_PASSWORD secret is empty" }
 
       - name: Configure kubectl
-        env:
-          KUBECONFIG_B64: ${{ secrets.KUBECONFIG }}
         run: |
-          $kubeDir = Join-Path $HOME ".kube"
-          New-Item -ItemType Directory -Force -Path $kubeDir | Out-Null
-          $configPath = Join-Path $kubeDir "config"
-          $b64 = ($env:KUBECONFIG_B64 -replace '\s', '')
-          [IO.File]::WriteAllBytes($configPath, [Convert]::FromBase64String($b64))
+          # Self-hosted: usa o kubeconfig local do k3d (nao sobrescreve com secret)
+          $configPath = Join-Path $HOME ".kube\config"
+          if (-not (Test-Path $configPath)) {
+            throw "Kubeconfig local nao encontrado em $configPath. Rode: k3d cluster create autoservice-local --wait --agents 1"
+          }
+          # k3d no Windows as vezes grava host.docker.internal; no host precisa ser 127.0.0.1
+          $cfg = Get-Content $configPath -Raw
+          if ($cfg -match 'host\.docker\.internal') {
+            ($cfg -replace 'https://host\.docker\.internal:','https://127.0.0.1:') | Set-Content $configPath -NoNewline
+          }
           $env:KUBECONFIG = $configPath
           kubectl config current-context
+          if ($LASTEXITCODE -ne 0) { throw "kubectl context invalido" }
           kubectl cluster-info
+          if ($LASTEXITCODE -ne 0) { throw "cluster inacessivel. Verifique Docker Desktop e: k3d cluster list" }
 
       - name: Create/update GHCR pull secret
         env:
