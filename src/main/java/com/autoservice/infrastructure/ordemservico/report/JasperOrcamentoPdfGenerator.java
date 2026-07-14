@@ -7,7 +7,7 @@ import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperReport;
-import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
+import net.sf.jasperreports.engine.data.JRMapCollectionDataSource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
@@ -34,7 +34,7 @@ public class JasperOrcamentoPdfGenerator implements OrcamentoPdfGenerator {
             final var jasperPrint = JasperFillManager.fillReport(
                     this.compiledReport,
                     OrcamentoReportParametersBuilder.build(ordemServico, logoStream),
-                    new JRBeanCollectionDataSource(OrcamentoReportParametersBuilder.itens(ordemServico))
+                    new JRMapCollectionDataSource(OrcamentoReportParametersBuilder.itens(ordemServico))
             );
 
             return JasperExportManager.exportReportToPdf(jasperPrint);

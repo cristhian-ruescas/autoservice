@@ -11,8 +11,6 @@ import com.autoservice.validation.Error;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -38,8 +36,7 @@ public class BaixarPecasDoEstoqueAoFinalizarOrdemServicoListener {
         this.estoqueGateway = Objects.requireNonNull(estoqueGateway);
     }
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT, fallbackExecution = true)
     public void on(final OrdemServicoFinalizadaEvent event) {
         final Map<PecaID, Integer> quantidadesPorPeca = ItemServicoPecaAggregator.quantidadesPorPeca(
                 this.itemServicoGateway,
