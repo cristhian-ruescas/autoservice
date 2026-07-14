@@ -130,7 +130,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # ─── DEPLOY BANCO (K8s secret + manifests) ──────────────────────
+  # ─── DEPLOY BANCO (K8s) — self-hosted Windows usa PowerShell ────
   deploy-db:
     name: Deploy Database (K8s)
     runs-on: self-hosted
@@ -140,13 +140,12 @@ jobs:
     timeout-minutes: 20
     defaults:
       run:
-        shell: '"C:/Program Files/Git/bin/bash.exe" -e {0}'
+        shell: powershell -ExecutionPolicy Bypass -Command ". '{0}'"
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Self-hosted Windows: use local kubectl (azure/setup-kubectl breaks PATH with Git Bash)
       - name: Check kubectl
         run: kubectl version --client
 
@@ -155,45 +154,54 @@ jobs:
           KUBECONFIG_B64: ${{ secrets.KUBECONFIG }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         run: |
-          set -euo pipefail
-          test -n "${KUBECONFIG_B64}"
-          test -n "${POSTGRES_PASSWORD}"
+          if ([string]::IsNullOrWhiteSpace($env:KUBECONFIG_B64)) { throw "KUBECONFIG secret is empty" }
+          if ([string]::IsNullOrWhiteSpace($env:POSTGRES_PASSWORD)) { throw "POSTGRES_PASSWORD secret is empty" }
 
       - name: Configure kubectl
         env:
           KUBECONFIG_B64: ${{ secrets.KUBECONFIG }}
         run: |
-          set -euo pipefail
-          mkdir -p "$HOME/.kube"
-          echo "${KUBECONFIG_B64}" | base64 -d > "$HOME/.kube/config"
-          chmod 600 "$HOME/.kube/config"
+          $kubeDir = Join-Path $HOME ".kube"
+          New-Item -ItemType Directory -Force -Path $kubeDir | Out-Null
+          $configPath = Join-Path $kubeDir "config"
+          $b64 = ($env:KUBECONFIG_B64 -replace '\s', '')
+          [IO.File]::WriteAllBytes($configPath, [Convert]::FromBase64String($b64))
+          $env:KUBECONFIG = $configPath
           kubectl config current-context
           kubectl cluster-info
 
       - name: Apply namespace & postgres manifests
         run: |
-          set -euo pipefail
+          $env:KUBECONFIG = Join-Path $HOME ".kube\config"
           kubectl apply -f k8s/00-namespace.yaml
+          if ($LASTEXITCODE -ne 0) { throw "kubectl apply namespace failed" }
           kubectl apply -f k8s/20-configmap-postgres.yaml
+          if ($LASTEXITCODE -ne 0) { throw "kubectl apply configmap failed" }
           kubectl apply -f k8s/22-pvc-postgres.yaml
+          if ($LASTEXITCODE -ne 0) { throw "kubectl apply pvc failed" }
           kubectl apply -f k8s/23-deployment-postgres.yaml
+          if ($LASTEXITCODE -ne 0) { throw "kubectl apply deployment failed" }
           kubectl apply -f k8s/24-service-postgres.yaml
+          if ($LASTEXITCODE -ne 0) { throw "kubectl apply service failed" }
 
       - name: Create/update postgres secret
         env:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         run: |
-          set -euo pipefail
-          kubectl create secret generic autoservice-postgres-secret \
-            --namespace=autoservice \
-            --from-literal=POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
+          $env:KUBECONFIG = Join-Path $HOME ".kube\config"
+          kubectl create secret generic autoservice-postgres-secret `
+            --namespace=autoservice `
+            --from-literal=POSTGRES_PASSWORD="$env:POSTGRES_PASSWORD" `
             --save-config --dry-run=client -o yaml | kubectl apply -f -
+          if ($LASTEXITCODE -ne 0) { throw "postgres secret apply failed" }
 
       - name: Wait for postgres rollout
-        run: kubectl rollout status deployment/autoservice-postgres -n autoservice --timeout=120s
+        run: |
+          $env:KUBECONFIG = Join-Path $HOME ".kube\config"
+          kubectl rollout status deployment/autoservice-postgres -n autoservice --timeout=120s
+          if ($LASTEXITCODE -ne 0) { throw "postgres rollout failed" }
 
-  # ─── DEPLOY APLICAÇÃO (K8s) ─────────────────────────────────────
-  # Roda no self-hosted runner (seu PC) para alcançar o k3d em 127.0.0.1
+  # ─── DEPLOY APLICAÇÃO (K8s) — self-hosted Windows usa PowerShell ─
   deploy-app:
     name: Deploy Application (K8s)
     runs-on: self-hosted
@@ -203,7 +211,7 @@ jobs:
     timeout-minutes: 20
     defaults:
       run:
-        shell: '"C:/Program Files/Git/bin/bash.exe" -e {0}'
+        shell: powershell -ExecutionPolicy Bypass -Command ". '{0}'"
 
     permissions:
       contents: read
@@ -213,7 +221,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Self-hosted Windows: use local kubectl (azure/setup-kubectl breaks PATH with Git Bash)
       - name: Check kubectl
         run: kubectl version --client
 
@@ -224,20 +231,21 @@ jobs:
           MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
           MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
         run: |
-          set -euo pipefail
-          test -n "${KUBECONFIG_B64}"
-          test -n "${AUTOSERVICE_JWT_SECRET}"
-          test -n "${MAIL_USERNAME}"
-          test -n "${MAIL_PASSWORD}"
+          if ([string]::IsNullOrWhiteSpace($env:KUBECONFIG_B64)) { throw "KUBECONFIG secret is empty" }
+          if ([string]::IsNullOrWhiteSpace($env:AUTOSERVICE_JWT_SECRET)) { throw "AUTOSERVICE_JWT_SECRET secret is empty" }
+          if ([string]::IsNullOrWhiteSpace($env:MAIL_USERNAME)) { throw "MAIL_USERNAME secret is empty" }
+          if ([string]::IsNullOrWhiteSpace($env:MAIL_PASSWORD)) { throw "MAIL_PASSWORD secret is empty" }
 
       - name: Configure kubectl
         env:
           KUBECONFIG_B64: ${{ secrets.KUBECONFIG }}
         run: |
-          set -euo pipefail
-          mkdir -p "$HOME/.kube"
-          echo "${KUBECONFIG_B64}" | base64 -d > "$HOME/.kube/config"
-          chmod 600 "$HOME/.kube/config"
+          $kubeDir = Join-Path $HOME ".kube"
+          New-Item -ItemType Directory -Force -Path $kubeDir | Out-Null
+          $configPath = Join-Path $kubeDir "config"
+          $b64 = ($env:KUBECONFIG_B64 -replace '\s', '')
+          [IO.File]::WriteAllBytes($configPath, [Convert]::FromBase64String($b64))
+          $env:KUBECONFIG = $configPath
           kubectl config current-context
           kubectl cluster-info
 
@@ -246,13 +254,14 @@ jobs:
           GHCR_USER: ${{ github.actor }}
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -euo pipefail
-          kubectl create secret docker-registry ghcr-pull-secret \
-            --namespace=autoservice \
-            --docker-server=ghcr.io \
-            --docker-username="${GHCR_USER}" \
-            --docker-password="${GHCR_TOKEN}" \
+          $env:KUBECONFIG = Join-Path $HOME ".kube\config"
+          kubectl create secret docker-registry ghcr-pull-secret `
+            --namespace=autoservice `
+            --docker-server=ghcr.io `
+            --docker-username="$env:GHCR_USER" `
+            --docker-password="$env:GHCR_TOKEN" `
             --save-config --dry-run=client -o yaml | kubectl apply -f -
+          if ($LASTEXITCODE -ne 0) { throw "ghcr pull secret apply failed" }
 
       - name: Create/update app secret
         env:
@@ -260,35 +269,46 @@ jobs:
           MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
           MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
         run: |
-          set -euo pipefail
-          kubectl create secret generic autoservice-app-secret \
-            --namespace=autoservice \
-            --from-literal=AUTOSERVICE_JWT_SECRET="${AUTOSERVICE_JWT_SECRET}" \
-            --from-literal=MAIL_USERNAME="${MAIL_USERNAME}" \
-            --from-literal=MAIL_PASSWORD="${MAIL_PASSWORD}" \
+          $env:KUBECONFIG = Join-Path $HOME ".kube\config"
+          kubectl create secret generic autoservice-app-secret `
+            --namespace=autoservice `
+            --from-literal=AUTOSERVICE_JWT_SECRET="$env:AUTOSERVICE_JWT_SECRET" `
+            --from-literal=MAIL_USERNAME="$env:MAIL_USERNAME" `
+            --from-literal=MAIL_PASSWORD="$env:MAIL_PASSWORD" `
             --save-config --dry-run=client -o yaml | kubectl apply -f -
+          if ($LASTEXITCODE -ne 0) { throw "app secret apply failed" }
 
       - name: Apply app manifests
         run: |
-          set -euo pipefail
+          $env:KUBECONFIG = Join-Path $HOME ".kube\config"
           kubectl apply -f k8s/10-configmap-app.yaml
+          if ($LASTEXITCODE -ne 0) { throw "configmap apply failed" }
           kubectl apply -f k8s/30-deployment-app.yaml
+          if ($LASTEXITCODE -ne 0) { throw "deployment apply failed" }
           kubectl apply -f k8s/31-service-app.yaml
+          if ($LASTEXITCODE -ne 0) { throw "service apply failed" }
           kubectl apply -f k8s/32-hpa-app.yaml
-          kubectl patch deployment autoservice-app -n autoservice \
-            --type=strategic \
+          if ($LASTEXITCODE -ne 0) { throw "hpa apply failed" }
+          kubectl patch deployment autoservice-app -n autoservice `
+            --type=strategic `
             -p '{"spec":{"template":{"spec":{"imagePullSecrets":[{"name":"ghcr-pull-secret"}]}}}}'
+          if ($LASTEXITCODE -ne 0) { throw "imagePullSecrets patch failed" }
 
       - name: Update image tag
         run: |
-          set -euo pipefail
-          IMAGE="${{ env.REGISTRY }}/$(echo '${{ env.IMAGE_NAME }}' | tr '[:upper:]' '[:lower:]'):sha-${{ github.sha }}"
-          kubectl set image deployment/autoservice-app \
-            autoservice-app="${IMAGE}" \
-            -n autoservice
+          $env:KUBECONFIG = Join-Path $HOME ".kube\config"
+          $imageName = "${{ env.IMAGE_NAME }}".ToLower()
+          $image = "${{ env.REGISTRY }}/${imageName}:sha-${{ github.sha }}"
+          kubectl set image deployment/autoservice-app autoservice-app=$image -n autoservice
+          if ($LASTEXITCODE -ne 0) { throw "set image failed" }
 
       - name: Wait for app rollout
-        run: kubectl rollout status deployment/autoservice-app -n autoservice --timeout=180s
+        run: |
+          $env:KUBECONFIG = Join-Path $HOME ".kube\config"
+          kubectl rollout status deployment/autoservice-app -n autoservice --timeout=180s
+          if ($LASTEXITCODE -ne 0) { throw "app rollout failed" }
 
       - name: Validate pods and HPA
-        run: kubectl -n autoservice get pods,svc,hpa
+        run: |
+          $env:KUBECONFIG = Join-Path $HOME ".kube\config"
+          kubectl -n autoservice get pods,svc,hpa
