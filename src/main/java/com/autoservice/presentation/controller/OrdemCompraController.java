@@ -50,7 +50,10 @@ public class OrdemCompraController {
     }
 
     @PatchMapping("/{id}/realizar")
-    @Operation(summary = "Realizar ordem de compra", description = "Confirma compra e aciona atualização de estoque no domínio.")
+    @Operation(
+            summary = "Realizar ordem de compra",
+            description = "Confirma a compra (PENDENTE → REALIZADA) e adiciona/vincula a peça ao estoque da OS."
+    )
     public ResponseEntity<OrdemCompraResponse> realizar(@PathVariable final UUID id) {
         final var output = this.realizarOrdemCompraUseCase.execute(RealizarOrdemCompraCommand.with(id));
 

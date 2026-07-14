@@ -5,6 +5,8 @@ import com.autoservice.presentation.dto.atendimento.AbrirAtendimentoRequest;
 import com.autoservice.presentation.dto.atendimento.AbrirAtendimentoResponse;
 import com.autoservice.presentation.mapper.AtendimentoRequestMapper;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -31,8 +33,14 @@ public class AtendimentoController {
     @PostMapping
     @Operation(
             summary = "Abrir atendimento / criar OS",
-            description = "Cria cliente, veículo e OS. Opcionalmente inclui serviços e peças; nesse caso a OS inicia em EM_DIAGNOSTICO."
+            description = "Recebe cliente, veículo e opcionalmente serviços/peças; retorna o id único da OS. "
+                    + "Sem itens: RECEBIDO. Com itens: EM_DIAGNOSTICO."
     )
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "OS criada"),
+            @ApiResponse(responseCode = "400", description = "Validação do payload"),
+            @ApiResponse(responseCode = "422", description = "Regra de domínio (ex.: documento inválido / duplicado)")
+    })
     public ResponseEntity<AbrirAtendimentoResponse> abrir(
             @RequestBody @Valid final AbrirAtendimentoRequest request
     ) {

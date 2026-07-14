@@ -7,6 +7,8 @@ import com.autoservice.application.veiculo.query.*;
 import com.autoservice.application.veiculo.update.AtualizarVeiculoCommand;
 import com.autoservice.application.veiculo.update.AtualizarVeiculoUseCase;
 import com.autoservice.presentation.dto.veiculo.AtualizarVeiculoRequest;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +18,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/veiculos")
+@Tag(name = "Veículos", description = "Consulta e manutenção de veículos (criação ocorre em POST /atendimentos).")
 public class VeiculoController {
 
     private final ListVeiculosQuery listVeiculosQuery;
@@ -42,6 +45,7 @@ public class VeiculoController {
     }
 
     @GetMapping
+    @Operation(summary = "Listar veículos")
     public ResponseEntity<PaginationOutput<VeiculoOutput>> listar(
             @RequestParam(defaultValue = "0") final int page,
             @RequestParam(defaultValue = "20") final int size,
@@ -61,21 +65,25 @@ public class VeiculoController {
     }
 
     @GetMapping("/placa/{placa}")
+    @Operation(summary = "Buscar veículo por placa")
     public ResponseEntity<VeiculoOutput> buscarPorPlaca(@PathVariable final String placa) {
         return ResponseEntity.ok(this.getVeiculoByPlacaQuery.buscarPorPlaca(placa));
     }
 
     @GetMapping("/cliente/{clienteId}")
+    @Operation(summary = "Listar veículos por cliente")
     public ResponseEntity<List<VeiculoOutput>> listarPorCliente(@PathVariable final UUID clienteId) {
         return ResponseEntity.ok(this.listVeiculosByClienteQuery.listarPorCliente(clienteId));
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "Detalhar veículo")
     public ResponseEntity<VeiculoOutput> buscarPorId(@PathVariable final UUID id) {
         return ResponseEntity.ok(this.getVeiculoByIdQuery.buscarPorId(id));
     }
 
     @PutMapping("/{id}")
+    @Operation(summary = "Atualizar veículo")
     public ResponseEntity<VeiculoOutput> atualizar(
             @PathVariable final UUID id,
             @RequestBody @Valid final AtualizarVeiculoRequest request
@@ -94,6 +102,7 @@ public class VeiculoController {
     }
 
     @DeleteMapping("/{id}")
+    @Operation(summary = "Remover veículo")
     public ResponseEntity<Void> remover(@PathVariable final UUID id) {
         this.removerVeiculoUseCase.execute(RemoverVeiculoCommand.with(id));
 

@@ -7,6 +7,8 @@ import com.autoservice.application.ordemservico.diagnostico.IniciarDiagnosticoUs
 import com.autoservice.presentation.dto.ordemservico.FinalizarDiagnosticoRequest;
 import com.autoservice.presentation.dto.ordemservico.OrdemServicoStatusResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -41,8 +43,13 @@ public class OrdemServicoDiagnosticoController {
     @PatchMapping("/{id}/diagnostico/finalizar")
     @Operation(
             summary = "Finalizar diagnóstico / gerar orçamento",
-            description = "Define previsão de execução e passa para AGUARDANDO_APROVACAO."
+            description = "Define previsão de execução e passa para AGUARDANDO_APROVACAO. "
+                    + "Após o commit, envia e-mail ao cliente com PDF do orçamento e links de aprovação/reprovação."
     )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Orçamento gerado; OS aguardando aprovação"),
+            @ApiResponse(responseCode = "422", description = "Status inválido ou valor do orçamento zerado")
+    })
     public ResponseEntity<OrdemServicoStatusResponse> finalizarDiagnostico(
             @PathVariable final UUID id,
             @RequestBody @Valid final FinalizarDiagnosticoRequest request

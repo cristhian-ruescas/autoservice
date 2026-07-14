@@ -1,6 +1,15 @@
 package com.autoservice.presentation.controller;
 
 import com.autoservice.infrastructure.security.JwtUtil;
+import com.autoservice.presentation.dto.auth.LoginRequest;
+import com.autoservice.presentation.dto.auth.LoginResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,6 +26,7 @@ import java.util.Objects;
 
 @RestController
 @RequestMapping("/auth")
+@Tag(name = "Autenticação", description = "Emissão de JWT para rotas administrativas.")
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
@@ -31,16 +41,21 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
+    @Operation(summary = "Login", description = "Autentica e retorna JWT. Use no header Authorization: Bearer <token>.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Token emitido",
+                    content = @Content(schema = @Schema(implementation = LoginResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Credenciais inválidas",
+                    content = @Content(schema = @Schema(implementation = Map.class)))
+    })
+    public ResponseEntity<?> login(@RequestBody @Valid final LoginRequest credentials) {
         try {
-            String username = credentials.get("username");
-            String password = credentials.get("password");
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(username, password)
+                    new UsernamePasswordAuthenticationToken(credentials.username(), credentials.password())
             );
             UserDetails user = (UserDetails) authentication.getPrincipal();
             String token = jwtUtil.generateToken(user.getUsername());
-            return ResponseEntity.ok(Map.of("token", token));
+            return ResponseEntity.ok(new LoginResponse(token));
         } catch (AuthenticationException e) {
             return ResponseEntity.status(401).body(Map.of("error", "Credenciais inválidas"));
         }
