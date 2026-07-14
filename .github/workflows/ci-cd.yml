@@ -173,11 +173,22 @@ jobs:
           kubectl cluster-info
           if ($LASTEXITCODE -ne 0) { throw "cluster inacessivel. Verifique Docker Desktop e: k3d cluster list" }
 
-      - name: Apply namespace & postgres manifests
+      - name: Create/update postgres secret
+        env:
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         run: |
           $env:KUBECONFIG = Join-Path $HOME ".kube\config"
           kubectl apply -f k8s/00-namespace.yaml
           if ($LASTEXITCODE -ne 0) { throw "kubectl apply namespace failed" }
+          kubectl create secret generic autoservice-postgres-secret `
+            --namespace=autoservice `
+            --from-literal=POSTGRES_PASSWORD="$env:POSTGRES_PASSWORD" `
+            --save-config --dry-run=client -o yaml | kubectl apply -f -
+          if ($LASTEXITCODE -ne 0) { throw "postgres secret apply failed" }
+
+      - name: Apply postgres manifests
+        run: |
+          $env:KUBECONFIG = Join-Path $HOME ".kube\config"
           kubectl apply -f k8s/20-configmap-postgres.yaml
           if ($LASTEXITCODE -ne 0) { throw "kubectl apply configmap failed" }
           kubectl apply -f k8s/21-initdb-postgres.yaml
@@ -189,21 +200,10 @@ jobs:
           kubectl apply -f k8s/24-service-postgres.yaml
           if ($LASTEXITCODE -ne 0) { throw "kubectl apply service failed" }
 
-      - name: Create/update postgres secret
-        env:
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-        run: |
-          $env:KUBECONFIG = Join-Path $HOME ".kube\config"
-          kubectl create secret generic autoservice-postgres-secret `
-            --namespace=autoservice `
-            --from-literal=POSTGRES_PASSWORD="$env:POSTGRES_PASSWORD" `
-            --save-config --dry-run=client -o yaml | kubectl apply -f -
-          if ($LASTEXITCODE -ne 0) { throw "postgres secret apply failed" }
-
       - name: Wait for postgres rollout
         run: |
           $env:KUBECONFIG = Join-Path $HOME ".kube\config"
-          kubectl rollout status deployment/autoservice-postgres -n autoservice --timeout=120s
+          kubectl rollout status deployment/autoservice-postgres -n autoservice --timeout=180s
           if ($LASTEXITCODE -ne 0) { throw "postgres rollout failed" }
 
   # ─── DEPLOY APLICAÇÃO (K8s) — self-hosted Windows usa PowerShell ─
@@ -297,10 +297,6 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "service apply failed" }
           kubectl apply -f k8s/32-hpa-app.yaml
           if ($LASTEXITCODE -ne 0) { throw "hpa apply failed" }
-          kubectl patch deployment autoservice-app -n autoservice `
-            --type=strategic `
-            -p '{"spec":{"template":{"spec":{"imagePullSecrets":[{"name":"ghcr-pull-secret"}]}}}}'
-          if ($LASTEXITCODE -ne 0) { throw "imagePullSecrets patch failed" }
 
       - name: Update image tag
         run: |
@@ -313,7 +309,8 @@ jobs:
       - name: Wait for app rollout
         run: |
           $env:KUBECONFIG = Join-Path $HOME ".kube\config"
-          kubectl rollout status deployment/autoservice-app -n autoservice --timeout=180s
+          # startupProbe permite ate ~300s; timeout do rollout precisa ser maior
+          kubectl rollout status deployment/autoservice-app -n autoservice --timeout=360s
           if ($LASTEXITCODE -ne 0) { throw "app rollout failed" }
 
       - name: Validate pods and HPA
