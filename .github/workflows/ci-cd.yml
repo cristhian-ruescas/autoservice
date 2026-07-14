@@ -180,6 +180,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "kubectl apply namespace failed" }
           kubectl apply -f k8s/20-configmap-postgres.yaml
           if ($LASTEXITCODE -ne 0) { throw "kubectl apply configmap failed" }
+          kubectl apply -f k8s/21-initdb-postgres.yaml
+          if ($LASTEXITCODE -ne 0) { throw "kubectl apply initdb configmap failed" }
           kubectl apply -f k8s/22-pvc-postgres.yaml
           if ($LASTEXITCODE -ne 0) { throw "kubectl apply pvc failed" }
           kubectl apply -f k8s/23-deployment-postgres.yaml
