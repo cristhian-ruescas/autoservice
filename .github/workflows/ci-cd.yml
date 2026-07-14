@@ -146,8 +146,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up kubectl
-        uses: azure/setup-kubectl@v4
+      # Self-hosted Windows: use local kubectl (azure/setup-kubectl breaks PATH with Git Bash)
+      - name: Check kubectl
+        run: kubectl version --client
 
       - name: Verify required deploy secrets
         env:
@@ -212,8 +213,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up kubectl
-        uses: azure/setup-kubectl@v4
+      # Self-hosted Windows: use local kubectl (azure/setup-kubectl breaks PATH with Git Bash)
+      - name: Check kubectl
+        run: kubectl version --client
 
       - name: Verify required deploy secrets
         env:
