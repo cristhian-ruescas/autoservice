@@ -32,6 +32,7 @@ public class EstoqueController {
     }
 
     @GetMapping
+    @Operation(summary = "Listar estoques")
     public ResponseEntity<PaginationOutput<EstoqueResponse>> listar(
             @RequestParam(defaultValue = "0") final int page,
             @RequestParam(defaultValue = "20") final int size
