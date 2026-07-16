@@ -6,7 +6,8 @@ This directory contains the Kubernetes manifests for deploying the Autoservice a
 
 - **deployment.yaml** - Main application deployment with resource requests/limits and health probes
 - **service.yaml** - Service exposing the application on port 8088
-- **postgres-secret.yaml** - Kubernetes Secret with PostgreSQL credentials
+- **postgres-secret.example.yaml** - Example Secret for PostgreSQL credentials (copy → `postgres-secret.yaml`, never commit the real file)
+- **11-secret-app.example.yaml** / **21-secret-postgres.example.yaml** - Examples for the numbered kustomize manifests
 - **hpa.yaml** - HorizontalPodAutoscaler for CPU and memory-based scaling
 
 ## Quick Start
@@ -14,13 +15,18 @@ This directory contains the Kubernetes manifests for deploying the Autoservice a
 ### With Terraform (Recommended)
 ```bash
 cd infra/
+cp terraform.tfvars.example terraform.tfvars   # edit secrets locally
 terraform init
 terraform apply
 ```
 
 ### Manual with kubectl
 ```bash
+cp k8s/postgres-secret.example.yaml k8s/postgres-secret.yaml
+cp k8s/11-secret-app.example.yaml k8s/11-secret-app.yaml
+# edit the copied files with real values (gitignored)
 kubectl apply -f k8s/postgres-secret.yaml
+kubectl apply -f k8s/11-secret-app.yaml
 kubectl apply -f k8s/service.yaml
 kubectl apply -f k8s/deployment.yaml
 kubectl apply -f k8s/hpa.yaml

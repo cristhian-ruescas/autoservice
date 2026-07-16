@@ -162,7 +162,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipoPessoa\": \"FISICA\",\n  \"nome\": \"Cristhian Demo\",\n  \"cpf\": \"10000000280\",\n  \"email\": \"cliente.demo@example.com\",\n  \"telefone\": \"11999990000\",\n  \"placa\": \"{{placaDemo}}\",\n  \"marca\": \"Volkswagen\",\n  \"modelo\": \"Gol\",\n  \"ano\": 2019,\n  \"cor\": \"Prata\",\n  \"kilometragem\": 62000,\n  \"relato\": \"Barulho no freio dianteiro e vibracao em alta velocidade\"\n}",
+              "raw": "{\n  \"tipoPessoa\": \"FISICA\",\n  \"nome\": \"Cliente Demo\",\n  \"cpf\": \"10000000280\",\n  \"email\": \"cliente.demo@example.com\",\n  \"telefone\": \"11999990000\",\n  \"placa\": \"{{placaDemo}}\",\n  \"marca\": \"Volkswagen\",\n  \"modelo\": \"Gol\",\n  \"ano\": 2019,\n  \"cor\": \"Prata\",\n  \"kilometragem\": 62000,\n  \"relato\": \"Barulho no freio dianteiro e vibracao em alta velocidade\"\n}",
               "options": { "raw": { "language": "json" } }
             },
             "url": "{{baseUrl}}/atendimentos",

@@ -65,7 +65,10 @@ spec:
             failureThreshold: 30
           env:
             - name: AUTOSERVICE_JWT_SECRET
-              value: "[REDACTED_USE_K8S_SECRET]"
+              valueFrom:
+                secretKeyRef:
+                  name: autoservice-app-secret
+                  key: AUTOSERVICE_JWT_SECRET
             - name: SPRING_DATASOURCE_URL
               value: "jdbc:postgresql://postgresql.autoservice.svc.cluster.local:5432/autoservicedb"
             - name: SPRING_DATASOURCE_USERNAME

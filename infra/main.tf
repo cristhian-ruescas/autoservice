@@ -49,9 +49,29 @@ resource "kubernetes_manifest" "postgres_initdb" {
   depends_on = [kubernetes_namespace.app]
 }
 
-# Deploy application manifests
-resource "kubernetes_manifest" "postgres_secret" {
-  manifest = yamldecode(file("${path.module}/../k8s/postgres-secret.yaml"))
+# Secrets are created from Terraform variables (never commit real values).
+resource "kubernetes_secret" "postgres_credentials" {
+  metadata {
+    name      = "postgres-credentials"
+    namespace = var.namespace
+  }
+  data = {
+    username = var.postgres_username
+    password = var.postgres_password
+  }
+  depends_on = [kubernetes_namespace.app]
+}
+
+resource "kubernetes_secret" "app_secret" {
+  metadata {
+    name      = "autoservice-app-secret"
+    namespace = var.namespace
+  }
+  data = {
+    AUTOSERVICE_JWT_SECRET = var.jwt_secret
+    MAIL_USERNAME          = var.mail_username
+    MAIL_PASSWORD          = var.mail_password
+  }
   depends_on = [kubernetes_namespace.app]
 }
 
@@ -65,7 +85,8 @@ resource "kubernetes_manifest" "app_deployment" {
   depends_on = [
     kubernetes_namespace.app,
     helm_release.postgres,
-    kubernetes_manifest.postgres_secret
+    kubernetes_secret.postgres_credentials,
+    kubernetes_secret.app_secret
   ]
 }
 

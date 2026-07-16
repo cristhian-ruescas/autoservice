@@ -132,8 +132,8 @@ Main deployment manifest with:
 ### `/k8s/service.yaml`
 Service manifest exposing the deployment on port 8088.
 
-### `/k8s/postgres-secret.yaml`
-Kubernetes Secret with PostgreSQL credentials.
+### `/k8s/postgres-secret.example.yaml`
+Example Kubernetes Secret for PostgreSQL credentials. Copy to `postgres-secret.yaml` and fill real values (file is gitignored).
 
 ### `/k8s/hpa.yaml`
 HPA manifest with CPU and memory-based scaling triggers.
@@ -178,7 +178,10 @@ Terraform automatically:
 
 ### Manual Kubectl Deployment
 ```bash
+cp k8s/postgres-secret.example.yaml k8s/postgres-secret.yaml
+# edit credentials, then:
 kubectl apply -f k8s/postgres-secret.yaml
+kubectl apply -f k8s/11-secret-app.yaml   # from 11-secret-app.example.yaml
 kubectl apply -f k8s/service.yaml
 kubectl apply -f k8s/deployment.yaml
 kubectl apply -f k8s/hpa.yaml
