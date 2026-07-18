@@ -25,16 +25,14 @@ terraform plan
 terraform apply -auto-approve
 ```
 
-Expected output:
+Expected output (resumo):
 ```
 null_resource.k3d_cluster: Creation complete
 kubernetes_namespace.app: Creation complete
-helm_release.postgres: Creation complete
-kubernetes_manifest.postgres_secret: Creation complete
-kubernetes_manifest.app_service: Creation complete
+kubernetes_secret.postgres / app: Creation complete
+kubernetes_manifest.postgres["20-..." ... "24-..."]: Creation complete
 helm_release.metrics_server: Creation complete
-kubernetes_manifest.app_deployment: Creation complete
-kubernetes_manifest.app_hpa: Creation complete
+kubernetes_manifest.app_before_deploy / app_deployment / app_hpa: Creation complete
 ```
 
 ### Step 2: Verify Deployment
@@ -108,7 +106,7 @@ This script:
 
 **Terminal 1 - Watch HPA**
 ```bash
-kubectl get hpa autoservice-hpa -n autoservice --watch
+kubectl get hpa autoservice-app-hpa -n autoservice --watch
 ```
 
 **Terminal 2 - Watch Pods**
@@ -262,26 +260,21 @@ terraform destroy -auto-approve
 ## 9. Configuration Reference
 
 ### Resource Requests/Limits
-**File**: `k8s/deployment.yaml`
-- CPU Request: 250m (minimum)
-- CPU Limit: 1000m (maximum)
-- Memory Request: 512Mi (minimum)
-- Memory Limit: 1Gi (maximum)
+**File**: `k8s/30-deployment-app.yaml`
+- CPU Request: 200m · Limit: 1
+- Memory Request: 512Mi · Limit: 1Gi
 
 ### HPA Thresholds
-**File**: `k8s/hpa.yaml`
+**File**: `k8s/32-hpa-app.yaml`
 - Scale up when CPU > 70%
-- Scale up when Memory > 80%
-- Min replicas: 2
-- Max replicas: 10
-- Scale up immediately
-- Scale down after 5 minutes
+- Scale up when Memory > 75%
+- Min replicas: 2 · Max replicas: 10
 
 ### Health Probes
-**File**: `k8s/deployment.yaml`
-- Readiness check: `/actuator/health/readiness` every 10s
-- Liveness check: `/actuator/health/liveness` every 15s
-- Startup grace period: up to 5 minutes
+**File**: `k8s/30-deployment-app.yaml`
+- Startup: `/actuator/health/liveness` (até ~5 min)
+- Readiness: `/actuator/health/readiness`
+- Liveness: `/actuator/health/liveness`
 
 ## 10. Documentation
 
@@ -312,7 +305,7 @@ kubectl logs <pod-name> -n autoservice
 
 View HPA details:
 ```bash
-kubectl describe hpa autoservice-hpa -n autoservice
+kubectl describe hpa autoservice-app-hpa -n autoservice
 ```
 
 Check cluster status:

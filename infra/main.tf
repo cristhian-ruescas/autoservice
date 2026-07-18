@@ -1,10 +1,42 @@
+locals {
+  k8s_dir = "${path.module}/../k8s"
+
+  postgres_manifests = [
+    "20-configmap-postgres.yaml",
+    "21-initdb-postgres.yaml",
+    "22-pvc-postgres.yaml",
+    "23-deployment-postgres.yaml",
+    "24-service-postgres.yaml",
+  ]
+
+  app_manifests_before_deploy = [
+    "10-configmap-app.yaml",
+    "31-service-app.yaml",
+  ]
+
+  create_ghcr_pull_secret = var.ghcr_username != "" && var.ghcr_token != ""
+
+  app_deployment_raw = yamldecode(file("${local.k8s_dir}/30-deployment-app.yaml"))
+
+  app_deployment = merge(local.app_deployment_raw, {
+    spec = merge(local.app_deployment_raw.spec, {
+      template = merge(local.app_deployment_raw.spec.template, {
+        spec = {
+          for k, v in local.app_deployment_raw.spec.template.spec : k => v
+          if k != "imagePullSecrets" || local.create_ghcr_pull_secret
+        }
+      })
+    })
+  })
+}
+
 resource "null_resource" "k3d_cluster" {
   triggers = {
     cluster_name = var.cluster_name
   }
 
   provisioner "local-exec" {
-    command = "k3d cluster create ${self.triggers.cluster_name} --wait"
+    command = "k3d cluster create ${self.triggers.cluster_name} --wait --agents 1"
   }
 
   provisioner "local-exec" {
@@ -20,49 +52,18 @@ resource "kubernetes_namespace" "app" {
   depends_on = [null_resource.k3d_cluster]
 }
 
-resource "helm_release" "postgres" {
-  name             = "postgresql"
-  repository       = "https://charts.bitnami.com/bitnami"
-  chart            = "postgresql"
-  namespace        = var.namespace
-  create_namespace = false
-  values = [
-    yamlencode({
-      auth = {
-        username = var.postgres_username
-        password = var.postgres_password
-        database = var.postgres_database
-      }
-      primary = {
-        service = { port = var.postgres_port }
-        initdb  = {
-          scriptsConfigMap = "autoservice-postgres-init"
-        }
-      }
-    })
-  ]
-  depends_on = [kubernetes_namespace.app, kubernetes_manifest.postgres_initdb]
-}
-
-resource "kubernetes_manifest" "postgres_initdb" {
-  manifest = yamldecode(file("${path.module}/../k8s/21-initdb-postgres.yaml"))
-  depends_on = [kubernetes_namespace.app]
-}
-
-# Secrets are created from Terraform variables (never commit real values).
-resource "kubernetes_secret" "postgres_credentials" {
+resource "kubernetes_secret" "postgres" {
   metadata {
-    name      = "postgres-credentials"
+    name      = "autoservice-postgres-secret"
     namespace = var.namespace
   }
   data = {
-    username = var.postgres_username
-    password = var.postgres_password
+    POSTGRES_PASSWORD = var.postgres_password
   }
   depends_on = [kubernetes_namespace.app]
 }
 
-resource "kubernetes_secret" "app_secret" {
+resource "kubernetes_secret" "app" {
   metadata {
     name      = "autoservice-app-secret"
     namespace = var.namespace
@@ -75,22 +76,39 @@ resource "kubernetes_secret" "app_secret" {
   depends_on = [kubernetes_namespace.app]
 }
 
-resource "kubernetes_manifest" "app_service" {
-  manifest = yamldecode(file("${path.module}/../k8s/service.yaml"))
+resource "kubernetes_secret" "ghcr_pull" {
+  count = local.create_ghcr_pull_secret ? 1 : 0
+
+  metadata {
+    name      = "ghcr-pull-secret"
+    namespace = var.namespace
+  }
+  type = "kubernetes.io/dockerconfigjson"
+  data = {
+    ".dockerconfigjson" = jsonencode({
+      auths = {
+        "ghcr.io" = {
+          username = var.ghcr_username
+          password = var.ghcr_token
+          auth     = base64encode("${var.ghcr_username}:${var.ghcr_token}")
+        }
+      }
+    })
+  }
   depends_on = [kubernetes_namespace.app]
 }
 
-resource "kubernetes_manifest" "app_deployment" {
-  manifest = yamldecode(file("${path.module}/../k8s/deployment.yaml"))
+resource "kubernetes_manifest" "postgres" {
+  for_each = toset(local.postgres_manifests)
+
+  manifest = yamldecode(file("${local.k8s_dir}/${each.value}"))
+
   depends_on = [
     kubernetes_namespace.app,
-    helm_release.postgres,
-    kubernetes_secret.postgres_credentials,
-    kubernetes_secret.app_secret
+    kubernetes_secret.postgres,
   ]
 }
 
-# Deploy metrics server (required for HPA)
 resource "helm_release" "metrics_server" {
   name             = "metrics-server"
   repository       = "https://kubernetes-sigs.github.io/metrics-server"
@@ -98,7 +116,7 @@ resource "helm_release" "metrics_server" {
   namespace        = "kube-system"
   create_namespace = true
   take_ownership   = true
-  
+
   set = [
     {
       name  = "args[0]"
@@ -109,14 +127,46 @@ resource "helm_release" "metrics_server" {
       value = "--kubelet-preferred-address-types=InternalIP"
     }
   ]
-  
+
   depends_on = [null_resource.k3d_cluster]
 }
 
+resource "kubernetes_manifest" "app_before_deploy" {
+  for_each = var.deploy_app ? toset(local.app_manifests_before_deploy) : toset([])
+
+  manifest = yamldecode(file("${local.k8s_dir}/${each.value}"))
+
+  depends_on = [
+    kubernetes_namespace.app,
+    kubernetes_secret.app,
+    kubernetes_manifest.postgres,
+    helm_release.metrics_server,
+  ]
+}
+
+resource "kubernetes_manifest" "app_deployment" {
+  count = var.deploy_app ? 1 : 0
+
+  manifest = local.app_deployment
+
+  depends_on = [
+    kubernetes_namespace.app,
+    kubernetes_secret.app,
+    kubernetes_secret.postgres,
+    kubernetes_secret.ghcr_pull,
+    kubernetes_manifest.postgres,
+    kubernetes_manifest.app_before_deploy,
+    helm_release.metrics_server,
+  ]
+}
+
 resource "kubernetes_manifest" "app_hpa" {
-  manifest = yamldecode(file("${path.module}/../k8s/hpa.yaml"))
+  count = var.deploy_app ? 1 : 0
+
+  manifest = yamldecode(file("${local.k8s_dir}/32-hpa-app.yaml"))
+
   depends_on = [
     kubernetes_manifest.app_deployment,
-    helm_release.metrics_server
+    helm_release.metrics_server,
   ]
 }

@@ -13,7 +13,7 @@ echo -e "${BLUE}========================================${NC}"
 
 NAMESPACE="autoservice"
 DEPLOYMENT="autoservice-app"
-HPA="autoservice-hpa"
+HPA="autoservice-app-hpa"
 SERVICE="autoservice"
 
 # Check 1: Verify Deployment exists and has resource requests/limits

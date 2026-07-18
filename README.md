@@ -66,8 +66,8 @@ infrastructure/   JPA, e-mail, PDF (orçamento), listeners de eventos, integraç
 | Camada | Recursos |
 |--------|----------|
 | **Local (Compose)** | Postgres + API (`docker/`) — desenvolvimento |
-| **Terraform (`/infra`)** | Cluster Kubernetes local (**K3d**), namespace `autoservice`, **PostgreSQL** (Helm) |
-| **Kubernetes (`/k8s`)** | App: Deployment, Service, ConfigMap, Secret, **HPA** · Banco: Deployment, Service, ConfigMap, Secret, **PVC**, initdb |
+| **Terraform (`/infra`)** | Cluster **k3d**, secrets alinhados ao CI, **Postgres + app** via manifests `k8s/` numerados, metrics-server (HPA) |
+| **Kubernetes (`/k8s`)** | Manifests canônicos (kustomize + CI + Terraform): Deployment, Service, ConfigMap, Secret, **HPA**, PVC, initdb |
 
 ```text
 Cliente / Postman / Swagger / e-mail (links)
@@ -185,13 +185,13 @@ Pré-requisito: cluster acessível via `kubectl` (pode ser o provisionado com Te
 
 ### Provisionamento da infraestrutura com Terraform
 
-Os scripts estão em **`/infra`**: cluster Kubernetes local (**K3d**), namespace e **PostgreSQL** via Helm Bitnami.
+Os scripts em **`/infra`** provisionam o **mesmo** stack dos manifests/CI: cluster **k3d**, secrets (`autoservice-postgres-secret`, `autoservice-app-secret`), Postgres e app via YAMLs numerados em `/k8s`, e metrics-server (HPA).
 
 **Pré-requisitos:** Terraform 1.3+, [k3d](https://k3d.io/) no `PATH`, `kubectl` (recomendado).
 
 ```bash
 cd infra
-cp terraform.tfvars.example terraform.tfvars   # ajuste senhas/nomes
+cp terraform.tfvars.example terraform.tfvars   # ajuste senhas / JWT / (opcional) GHCR
 terraform init
 terraform plan
 terraform apply
@@ -199,23 +199,21 @@ terraform apply
 
 **Recursos criados:**
 
-- Cluster K3d (`autoservice-local` por padrão)
+- Cluster K3d (`autoservice-local` por padrão, com 1 agent)
 - Namespace `autoservice`
-- PostgreSQL (Helm)
-- ConfigMaps/Secrets auxiliares conforme o módulo
+- Secrets com os **mesmos nomes/chaves** do pipeline CI/CD
+- PostgreSQL e API a partir de `k8s/20`–`24` e `k8s/10` + `30`–`32` (`deploy_app=true` por padrão)
+- Metrics Server (Helm) para o HPA
 
 Validação:
 
 ```bash
 kubectl cluster-info
-kubectl get pods -n autoservice
-kubectl get services -n autoservice
+kubectl -n autoservice get pods,svc,hpa
 ```
 
-Detalhes e customização: **[infra/README.md](./infra/README.md)**.  
-Para destruir: `terraform destroy` (dentro de `infra/`).
-
-Após o cluster existir, o deploy da API segue a seção **Deploy em Kubernetes** (ou o CI/CD em `main`/`master`).
+Detalhes: **[infra/README.md](./infra/README.md)**. Destruir: `terraform destroy` (em `infra/`).  
+O CI em `main`/`master` continua aplicando os mesmos YAMLs e atualizando a tag da imagem no GHCR.
 
 ---
 

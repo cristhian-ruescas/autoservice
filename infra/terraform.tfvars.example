@@ -2,10 +2,10 @@
 cluster_name      = "autoservice-local"
 kubeconfig_path   = "~/.kube/config"
 namespace         = "autoservice"
-postgres_username = "autoservice"
 postgres_password = "change_me"
-postgres_database = "autoservicedb"
-postgres_port     = 5432
 jwt_secret        = "change_me"
 mail_username     = ""
 mail_password     = ""
+deploy_app        = true
+ghcr_username     = ""
+ghcr_token        = ""

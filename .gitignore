@@ -39,7 +39,6 @@ local.variable.env
 # Kubernetes Secrets (SENSITIVE - never commit!)
 k8s/11-secret-app.yaml
 k8s/21-secret-postgres.yaml
-k8s/postgres-secret.yaml
 .k8s_secrets
 
 # Terraform (SENSITIVE - state may contain plaintext secrets; cache is machine-specific)

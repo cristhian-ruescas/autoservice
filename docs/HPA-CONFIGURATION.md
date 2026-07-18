@@ -121,22 +121,21 @@ The HPA scales based on two metrics:
 
 ## Deployment Files
 
-### `/k8s/deployment.yaml`
-Main deployment manifest with:
-- Resource requests and limits
-- All three health probes (readiness, liveness, startup)
-- Environment variables for database connection
-- Pod anti-affinity for distribution across nodes
-- EmptyDir volume for temporary files
+### `/k8s/30-deployment-app.yaml`
+Deployment canônico da API (CI + Terraform + kustomize):
+- Resource requests/limits
+- Probes (startup, readiness, liveness)
+- `envFrom` ConfigMap/Secret + senha do Postgres via `autoservice-postgres-secret`
+- `imagePullSecrets: ghcr-pull-secret` (CI; Terraform omite se não houver credenciais GHCR)
 
-### `/k8s/service.yaml`
-Service manifest exposing the deployment on port 8088.
+### `/k8s/31-service-app.yaml`
+Service da API na porta 8088.
 
-### `/k8s/postgres-secret.example.yaml`
-Example Kubernetes Secret for PostgreSQL credentials. Copy to `postgres-secret.yaml` and fill real values (file is gitignored).
+### `/k8s/21-secret-postgres.example.yaml` / `/k8s/11-secret-app.example.yaml`
+Exemplos de Secrets (mesmos nomes do CI). Copiar, preencher e aplicar — não versionar valores reais.
 
-### `/k8s/hpa.yaml`
-HPA manifest with CPU and memory-based scaling triggers.
+### `/k8s/32-hpa-app.yaml`
+HPA: CPU 70% e memória 75%, min 2 / max 10 réplicas (`autoservice-app-hpa`).
 
 ## Prerequisites
 
@@ -168,23 +167,22 @@ terraform plan
 terraform apply
 ```
 
-Terraform automatically:
-1. Creates k3d cluster
-2. Creates `autoservice` namespace
-3. Deploys PostgreSQL via Helm
-4. Installs Metrics Server
-5. Deploys application manifests
-6. Configures HPA
+Terraform:
+1. Cria cluster k3d
+2. Cria namespace `autoservice`
+3. Cria secrets alinhados ao CI
+4. Aplica Postgres (`k8s/20`–`24`)
+5. Instala Metrics Server
+6. Aplica app + HPA (`k8s/10`, `30`–`32`) se `deploy_app=true`
 
-### Manual Kubectl Deployment
+### Manual Kubectl / Kustomize
 ```bash
-cp k8s/postgres-secret.example.yaml k8s/postgres-secret.yaml
-# edit credentials, then:
-kubectl apply -f k8s/postgres-secret.yaml
-kubectl apply -f k8s/11-secret-app.yaml   # from 11-secret-app.example.yaml
-kubectl apply -f k8s/service.yaml
-kubectl apply -f k8s/deployment.yaml
-kubectl apply -f k8s/hpa.yaml
+cp k8s/11-secret-app.example.yaml k8s/11-secret-app.yaml
+cp k8s/21-secret-postgres.example.yaml k8s/21-secret-postgres.yaml
+# edite credenciais, depois:
+kubectl apply -f k8s/11-secret-app.yaml
+kubectl apply -f k8s/21-secret-postgres.yaml
+kubectl apply -k k8s
 ```
 
 ## Validation
@@ -202,8 +200,8 @@ kubectl describe pod <pod-name> -n autoservice
 
 ### 3. Check HPA Status
 ```bash
-kubectl get hpa autoservice-hpa -n autoservice
-kubectl describe hpa autoservice-hpa -n autoservice
+kubectl get hpa autoservice-app-hpa -n autoservice
+kubectl describe hpa autoservice-app-hpa -n autoservice
 ```
 
 ### 4. View Metrics
@@ -229,7 +227,7 @@ chmod +x scripts/test-hpa-load.sh
 ### Manual Load Generation
 ```bash
 # Terminal 1: Watch HPA scaling
-kubectl get hpa autoservice-hpa -n autoservice --watch
+kubectl get hpa autoservice-app-hpa -n autoservice --watch
 
 # Terminal 2: Watch pods
 kubectl get pods -n autoservice --watch
@@ -334,7 +332,7 @@ kubectl get events -n autoservice --sort-by='.lastTimestamp'
 ## Performance Tuning
 
 ### Adjusting Scaling Thresholds
-Edit `k8s/hpa.yaml` to change trigger points:
+Edit `k8s/32-hpa-app.yaml` to change trigger points:
 ```yaml
 metrics:
 - type: Resource
@@ -361,7 +359,7 @@ behavior:
 ```
 
 ### Resource Request Optimization
-If pods are too small/large, adjust in `deployment.yaml`:
+If pods are too small/large, adjust in `k8s/30-deployment-app.yaml`:
 ```yaml
 resources:
   requests:
