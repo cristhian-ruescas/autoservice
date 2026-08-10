@@ -65,7 +65,7 @@ spec:
             failureThreshold: 30
           env:
             - name: AUTOSERVICE_JWT_SECRET
-              value: "chave_secreta_local_de_teste_para_o_jwt_funcionar_no_minikube"
+              value: "[REDACTED_USE_K8S_SECRET]"
             - name: SPRING_DATASOURCE_URL
               value: "jdbc:postgresql://postgresql.autoservice.svc.cluster.local:5432/autoservicedb"
             - name: SPRING_DATASOURCE_USERNAME
