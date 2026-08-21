@@ -80,6 +80,19 @@ class OrdemServicoComandosSimplesUseCaseTest {
     }
 
     @Test
+    void aprovarOrcamentoQuandoOrdemNaoExiste() {
+        final var id = OrdemServicoID.unique();
+        when(ordemServicoGateway.findById(id)).thenReturn(Optional.empty());
+
+        final var exception = assertThrows(
+                DomainException.class,
+                () -> aprovarOrdemServicoUseCase.execute(AprovarOrdemServicoCommand.with(UUID.fromString(id.getValue())))
+        );
+
+        assertEquals("Ordem de serviço não encontrada", exception.getMessage());
+    }
+
+    @Test
     void reprovarOrcamento() {
         final var id = OrdemServicoID.unique();
         final var os = OrdemServico.with(
@@ -95,6 +108,19 @@ class OrdemServicoComandosSimplesUseCaseTest {
         final var out = reprovarOrdemServicoUseCase.execute(ReprovarOrdemServicoCommand.with(UUID.fromString(id.getValue())));
 
         assertEquals(OrdemServicoStatus.REPROVADO.name(), out.status());
+    }
+
+    @Test
+    void reprovarOrcamentoQuandoOrdemNaoExiste() {
+        final var id = OrdemServicoID.unique();
+        when(ordemServicoGateway.findById(id)).thenReturn(Optional.empty());
+
+        final var exception = assertThrows(
+                DomainException.class,
+                () -> reprovarOrdemServicoUseCase.execute(ReprovarOrdemServicoCommand.with(UUID.fromString(id.getValue())))
+        );
+
+        assertEquals("Ordem de serviço não encontrada", exception.getMessage());
     }
 
     @Test
@@ -117,6 +143,19 @@ class OrdemServicoComandosSimplesUseCaseTest {
     }
 
     @Test
+    void finalizarExecucaoQuandoOrdemNaoExiste() {
+        final var id = OrdemServicoID.unique();
+        when(ordemServicoGateway.findById(id)).thenReturn(Optional.empty());
+
+        final var exception = assertThrows(
+                DomainException.class,
+                () -> finalizarOrdemServicoUseCase.execute(FinalizarOrdemServicoCommand.with(UUID.fromString(id.getValue())))
+        );
+
+        assertEquals("Ordem de serviço não encontrada", exception.getMessage());
+    }
+
+    @Test
     void entregarFinalizada() {
         final var id = OrdemServicoID.unique();
         final var os = OrdemServico.with(
@@ -132,6 +171,19 @@ class OrdemServicoComandosSimplesUseCaseTest {
         final var out = entregarOrdemServicoUseCase.execute(EntregarOrdemServicoCommand.with(UUID.fromString(id.getValue())));
 
         assertEquals(OrdemServicoStatus.ENTREGUE.name(), out.status());
+    }
+
+    @Test
+    void entregarQuandoOrdemNaoExiste() {
+        final var id = OrdemServicoID.unique();
+        when(ordemServicoGateway.findById(id)).thenReturn(Optional.empty());
+
+        final var exception = assertThrows(
+                DomainException.class,
+                () -> entregarOrdemServicoUseCase.execute(EntregarOrdemServicoCommand.with(UUID.fromString(id.getValue())))
+        );
+
+        assertEquals("Ordem de serviço não encontrada", exception.getMessage());
     }
 
     @Test
@@ -155,5 +207,26 @@ class OrdemServicoComandosSimplesUseCaseTest {
     @Test
     void removerOrdemComandoNuloFalha() {
         assertThrows(DomainException.class, () -> removerOrdemServicoUseCase.execute(null));
+    }
+
+    @Test
+    void removerOrdemSemIdFalha() {
+        final var exception = assertThrows(
+                DomainException.class,
+                () -> removerOrdemServicoUseCase.execute(RemoverOrdemServicoCommand.with(null))
+        );
+        assertEquals("Ordem de serviço é obrigatória para remoção", exception.getMessage());
+    }
+
+    @Test
+    void removerOrdemQuandoNaoExisteFalha() {
+        final var id = OrdemServicoID.unique();
+        when(ordemServicoGateway.findById(id)).thenReturn(Optional.empty());
+
+        final var exception = assertThrows(
+                DomainException.class,
+                () -> removerOrdemServicoUseCase.execute(RemoverOrdemServicoCommand.with(UUID.fromString(id.getValue())))
+        );
+        assertEquals("Ordem de serviço não encontrada", exception.getMessage());
     }
 }
