@@ -27,6 +27,19 @@ services:
     networks:
       - autoservice-network
 
+  mailpit:
+    image: axllent/mailpit:v1.21
+    container_name: autoservice-mailpit
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    networks:
+      - autoservice-network
+
+  # Auth CPF (POST /auth/cpf) vive no repositório serverless (autoservice-lambda-auth / Worker).
+  # Não faça parte deste módulo (SDD §14.1 vs §14.4).
+
   app:
     build:
       context: ..
@@ -42,9 +55,16 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       APP_BASE_URL: http://localhost:8088
+      MAIL_HOST: mailpit
+      MAIL_PORT: "1025"
+      MAIL_SMTP_AUTH: "false"
+      MAIL_SMTP_STARTTLS: "false"
+      MAIL_FROM: orcamentos@autoservice.local
     depends_on:
       postgres:
         condition: service_healthy
+      mailpit:
+        condition: service_started
     networks:
       - autoservice-network
 

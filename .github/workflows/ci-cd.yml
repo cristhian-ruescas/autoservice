@@ -62,6 +62,8 @@ jobs:
           set -euo pipefail
           kubectl kustomize k8s > /tmp/k8s-rendered.yaml
           test -s /tmp/k8s-rendered.yaml
+          kubectl kustomize k8s/gateway > /tmp/k8s-gateway-rendered.yaml
+          test -s /tmp/k8s-gateway-rendered.yaml
 
       - name: Build & run tests
         env:
@@ -130,87 +132,15 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # ─── DEPLOY BANCO (K8s) — self-hosted Windows usa PowerShell ────
-  deploy-db:
-    name: Deploy Database (K8s)
-    runs-on: self-hosted
-    needs: docker
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-    environment: production
-    timeout-minutes: 20
-    defaults:
-      run:
-        shell: powershell -ExecutionPolicy Bypass -Command ". '{0}'"
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Check kubectl
-        run: kubectl version --client
-
-      - name: Verify required deploy secrets
-        env:
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-        run: |
-          if ([string]::IsNullOrWhiteSpace($env:POSTGRES_PASSWORD)) { throw "POSTGRES_PASSWORD secret is empty" }
-
-      - name: Configure kubectl
-        run: |
-          # Self-hosted: usa o kubeconfig local do k3d (nao sobrescreve com secret)
-          $configPath = Join-Path $HOME ".kube\config"
-          if (-not (Test-Path $configPath)) {
-            throw "Kubeconfig local nao encontrado em $configPath. Rode: k3d cluster create autoservice-local --wait --agents 1"
-          }
-          # k3d no Windows as vezes grava host.docker.internal; no host precisa ser 127.0.0.1
-          $cfg = Get-Content $configPath -Raw
-          if ($cfg -match 'host\.docker\.internal') {
-            ($cfg -replace 'https://host\.docker\.internal:','https://127.0.0.1:') | Set-Content $configPath -NoNewline
-          }
-          $env:KUBECONFIG = $configPath
-          kubectl config current-context
-          if ($LASTEXITCODE -ne 0) { throw "kubectl context invalido" }
-          kubectl cluster-info
-          if ($LASTEXITCODE -ne 0) { throw "cluster inacessivel. Verifique Docker Desktop e: k3d cluster list" }
-
-      - name: Create/update postgres secret
-        env:
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-        run: |
-          $env:KUBECONFIG = Join-Path $HOME ".kube\config"
-          kubectl apply -f k8s/00-namespace.yaml
-          if ($LASTEXITCODE -ne 0) { throw "kubectl apply namespace failed" }
-          kubectl create secret generic autoservice-postgres-secret `
-            --namespace=autoservice `
-            --from-literal=POSTGRES_PASSWORD="$env:POSTGRES_PASSWORD" `
-            --save-config --dry-run=client -o yaml | kubectl apply -f -
-          if ($LASTEXITCODE -ne 0) { throw "postgres secret apply failed" }
-
-      - name: Apply postgres manifests
-        run: |
-          $env:KUBECONFIG = Join-Path $HOME ".kube\config"
-          kubectl apply -f k8s/20-configmap-postgres.yaml
-          if ($LASTEXITCODE -ne 0) { throw "kubectl apply configmap failed" }
-          kubectl apply -f k8s/21-initdb-postgres.yaml
-          if ($LASTEXITCODE -ne 0) { throw "kubectl apply initdb configmap failed" }
-          kubectl apply -f k8s/22-pvc-postgres.yaml
-          if ($LASTEXITCODE -ne 0) { throw "kubectl apply pvc failed" }
-          kubectl apply -f k8s/23-deployment-postgres.yaml
-          if ($LASTEXITCODE -ne 0) { throw "kubectl apply deployment failed" }
-          kubectl apply -f k8s/24-service-postgres.yaml
-          if ($LASTEXITCODE -ne 0) { throw "kubectl apply service failed" }
-
-      - name: Wait for postgres rollout
-        run: |
-          $env:KUBECONFIG = Join-Path $HOME ".kube\config"
-          kubectl rollout status deployment/autoservice-postgres -n autoservice --timeout=180s
-          if ($LASTEXITCODE -ne 0) { throw "postgres rollout failed" }
-
   # ─── DEPLOY APLICAÇÃO (K8s) — self-hosted Windows usa PowerShell ─
+  # Pré-requisitos externos (outros repos SDD):
+  #   - autoservice-infra-k8s: cluster + Traefik + metrics-server
+  #   - autoservice-infra-db: banco gerenciado + credenciais
+  #   - autoservice-lambda-auth / Worker: POST /auth/cpf
   deploy-app:
     name: Deploy Application (K8s)
     runs-on: self-hosted
-    needs: [ docker, deploy-db ]
+    needs: [ docker ]
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     environment: production
     timeout-minutes: 20
@@ -232,21 +162,21 @@ jobs:
       - name: Verify required deploy secrets
         env:
           AUTOSERVICE_JWT_SECRET: ${{ secrets.AUTOSERVICE_JWT_SECRET }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
           MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
           MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
         run: |
           if ([string]::IsNullOrWhiteSpace($env:AUTOSERVICE_JWT_SECRET)) { throw "AUTOSERVICE_JWT_SECRET secret is empty" }
+          if ([string]::IsNullOrWhiteSpace($env:SPRING_DATASOURCE_PASSWORD)) { throw "SPRING_DATASOURCE_PASSWORD secret is empty" }
           if ([string]::IsNullOrWhiteSpace($env:MAIL_USERNAME)) { throw "MAIL_USERNAME secret is empty" }
           if ([string]::IsNullOrWhiteSpace($env:MAIL_PASSWORD)) { throw "MAIL_PASSWORD secret is empty" }
 
       - name: Configure kubectl
         run: |
-          # Self-hosted: usa o kubeconfig local do k3d (nao sobrescreve com secret)
           $configPath = Join-Path $HOME ".kube\config"
           if (-not (Test-Path $configPath)) {
-            throw "Kubeconfig local nao encontrado em $configPath. Rode: k3d cluster create autoservice-local --wait --agents 1"
+            throw "Kubeconfig local nao encontrado em $configPath. Provisionar cluster via autoservice-infra-k8s."
           }
-          # k3d no Windows as vezes grava host.docker.internal; no host precisa ser 127.0.0.1
           $cfg = Get-Content $configPath -Raw
           if ($cfg -match 'host\.docker\.internal') {
             ($cfg -replace 'https://host\.docker\.internal:','https://127.0.0.1:') | Set-Content $configPath -NoNewline
@@ -255,7 +185,7 @@ jobs:
           kubectl config current-context
           if ($LASTEXITCODE -ne 0) { throw "kubectl context invalido" }
           kubectl cluster-info
-          if ($LASTEXITCODE -ne 0) { throw "cluster inacessivel. Verifique Docker Desktop e: k3d cluster list" }
+          if ($LASTEXITCODE -ne 0) { throw "cluster inacessivel. Verifique autoservice-infra-k8s / Docker Desktop." }
 
       - name: Create/update GHCR pull secret
         env:
@@ -263,6 +193,8 @@ jobs:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           $env:KUBECONFIG = Join-Path $HOME ".kube\config"
+          kubectl apply -f k8s/00-namespace.yaml
+          if ($LASTEXITCODE -ne 0) { throw "kubectl apply namespace failed" }
           kubectl create secret docker-registry ghcr-pull-secret `
             --namespace=autoservice `
             --docker-server=ghcr.io `
@@ -274,6 +206,7 @@ jobs:
       - name: Create/update app secret
         env:
           AUTOSERVICE_JWT_SECRET: ${{ secrets.AUTOSERVICE_JWT_SECRET }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
           MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
           MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
         run: |
@@ -281,6 +214,7 @@ jobs:
           kubectl create secret generic autoservice-app-secret `
             --namespace=autoservice `
             --from-literal=AUTOSERVICE_JWT_SECRET="$env:AUTOSERVICE_JWT_SECRET" `
+            --from-literal=SPRING_DATASOURCE_PASSWORD="$env:SPRING_DATASOURCE_PASSWORD" `
             --from-literal=MAIL_USERNAME="$env:MAIL_USERNAME" `
             --from-literal=MAIL_PASSWORD="$env:MAIL_PASSWORD" `
             --save-config --dry-run=client -o yaml | kubectl apply -f -
@@ -289,14 +223,10 @@ jobs:
       - name: Apply app manifests
         run: |
           $env:KUBECONFIG = Join-Path $HOME ".kube\config"
-          kubectl apply -f k8s/10-configmap-app.yaml
-          if ($LASTEXITCODE -ne 0) { throw "configmap apply failed" }
-          kubectl apply -f k8s/30-deployment-app.yaml
-          if ($LASTEXITCODE -ne 0) { throw "deployment apply failed" }
-          kubectl apply -f k8s/31-service-app.yaml
-          if ($LASTEXITCODE -ne 0) { throw "service apply failed" }
-          kubectl apply -f k8s/32-hpa-app.yaml
-          if ($LASTEXITCODE -ne 0) { throw "hpa apply failed" }
+          kubectl apply -k k8s
+          if ($LASTEXITCODE -ne 0) { throw "kustomize app apply failed" }
+          kubectl apply -k k8s/gateway
+          if ($LASTEXITCODE -ne 0) { throw "kustomize gateway apply failed (Traefik CRDs devem existir via infra-k8s)" }
 
       - name: Update image tag
         run: |
@@ -304,16 +234,15 @@ jobs:
           $imageName = "${{ env.IMAGE_NAME }}".ToLower()
           $image = "${{ env.REGISTRY }}/${imageName}:sha-${{ github.sha }}"
           kubectl set image deployment/autoservice-app autoservice-app=$image -n autoservice
-          if ($LASTEXITCODE -ne 0) { throw "set image failed" }
+          if ($LASTEXITCODE -ne 0) { throw "set app image failed" }
 
       - name: Wait for app rollout
         run: |
           $env:KUBECONFIG = Join-Path $HOME ".kube\config"
-          # startupProbe permite ate ~300s; timeout do rollout precisa ser maior
           kubectl rollout status deployment/autoservice-app -n autoservice --timeout=360s
           if ($LASTEXITCODE -ne 0) { throw "app rollout failed" }
 
       - name: Validate pods and HPA
         run: |
           $env:KUBECONFIG = Join-Path $HOME ".kube\config"
-          kubectl -n autoservice get pods,svc,hpa
+          kubectl -n autoservice get pods,svc,hpa,ingressroute

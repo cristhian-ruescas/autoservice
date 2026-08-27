@@ -1,6 +1,8 @@
 server:
   port: 8088
 spring:
+  application:
+    name: autoservice
   config:
     import: optional:file:${user.dir}/local.variable.env[.properties]
   datasource:
@@ -56,11 +58,16 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,metrics
+        include: health,metrics,prometheus
   endpoint:
     health:
       probes:
         enabled: true
+    prometheus:
+      enabled: true
+  metrics:
+    tags:
+      application: autoservice
   health:
     livenessState:
       enabled: true
@@ -68,3 +75,8 @@ management:
       enabled: true
     mail:
       enabled: false
+
+logging:
+  level:
+    root: INFO
+    com.autoservice: INFO

@@ -1,16 +1,17 @@
 package com.autoservice.presentation.handler;
 
 import com.autoservice.domain.exceptions.DomainException;
+import com.autoservice.infrastructure.metrics.OrdemServicoMetrics;
 import com.autoservice.presentation.dto.ErrorResponse;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -22,6 +23,12 @@ import java.util.List;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private final OrdemServicoMetrics ordemServicoMetrics;
+
+    public GlobalExceptionHandler(final OrdemServicoMetrics ordemServicoMetrics) {
+        this.ordemServicoMetrics = ordemServicoMetrics;
+    }
 
     @ExceptionHandler({AuthenticationException.class, UsernameNotFoundException.class, ServletException.class})
     public ResponseEntity<?> handleAuthenticationException(Exception ex, HttpServletRequest request) {
@@ -57,6 +64,10 @@ public class GlobalExceptionHandler {
             DomainException ex,
             HttpServletRequest request) {
 
+        if (isOrdemServicoPath(request.getRequestURI())) {
+            this.ordemServicoMetrics.incrementarFalhaProcessamento();
+        }
+
         final var errors = ex.getErrors().stream()
                 .map(error -> new ErrorResponse.FieldError(null, error.message()))
                 .toList();
@@ -73,6 +84,10 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(errorResponse);
+    }
+
+    private boolean isOrdemServicoPath(final String uri) {
+        return uri != null && (uri.contains("/ordens-servico") || uri.contains("/atendimentos"));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)

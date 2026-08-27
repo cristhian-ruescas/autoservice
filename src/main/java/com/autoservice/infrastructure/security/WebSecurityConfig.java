@@ -48,7 +48,8 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.GET, SecurityPaths.ANDAMENTO_ORDEM_SERVICO).permitAll()
                         .requestMatchers(HttpMethod.GET, SecurityPaths.APROVACAO_APROVAR).permitAll()
                         .requestMatchers(HttpMethod.GET, SecurityPaths.APROVACAO_REPROVAR).permitAll()
-                        .requestMatchers(SecurityPaths.ADMIN_ENDPOINTS).hasRole(SecurityPaths.ROLE_ADMIN)
+                        .requestMatchers(SecurityPaths.ADMIN_ENDPOINTS)
+                        .hasAnyRole(SecurityPaths.ROLE_ADMIN, SecurityPaths.ROLE_CLIENTE)
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, authException) -> {

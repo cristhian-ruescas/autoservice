@@ -1,85 +1,36 @@
-# Kubernetes — Autoservice
+# Kubernetes — manifests da aplicação (Repo 4)
 
-Manifestos **canônicos** (mesmos usados pelo CI e pelo Terraform em `/infra`).
+Somente recursos da **API Autoservice**. Cluster, Traefik, Postgres gerenciado e auth CPF ficam nos repositórios irmãos.
 
-## Arquivos
+## Base (`kubectl apply -k k8s`)
 
-| Arquivo | Função |
-|---------|--------|
+| Manifesto | Função |
+|-----------|--------|
 | `00-namespace.yaml` | Namespace `autoservice` |
-| `10-configmap-app.yaml` | ConfigMap da API |
-| `11-secret-app.example.yaml` | Exemplo de Secret da API (não commitar valores reais) |
-| `20-configmap-postgres.yaml` | ConfigMap do Postgres |
-| `21-initdb-postgres.yaml` | Scripts de init (schemas) |
-| `21-secret-postgres.example.yaml` | Exemplo de Secret do Postgres |
-| `22-pvc-postgres.yaml` | PVC do banco |
-| `23-deployment-postgres.yaml` | Deployment Postgres |
-| `24-service-postgres.yaml` | Service Postgres |
-| `30-deployment-app.yaml` | Deployment da API (+ HPA target) |
-| `31-service-app.yaml` | Service da API |
-| `32-hpa-app.yaml` | HPA (CPU 70% / memória 75%) |
-| `kustomization.yaml` | Agrupa os manifests acima (sem Secrets) |
+| `10-configmap-app.yaml` | JDBC (host do infra-db), mail, `APP_BASE_URL` |
+| `11-secret-app.example.yaml` | JWT + senha DB + SMTP (não commitar valores reais) |
+| `30-deployment-app.yaml` | Deployment da API |
+| `31-service-app.yaml` | Service |
+| `32-hpa-app.yaml` | HPA (requer metrics-server do infra-k8s) |
 
-Secrets **não** entram no kustomize: são criados pelo CI, pelo Terraform ou manualmente a partir dos `*.example.yaml`.
+## Gateway (`kubectl apply -k k8s/gateway`)
 
-## Fluxos suportados
+Aplicar **depois** do Traefik (repo `autoservice-infra-k8s`):
 
-### 1. Terraform (cluster + DB + opcionalmente app)
+| Manifesto | Função |
+|-----------|--------|
+| `40-middleware-correlation.yaml` | Middleware Traefik |
+| `40-ingressroute-app.yaml` | `PathPrefix(/)` → `autoservice-app:8088` |
 
-```bash
-cd infra/
-cp terraform.tfvars.example terraform.tfvars   # edite secrets
-terraform init
-terraform apply
-```
+Rota `/auth/cpf` **não** é definida aqui — pertence ao serviço serverless + IngressRoute/roteamento no infra-k8s ou API Gateway.
 
-Cria k3d, namespace, secrets (`autoservice-postgres-secret`, `autoservice-app-secret`), Postgres (manifests numerados), metrics-server e, se `deploy_app=true`, a app (mesmos YAMLs do CI).
+## Secrets esperados
 
-### 2. CI/CD (GitHub Actions)
+- `autoservice-app-secret`: `AUTOSERVICE_JWT_SECRET`, `SPRING_DATASOURCE_PASSWORD`, `MAIL_*`
+- `ghcr-pull-secret`: pull da imagem no GHCR (criado pelo CI)
 
-Em `main`/`master`: build → push GHCR → cria secrets → `kubectl apply` dos mesmos arquivos numerados.
+## Dependências externas
 
-### 3. Manual com kubectl / kustomize
-
-```bash
-cp k8s/11-secret-app.example.yaml k8s/11-secret-app.yaml
-cp k8s/21-secret-postgres.example.yaml k8s/21-secret-postgres.yaml
-# edite os arquivos com valores reais (gitignored)
-kubectl apply -f k8s/11-secret-app.yaml
-kubectl apply -f k8s/21-secret-postgres.yaml
-
-# opcional: pull secret GHCR (necessário se a imagem for privada)
-# kubectl create secret docker-registry ghcr-pull-secret ...
-
-kubectl apply -k k8s
-```
-
-## HPA
-
-- **Min / max:** 2 / 10 réplicas  
-- **CPU:** 70% · **Memória:** 75%  
-- Requer **metrics-server** (instalado pelo Terraform; no CI assume-se cluster com metrics-server)
-
-```bash
-kubectl -n autoservice get hpa autoservice-app-hpa
-kubectl -n autoservice describe hpa autoservice-app-hpa
-kubectl top pods -n autoservice
-```
-
-Detalhes: [docs/HPA-CONFIGURATION.md](../docs/HPA-CONFIGURATION.md).
-
-## Validação
-
-```bash
-kubectl -n autoservice get pods,svc,hpa
-kubectl -n autoservice rollout status deployment/autoservice-postgres
-kubectl -n autoservice rollout status deployment/autoservice-app
-```
-
-## Troubleshooting
-
-| Sintoma | Ação |
-|---------|------|
-| HPA metrics `Unknown` | `kubectl get deploy metrics-server -n kube-system` |
-| ImagePullBackOff | Crie `ghcr-pull-secret` ou ajuste a imagem em `30-deployment-app.yaml` |
-| App sem DB | Confira secret `autoservice-postgres-secret` e Service `autoservice-postgres` |
+1. Banco gerenciado configurado em `SPRING_DATASOURCE_URL` (outputs de `autoservice-infra-db`)
+2. Cluster + Traefik + metrics-server (`autoservice-infra-k8s`)
+3. Mesmo `AUTOSERVICE_JWT_SECRET` do emissor de JWT cliente (`iss=autoservice-auth`)

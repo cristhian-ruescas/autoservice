@@ -12,17 +12,22 @@ Before running HPA, ensure:
 ## 2. Deploy Infrastructure
 
 ### Step 1: Initialize and Deploy
+
+Cluster, Traefik e metrics-server são provisionados no repositório **`autoservice-infra-k8s`** (não neste repo).
+
 ```bash
-cd infra/
-
-# Initialize Terraform
+# No repositório autoservice-infra-k8s (exemplo)
+cd ../autoservice-infra-k8s/terraform
 terraform init
-
-# Review changes
 terraform plan
+terraform apply
+```
 
-# Apply configuration
-terraform apply -auto-approve
+Depois, neste repo, aplique apenas os manifests da app:
+
+```bash
+kubectl apply -k k8s
+kubectl apply -k k8s/gateway
 ```
 
 Expected output (resumo):
@@ -252,9 +257,19 @@ kubectl delete pod -l app=load-gen -n autoservice --ignore-not-found
 ```
 
 ### Destroy Entire Infrastructure
+
+Cluster e Traefik: destruir no repositório **`autoservice-infra-k8s`**.
+
 ```bash
-cd infra/
+# Exemplo no repo infra-k8s
 terraform destroy -auto-approve
+```
+
+App neste repo:
+
+```bash
+kubectl delete -k k8s/gateway --ignore-not-found
+kubectl delete -k k8s --ignore-not-found
 ```
 
 ## 9. Configuration Reference

@@ -3,11 +3,13 @@ package com.autoservice.infrastructure.security;
 public final class SecurityPaths {
 
     public static final String ROLE_ADMIN = "ADMIN";
+    public static final String ROLE_CLIENTE = "CLIENTE";
 
     public static final String[] PUBLIC_ENDPOINTS = {
             "/auth/**",
             "/actuator/health",
             "/actuator/health/**",
+            "/actuator/prometheus",
             "/v3/api-docs/**",
             "/swagger-ui/**",
             "/swagger-ui.html"

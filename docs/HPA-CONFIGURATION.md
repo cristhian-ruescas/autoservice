@@ -122,17 +122,17 @@ The HPA scales based on two metrics:
 ## Deployment Files
 
 ### `/k8s/30-deployment-app.yaml`
-Deployment canônico da API (CI + Terraform + kustomize):
+Deployment canônico da API (CI + kustomize):
 - Resource requests/limits
 - Probes (startup, readiness, liveness)
-- `envFrom` ConfigMap/Secret + senha do Postgres via `autoservice-postgres-secret`
-- `imagePullSecrets: ghcr-pull-secret` (CI; Terraform omite se não houver credenciais GHCR)
+- `envFrom` ConfigMap + Secret (`autoservice-app-secret`, inclui senha JDBC do infra-db)
+- `imagePullSecrets: ghcr-pull-secret`
 
 ### `/k8s/31-service-app.yaml`
 Service da API na porta 8088.
 
-### `/k8s/21-secret-postgres.example.yaml` / `/k8s/11-secret-app.example.yaml`
-Exemplos de Secrets (mesmos nomes do CI). Copiar, preencher e aplicar — não versionar valores reais.
+### `/k8s/11-secret-app.example.yaml`
+Exemplo de Secret da app (JWT, senha DB gerenciado, mail). Copiar, preencher e aplicar — não versionar valores reais.
 
 ### `/k8s/32-hpa-app.yaml`
 HPA: CPU 70% e memória 75%, min 2 / max 10 réplicas (`autoservice-app-hpa`).
@@ -159,19 +159,19 @@ management.health.liveness.enabled=true
 
 ## Deployment
 
-### Using Terraform
+### Using Terraform (cluster)
+
+Provisionamento do cluster/metrics-server fica em **`autoservice-infra-k8s`**. Neste repo:
+
 ```bash
-cd infra/
-terraform init
-terraform plan
-terraform apply
+kubectl apply -k k8s
+kubectl apply -k k8s/gateway
 ```
 
-Terraform:
-1. Cria cluster k3d
-2. Cria namespace `autoservice`
-3. Cria secrets alinhados ao CI
-4. Aplica Postgres (`k8s/20`–`24`)
+Dependências:
+1. Cluster + Traefik + metrics-server (`autoservice-infra-k8s`)
+2. Banco gerenciado e credenciais (`autoservice-infra-db` → Secret da app)
+3. Auth CPF externo (mesmo `AUTOSERVICE_JWT_SECRET`)
 5. Instala Metrics Server
 6. Aplica app + HPA (`k8s/10`, `30`–`32`) se `deploy_app=true`
 

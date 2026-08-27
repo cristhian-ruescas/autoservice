@@ -17,6 +17,7 @@ import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -49,7 +50,10 @@ class JwtAuthenticationFilterTest {
     void doFilterInternal_tokenValido_autenticaUsuario() throws ServletException, IOException {
         when(request.getServletPath()).thenReturn("/api/test");
         when(request.getHeader("Authorization")).thenReturn("Bearer tokenvalido");
-        when(jwtUtil.extractUsername("tokenvalido")).thenReturn("admin@email.com");
+        final var decoded = org.mockito.Mockito.mock(com.auth0.jwt.interfaces.DecodedJWT.class);
+        when(jwtUtil.decodeToken("tokenvalido")).thenReturn(decoded);
+        when(jwtUtil.isClienteToken(decoded)).thenReturn(false);
+        when(decoded.getSubject()).thenReturn("admin@email.com");
         org.springframework.security.core.userdetails.User realUser =
                 new org.springframework.security.core.userdetails.User(
                         "admin@email.com",
@@ -68,11 +72,26 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
+    void doFilterInternal_tokenCliente_autenticaComRoleCliente() throws ServletException, IOException {
+        when(request.getHeader("Authorization")).thenReturn("Bearer tokencliente");
+        final var decoded = org.mockito.Mockito.mock(com.auth0.jwt.interfaces.DecodedJWT.class);
+        when(jwtUtil.decodeToken("tokencliente")).thenReturn(decoded);
+        when(jwtUtil.isClienteToken(decoded)).thenReturn(true);
+        when(jwtUtil.validateClienteToken("tokencliente")).thenReturn(true);
+        when(decoded.getSubject()).thenReturn("cliente-uuid");
+
+        jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
+
+        verify(filterChain).doFilter(request, response);
+        assertNotNull(SecurityContextHolder.getContext().getAuthentication());
+        assertTrue(SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals(JwtAuthenticationFilter.ROLE_CLIENTE)));
+    }
+
+    @Test
     void doFilterInternal_tokenInvalido_naoAutenticaUsuario() throws ServletException, IOException {
         when(request.getHeader("Authorization")).thenReturn("Bearer tokeninvalido");
-        when(jwtUtil.extractUsername("tokeninvalido")).thenReturn("admin@email.com");
-        when(userDetailsService.loadUserByUsername("admin@email.com")).thenReturn(userDetails);
-        when(jwtUtil.validateToken("tokeninvalido", "admin@email.com")).thenReturn(false);
+        when(jwtUtil.decodeToken("tokeninvalido")).thenThrow(new RuntimeException("invalid"));
 
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 

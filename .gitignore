@@ -50,3 +50,7 @@ k8s/21-secret-postgres.yaml
 # Spec-Driven Development
 sdd/
 
+# auth-cpf (Node)
+auth-cpf/node_modules/
+
+
