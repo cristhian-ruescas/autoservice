@@ -13,8 +13,8 @@ echo -e "${BLUE}========================================${NC}"
 
 NAMESPACE="autoservice"
 DEPLOYMENT="autoservice-app"
-HPA="autoservice-hpa"
-SERVICE="autoservice"
+HPA="autoservice-app-hpa"
+SERVICE="autoservice-app"
 
 # Check 1: Verify Deployment exists and has resource requests/limits
 echo -e "\n${BLUE}1. Checking Deployment resources...${NC}"
@@ -68,7 +68,7 @@ fi
 
 # Check 5: Verify Pod status
 echo -e "\n${BLUE}5. Checking Pod Status...${NC}"
-PODS=$(kubectl get pods -n $NAMESPACE -l app=autoservice -o json)
+PODS=$(kubectl get pods -n $NAMESPACE -l app=autoservice-app -o json)
 POD_COUNT=$(echo $PODS | jq '.items | length')
 READY_COUNT=$(echo $PODS | jq '[.items[] | select(.status.conditions[] | select(.type=="Ready") | select(.status=="True"))] | length')
 
@@ -93,6 +93,6 @@ echo -e "${BLUE}========================================${NC}"
 
 echo -e "\n${YELLOW}Next Steps:${NC}"
 echo -e "1. Test readiness: kubectl exec -it <pod-name> -n $NAMESPACE -- curl localhost:8088/actuator/health/readiness"
-echo -e "2. Generate load: kubectl run -i --tty load-generator --rm --image=busybox --restart=Never -- /bin/sh -c 'while true; do wget -q -O- http://autoservice:8088/swagger-ui.html; done'"
+echo -e "2. Generate load: kubectl run -i --tty load-generator --rm --image=busybox --restart=Never -n $NAMESPACE -- /bin/sh -c 'while true; do wget -q -O- http://autoservice-app:8088/actuator/health; done'"
 echo -e "3. Watch HPA scaling: kubectl get hpa $HPA -n $NAMESPACE --watch"
 echo -e "4. Monitor metrics: kubectl top pods -n $NAMESPACE"

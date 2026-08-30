@@ -27,12 +27,6 @@ spec:
                 name: autoservice-app-config
             - secretRef:
                 name: autoservice-app-secret
-          env:
-            - name: SPRING_DATASOURCE_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: autoservice-postgres-secret
-                  key: POSTGRES_PASSWORD
           startupProbe:
             httpGet:
               path: /actuator/health/liveness
