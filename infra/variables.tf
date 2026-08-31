@@ -21,7 +21,7 @@ variable "postgres_username" {
 
 variable "postgres_password" {
   type    = string
-  default = "autoservicepass"
+  default = "change-me-before-deploy"
   description = "Change this in terraform.tfvars for production/use a secret manager"
 }
 
