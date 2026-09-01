@@ -56,7 +56,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,metrics
+        include: health,metrics,info
   endpoint:
     health:
       probes:
@@ -68,3 +68,9 @@ management:
       enabled: true
     mail:
       enabled: false
+
+management.metrics.export.datadog:
+  enabled: ${DATADOG_ENABLED:false}
+  api-key: ${DATADOG_API_KEY:}
+  host: ${DD_AGENT_HOST:localhost}
+  step: 30s
