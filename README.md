@@ -69,20 +69,20 @@ O `Dockerfile` está em **`docker/Dockerfile`** (build multi-stage com Maven + J
 
 ### Kubernetes (K8s)
 
-Os manifestos para deploy estão em **`/k8s`**, incluindo:
+Os manifestos para deploy da **aplicação** estão em **`/k8s`**:
 
 - `Deployment`, `Service`, `ConfigMap`, `Secret` e `HPA` da aplicação;
-- `Deployment`, `Service`, `ConfigMap`, `Secret` e `PVC` do PostgreSQL;
 - `kustomization.yaml` para aplicar todos os recursos de uma vez.
 
-Antes do deploy, crie os secrets a partir dos exemplos:
+> Cluster (k3d, Traefik, metrics-server) → repo **`autoservice-infra-k8s`**.  
+> Banco gerenciado (Neon) → repo **`autoservice-infra-db`**.
+
+Antes do deploy, crie o secret a partir do exemplo:
 
 ```bash
 cp k8s/11-secret-app.example.yaml k8s/11-secret-app.yaml
-cp k8s/21-secret-postgres.example.yaml k8s/21-secret-postgres.yaml
-# edite os arquivos com valores reais (não commitar)
+# edite com credenciais Neon, JWT e SMTP (não commitar)
 kubectl apply -f k8s/11-secret-app.yaml
-kubectl apply -f k8s/21-secret-postgres.yaml
 ```
 
 Ou use `kubectl create secret generic` (como no pipeline CI/CD).
@@ -111,7 +111,6 @@ Verificar rollout:
 kubectl -n autoservice get pods
 kubectl -n autoservice get svc
 kubectl -n autoservice get hpa
-kubectl -n autoservice rollout status deployment/autoservice-postgres
 kubectl -n autoservice rollout status deployment/autoservice-app
 ```
 
@@ -123,65 +122,34 @@ Pipeline em **`.github/workflows/ci-cd.yml`** com etapas de:
 - execução dos testes automatizados;
 - validação dos manifestos Kubernetes (`kubectl kustomize`);
 - build/push da imagem Docker no GHCR (push em `main`/`master`);
-- deploy do banco e da aplicação no Kubernetes (push em `main`/`master`).
+- deploy da aplicação no Kubernetes (push em `main`/`master`).
 
 Dispara em `push`/`pull_request` para `main`, `master` e `develop` (deploy completo apenas em `main`/`master`).
 
 Secrets obrigatórios no ambiente `production`:
 
-- `KUBECONFIG` (arquivo kubeconfig em base64);
-- `POSTGRES_PASSWORD`;
 - `AUTOSERVICE_JWT_SECRET`;
 - `MAIL_USERNAME`;
-- `MAIL_PASSWORD`.
+- `MAIL_PASSWORD`;
+- `SPRING_DATASOURCE_URL` (Neon);
+- `SPRING_DATASOURCE_USERNAME`;
+- `SPRING_DATASOURCE_PASSWORD`.
 
-## Arquitetura proposta (Fase 2)
+## Arquitetura (Fase 3 — escopo deste repo)
 
 ```text
 Cliente/Front
     |
     v
-Ingress/Service (K8s) ---> autoservice-app (Deployment + HPA)
+Traefik (autoservice-infra-k8s) ---> autoservice-app (Deployment + HPA)
                                 |
                                 v
-                        autoservice-postgres (Deployment + PVC)
+                        Neon Postgres (autoservice-infra-db)
 
-CI/CD (GitHub Actions)
+CI/CD (GitHub Actions — este repo)
     -> build/test
     -> build/push imagem
-    -> apply k8s (db + app)
-```
-
-## Infraestrutura como Código (Terraform)
-
-Os scripts Terraform estão em **`/infra`** para provisionamento do cluster Kubernetes (K3d) e banco de dados via Helm.
-
-### Provisionamento com Terraform
-
-```bash
-cd infra
-
-# Revisar plano de provisionamento
-terraform init
-terraform plan
-
-# Aplicar provisioning (cria cluster K3d + PostgreSQL)
-terraform apply
-```
-
-**Variáveis e configuração:** Ver [infra/README.md](./infra/README.md) para instruções completas e customização de passwords/nomes.
-
-**Recursos criados:**
-- Cluster Kubernetes local (K3d com nome padrão `autoservice-local`)
-- PostgreSQL via Helm Bitnami chart
-- Namespace `autoservice`
-- ConfigMaps e Secrets para aplicação
-
-Após aplicar, validar cluster com:
-```bash
-kubectl cluster-info
-kubectl get pods -n autoservice
-kubectl get services -n autoservice
+    -> apply k8s (app)
 ```
 
 ## Checklist de entrega — Go/No-Go (Fase 2)
@@ -191,9 +159,8 @@ kubectl get services -n autoservice
 - [x] Refatoração em camadas (DDD/hexagonal) e código atualizado;
 - [x] Testes automatizados unitários e de integração (613 testes; 2 integrações com schema Testcontainers pendentes no ambiente WSL);
 - [x] Dockerfile e docker-compose;
-- [x] Manifestos Kubernetes em `/k8s` (Deployment/Service/ConfigMap/Secret/HPA/PVC);
+- [x] Manifestos Kubernetes em `/k8s` (Deployment/Service/ConfigMap/Secret/HPA da app);
 - [x] Pipeline CI/CD em `.github/workflows/ci-cd.yml`;
-- [x] Scripts Terraform em `/infra` e documentação de provisionamento;
 - [x] Link da collection completa de APIs (Postman/Swagger — [`Autoservice API.postman_collection.json`](./Autoservice%20API.postman_collection.json)).
 
 ### No-Go (pendente para entrega final)

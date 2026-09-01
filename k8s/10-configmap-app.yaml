@@ -4,12 +4,9 @@ metadata:
   name: autoservice-app-config
   namespace: autoservice
 data:
-  SPRING_DATASOURCE_URL: jdbc:postgresql://autoservice-postgres:5432/autoservice
-  SPRING_DATASOURCE_USERNAME: postgres
   APP_BASE_URL: http://autoservice-app:8088
   MAIL_HOST: smtp.example.com
   MAIL_PORT: "587"
   MAIL_SMTP_AUTH: "true"
   MAIL_SMTP_STARTTLS: "true"
   MAIL_FROM: orcamentos@autoservice.local
-
