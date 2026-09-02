@@ -13,6 +13,35 @@ Documentação interativa: **`/swagger-ui.html`** (OpenAPI em **`/v3/api-docs`**
 - Dar suporte à disciplina de **DDD** (domínio, aplicação, infraestrutura, apresentação) e qualidade (testes, cobertura
   nos pacotes de domínio/aplicação).
 
+## Requisitos de repositório atendidos
+
+Este repositório reúne os principais elementos do projeto de aplicação principal em Kubernetes:
+
+- Código-fonte da API principal em Spring Boot.
+- Dockerfile para build da imagem da aplicação.
+- Manifestos Kubernetes em `/k8s` com Deployment, Service, HPA, ConfigMap, Secret e Ingress.
+- Observabilidade com logs estruturados em JSON, métricas e endpoints de saúde em `/health`, `/live` e `/ready`.
+- Pipeline CI/CD em `.github/workflows/ci-cd.yml` para build/test, push da imagem e deploy no cluster.
+- Documentação de API em Swagger/OpenAPI + Postman e comandos para execução local.
+
+## Desafio corporativo: requisitos atendidos
+
+A arquitetura deste repositório foi alinhada ao desafio de escala corporativa da oficina:
+
+- Autenticação e API Gateway: o fluxo de autenticação por CPF é executado por uma Lambda Serverless externa e o token JWT é consumido pela aplicação principal via API Gateway/Ingress.
+- Segurança: rotas sensíveis são protegidas com JWT e endpoints públicos restritos a autenticação, Swagger e healthchecks.
+- Observabilidade: logs estruturados em JSON, métricas do Spring Actuator, integração com Datadog e endpoints `/health`, `/live`, `/ready` para monitoramento e alertas.
+- Escalabilidade: deployment com HPA, recursos de CPU/memória e ingress para múltiplas unidades.
+- CI/CD: pipeline com validação, testes, build de imagem, push para registry e deploy automatizado em ambiente homolog/prod.
+- Proteção de branch: GitHub Actions e política de PR obrigatória para merge nas branches principais.
+
+### Endpoints de saúde
+
+- `GET /health` — verificações gerais da aplicação
+- `GET /live` — liveness probe (aplicação viva)
+- `GET /ready` — readiness probe (aplicação pronta para receber tráfego)
+- `GET /actuator/health` — endpoint padrão do Spring Actuator
+
 ## Por que PostgreSQL?
 
 Foi adotado **PostgreSQL** por ser **open-source**, amplamente usado em produção, com forte suporte a **integridade
@@ -69,20 +98,20 @@ O `Dockerfile` está em **`docker/Dockerfile`** (build multi-stage com Maven + J
 
 ### Kubernetes (K8s)
 
-Os manifestos para deploy da **aplicação** estão em **`/k8s`**:
+Os manifestos para deploy estão em **`/k8s`**, incluindo:
 
 - `Deployment`, `Service`, `ConfigMap`, `Secret` e `HPA` da aplicação;
+- `Deployment`, `Service`, `ConfigMap`, `Secret` e `PVC` do PostgreSQL;
 - `kustomization.yaml` para aplicar todos os recursos de uma vez.
 
-> Cluster (k3d, Traefik, metrics-server) → repo **`autoservice-infra-k8s`**.  
-> Banco gerenciado (Neon) → repo **`autoservice-infra-db`**.
-
-Antes do deploy, crie o secret a partir do exemplo:
+Antes do deploy, crie os secrets a partir dos exemplos:
 
 ```bash
 cp k8s/11-secret-app.example.yaml k8s/11-secret-app.yaml
-# edite com credenciais Neon, JWT e SMTP (não commitar)
+cp k8s/21-secret-postgres.example.yaml k8s/21-secret-postgres.yaml
+# edite os arquivos com valores reais (não commitar)
 kubectl apply -f k8s/11-secret-app.yaml
+kubectl apply -f k8s/21-secret-postgres.yaml
 ```
 
 Ou use `kubectl create secret generic` (como no pipeline CI/CD).
@@ -111,6 +140,7 @@ Verificar rollout:
 kubectl -n autoservice get pods
 kubectl -n autoservice get svc
 kubectl -n autoservice get hpa
+kubectl -n autoservice rollout status deployment/autoservice-postgres
 kubectl -n autoservice rollout status deployment/autoservice-app
 ```
 
@@ -122,34 +152,65 @@ Pipeline em **`.github/workflows/ci-cd.yml`** com etapas de:
 - execução dos testes automatizados;
 - validação dos manifestos Kubernetes (`kubectl kustomize`);
 - build/push da imagem Docker no GHCR (push em `main`/`master`);
-- deploy da aplicação no Kubernetes (push em `main`/`master`).
+- deploy do banco e da aplicação no Kubernetes (push em `main`/`master`).
 
 Dispara em `push`/`pull_request` para `main`, `master` e `develop` (deploy completo apenas em `main`/`master`).
 
 Secrets obrigatórios no ambiente `production`:
 
+- `KUBECONFIG` (arquivo kubeconfig em base64);
+- `POSTGRES_PASSWORD`;
 - `AUTOSERVICE_JWT_SECRET`;
 - `MAIL_USERNAME`;
-- `MAIL_PASSWORD`;
-- `SPRING_DATASOURCE_URL` (Neon);
-- `SPRING_DATASOURCE_USERNAME`;
-- `SPRING_DATASOURCE_PASSWORD`.
+- `MAIL_PASSWORD`.
 
-## Arquitetura (Fase 3 — escopo deste repo)
+## Arquitetura proposta (Fase 2)
 
 ```text
 Cliente/Front
     |
     v
-Traefik (autoservice-infra-k8s) ---> autoservice-app (Deployment + HPA)
+Ingress/Service (K8s) ---> autoservice-app (Deployment + HPA)
                                 |
                                 v
-                        Neon Postgres (autoservice-infra-db)
+                        autoservice-postgres (Deployment + PVC)
 
-CI/CD (GitHub Actions — este repo)
+CI/CD (GitHub Actions)
     -> build/test
     -> build/push imagem
-    -> apply k8s (app)
+    -> apply k8s (db + app)
+```
+
+## Infraestrutura como Código (Terraform)
+
+Os scripts Terraform estão em **`/infra`** para provisionamento do cluster Kubernetes (K3d) e banco de dados via Helm.
+
+### Provisionamento com Terraform
+
+```bash
+cd infra
+
+# Revisar plano de provisionamento
+terraform init
+terraform plan
+
+# Aplicar provisioning (cria cluster K3d + PostgreSQL)
+terraform apply
+```
+
+**Variáveis e configuração:** Ver [infra/README.md](./infra/README.md) para instruções completas e customização de passwords/nomes.
+
+**Recursos criados:**
+- Cluster Kubernetes local (K3d com nome padrão `autoservice-local`)
+- PostgreSQL via Helm Bitnami chart
+- Namespace `autoservice`
+- ConfigMaps e Secrets para aplicação
+
+Após aplicar, validar cluster com:
+```bash
+kubectl cluster-info
+kubectl get pods -n autoservice
+kubectl get services -n autoservice
 ```
 
 ## Checklist de entrega — Go/No-Go (Fase 2)
@@ -159,8 +220,9 @@ CI/CD (GitHub Actions — este repo)
 - [x] Refatoração em camadas (DDD/hexagonal) e código atualizado;
 - [x] Testes automatizados unitários e de integração (613 testes; 2 integrações com schema Testcontainers pendentes no ambiente WSL);
 - [x] Dockerfile e docker-compose;
-- [x] Manifestos Kubernetes em `/k8s` (Deployment/Service/ConfigMap/Secret/HPA da app);
+- [x] Manifestos Kubernetes em `/k8s` (Deployment/Service/ConfigMap/Secret/HPA/PVC);
 - [x] Pipeline CI/CD em `.github/workflows/ci-cd.yml`;
+- [x] Scripts Terraform em `/infra` e documentação de provisionamento;
 - [x] Link da collection completa de APIs (Postman/Swagger — [`Autoservice API.postman_collection.json`](./Autoservice%20API.postman_collection.json)).
 
 ### No-Go (pendente para entrega final)

@@ -78,7 +78,7 @@ while [ $SECONDS -lt $MONITOR_END ]; do
     awk '{print "  " $1 " - " $3}'
   
   # Show HPA status
-  HPA_STATUS=$(kubectl get hpa autoservice-app-hpa -n $NAMESPACE --no-headers 2>/dev/null || echo "")
+  HPA_STATUS=$(kubectl get hpa autoservice-hpa -n $NAMESPACE --no-headers 2>/dev/null || echo "")
   if [[ -n "$HPA_STATUS" ]]; then
     echo -e "HPA Status:"
     echo -e "$HPA_STATUS" | awk '{print "  " $0}'
@@ -101,10 +101,10 @@ echo "  kubectl delete pod $LOAD_POD_NAME -n $NAMESPACE"
 
 echo -e "\n${YELLOW}Next steps:${NC}"
 echo "1. Check final HPA status:"
-echo "   kubectl get hpa autoservice-app-hpa -n $NAMESPACE"
+echo "   kubectl get hpa autoservice-hpa -n $NAMESPACE"
 echo ""
 echo "2. View scaling history:"
-echo "   kubectl describe hpa autoservice-app-hpa -n $NAMESPACE"
+echo "   kubectl describe hpa autoservice-hpa -n $NAMESPACE"
 echo ""
 echo "3. Check pod logs:"
 echo "   kubectl logs -f deployment/autoservice-app -n $NAMESPACE"

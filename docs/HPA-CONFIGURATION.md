@@ -121,28 +121,32 @@ The HPA scales based on two metrics:
 
 ## Deployment Files
 
-### `/k8s/30-deployment-app.yaml`
-Deployment da aplicação com:
-- Resource requests e limits
-- Health probes (readiness, liveness, startup)
-- Credenciais do banco via `autoservice-app-secret` (Neon)
+### `/k8s/deployment.yaml`
+Main deployment manifest with:
+- Resource requests and limits
+- All three health probes (readiness, liveness, startup)
+- Environment variables for database connection
+- Pod anti-affinity for distribution across nodes
+- EmptyDir volume for temporary files
 
-### `/k8s/31-service-app.yaml`
-Service ClusterIP expondo a aplicação na porta 8088.
+### `/k8s/service.yaml`
+Service manifest exposing the deployment on port 8088.
 
-### `/k8s/32-hpa-app.yaml`
-HPA com triggers de CPU e memória.
+### `/k8s/postgres-secret.yaml`
+Kubernetes Secret with PostgreSQL credentials.
 
-### `/k8s/11-secret-app.example.yaml`
-Template do secret (JWT, mail, datasource Neon).
+### `/k8s/hpa.yaml`
+HPA manifest with CPU and memory-based scaling triggers.
 
 ## Prerequisites
 
 ### Metrics Server
-O Metrics Server deve estar rodando no cluster (provisionado pelo repo `autoservice-infra-k8s`):
+The Metrics Server must be running for HPA to work:
 ```bash
 kubectl get deployment metrics-server -n kube-system
 ```
+
+**Auto-installed by Terraform in `kube-system` namespace**
 
 ### Spring Boot Actuator Health Endpoints
 The application must have Spring Boot Actuator enabled with:
@@ -156,25 +160,28 @@ management.health.liveness.enabled=true
 
 ## Deployment
 
-### Via Kustomize
+### Using Terraform
 ```bash
-cp k8s/11-secret-app.example.yaml k8s/11-secret-app.yaml
-# edite com credenciais reais
-
-kubectl apply -f k8s/00-namespace.yaml
-kubectl apply -f k8s/11-secret-app.yaml
-kubectl apply -k k8s
+cd infra/
+terraform init
+terraform plan
+terraform apply
 ```
 
-O cluster (k3d, Traefik, metrics-server) é provisionado pelo repo **`autoservice-infra-k8s`**.
+Terraform automatically:
+1. Creates k3d cluster
+2. Creates `autoservice` namespace
+3. Deploys PostgreSQL via Helm
+4. Installs Metrics Server
+5. Deploys application manifests
+6. Configures HPA
 
-### Manual (arquivos individuais)
+### Manual Kubectl Deployment
 ```bash
-kubectl apply -f k8s/00-namespace.yaml
-kubectl apply -f k8s/10-configmap-app.yaml
-kubectl apply -f k8s/30-deployment-app.yaml
-kubectl apply -f k8s/31-service-app.yaml
-kubectl apply -f k8s/32-hpa-app.yaml
+kubectl apply -f k8s/postgres-secret.yaml
+kubectl apply -f k8s/service.yaml
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/hpa.yaml
 ```
 
 ## Validation
@@ -192,8 +199,8 @@ kubectl describe pod <pod-name> -n autoservice
 
 ### 3. Check HPA Status
 ```bash
-kubectl get hpa autoservice-app-hpa -n autoservice
-kubectl describe hpa autoservice-app-hpa -n autoservice
+kubectl get hpa autoservice-hpa -n autoservice
+kubectl describe hpa autoservice-hpa -n autoservice
 ```
 
 ### 4. View Metrics
@@ -219,7 +226,7 @@ chmod +x scripts/test-hpa-load.sh
 ### Manual Load Generation
 ```bash
 # Terminal 1: Watch HPA scaling
-kubectl get hpa autoservice-app-hpa -n autoservice --watch
+kubectl get hpa autoservice-hpa -n autoservice --watch
 
 # Terminal 2: Watch pods
 kubectl get pods -n autoservice --watch
@@ -324,7 +331,7 @@ kubectl get events -n autoservice --sort-by='.lastTimestamp'
 ## Performance Tuning
 
 ### Adjusting Scaling Thresholds
-Edit `k8s/32-hpa-app.yaml` to change trigger points:
+Edit `k8s/hpa.yaml` to change trigger points:
 ```yaml
 metrics:
 - type: Resource
@@ -351,7 +358,7 @@ behavior:
 ```
 
 ### Resource Request Optimization
-If pods are too small/large, adjust in `k8s/30-deployment-app.yaml`:
+If pods are too small/large, adjust in `deployment.yaml`:
 ```yaml
 resources:
   requests:
