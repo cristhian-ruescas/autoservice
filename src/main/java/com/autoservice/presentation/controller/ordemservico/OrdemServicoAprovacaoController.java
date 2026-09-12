@@ -8,6 +8,7 @@ import com.autoservice.presentation.dto.ordemservico.OrdemServicoStatusResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -45,6 +46,7 @@ public class OrdemServicoAprovacaoController {
     }
 
     @GetMapping("/{id}/aprovacao/aprovar")
+    @PreAuthorize("@cpfAccessGuard.canAccessOrdemServico(#id, authentication)")
     @Operation(summary = "Aprovar orçamento por link (GET)", description = "Destinado a links em e-mail.")
     public ResponseEntity<OrdemServicoStatusResponse> aprovarPorLink(@PathVariable final UUID id) {
         return ResponseEntity.ok(OrdemServicoStatusResponse.from(
@@ -53,6 +55,7 @@ public class OrdemServicoAprovacaoController {
     }
 
     @GetMapping("/{id}/aprovacao/reprovar")
+    @PreAuthorize("@cpfAccessGuard.canAccessOrdemServico(#id, authentication)")
     @Operation(summary = "Reprovar orçamento por link (GET)", description = "Destinado a links em e-mail.")
     public ResponseEntity<OrdemServicoStatusResponse> reprovarPorLink(@PathVariable final UUID id) {
         return ResponseEntity.ok(OrdemServicoStatusResponse.from(

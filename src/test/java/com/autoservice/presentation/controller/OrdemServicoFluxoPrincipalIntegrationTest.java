@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static org.hamcrest.Matchers.notNullValue;
@@ -77,6 +78,16 @@ class OrdemServicoFluxoPrincipalIntegrationTest extends AbstractIntegrationTest 
         final JsonNode root = this.objectMapper.readTree(json);
         final String osId = root.get("ordemServicoId").asText();
 
+        mockMvc.perform(get("/ordens-servico/" + osId + "/andamento")
+                        .with(user("529.982.247-25").roles("CUSTOMER")))
+                .andExpect(status().isOk());
+
+        for (final var rota : List.of("andamento", "aprovacao/aprovar", "aprovacao/reprovar")) {
+            mockMvc.perform(get("/ordens-servico/" + osId + "/" + rota)
+                            .with(user("39053344705").roles("CUSTOMER")))
+                    .andExpect(status().isForbidden());
+        }
+
         mockMvc.perform(patch("/ordens-servico/" + osId + "/diagnostico")
                         .with(user("admin@autoservice.local").roles("ADMIN")))
                 .andExpect(status().isOk());
@@ -106,8 +117,8 @@ class OrdemServicoFluxoPrincipalIntegrationTest extends AbstractIntegrationTest 
                         .content("{\"tempoPrevistoExecucaoDias\":0,\"tempoPrevistoExecucaoHoras\":2}"))
                 .andExpect(status().isOk());
 
-        mockMvc.perform(patch("/ordens-servico/" + osId + "/aprovacao/aprovar")
-                        .with(user("admin@autoservice.local").roles("ADMIN")))
+        mockMvc.perform(get("/ordens-servico/" + osId + "/aprovacao/aprovar")
+                        .with(user("52998224725").roles("CUSTOMER")))
                 .andExpect(status().isOk());
 
         mockMvc.perform(patch("/ordens-servico/" + osId + "/finalizar")

@@ -52,7 +52,7 @@ public class JwtUtil {
     public boolean validateToken(String token) {
         try {
             DecodedJWT jwt = decodeToken(token);
-            return !isTokenExpired(jwt);
+            return hasValidExpiration(jwt);
         } catch (Exception e) {
             logger.warn("Token validation failed: {}", e.getMessage());
             return false;
@@ -63,7 +63,7 @@ public class JwtUtil {
         try {
             DecodedJWT jwt = decodeToken(token);
             String subject = jwt.getSubject();
-            return subject.equals(username) && !isTokenExpired(jwt);
+            return subject.equals(username) && hasValidExpiration(jwt);
         } catch (Exception e) {
             logger.warn("Token validation failed: {}", e.getMessage());
             return false;
@@ -107,15 +107,16 @@ public class JwtUtil {
     }
 
     private JWTVerifier buildVerifier() {
-        Verification verification = JWT.require(algorithm);
+        Verification verification = JWT.require(algorithm)
+                .withClaim("exp", (claim, jwt) -> claim.asDate() != null);
         if (issuer != null && !issuer.isBlank()) {
             verification.withIssuer(issuer);
         }
         return verification.build();
     }
 
-    private boolean isTokenExpired(DecodedJWT jwt) {
+    private boolean hasValidExpiration(DecodedJWT jwt) {
         Date expiration = jwt.getExpiresAt();
-        return expiration != null && expiration.before(new Date());
+        return expiration != null && expiration.after(new Date());
     }
 }

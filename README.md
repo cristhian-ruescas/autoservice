@@ -98,6 +98,31 @@ O deploy no cluster e o provisionamento de infraestrutura ficam nos repositorios
 - O repositorio de banco fornece endpoint/credenciais do PostgreSQL para `SPRING_DATASOURCE_*`.
 - O repositorio de infra Kubernetes consome a imagem publicada por este repositorio.
 
+### Contrato JWT e autorizacao por CPF
+
+O token do cliente deve ser assinado com HS256 e conter `iss` igual a
+`AUTOSERVICE_JWT_ISSUER`, `sub` com o CPF do cliente, `roles` com `CUSTOMER`
+e `exp` com uma expiracao futura. Tokens sem `exp`, expirados, com assinatura
+invalida ou issuer diferente sao recusados com HTTP 401. O claim `cpf` nao
+substitui o `sub` na autorizacao. A validacao da existencia e do status do
+cliente na emissao continua sendo responsabilidade da Lambda.
+
+Para `CUSTOMER`, a abertura de atendimento e a consulta por CPF exigem que o
+CPF informado corresponda ao `sub`. As rotas GET abaixo tambem exigem que o
+CPF do proprietario da OS (OS -> veiculo -> cliente -> pessoa fisica)
+corresponda ao `sub`:
+
+- `/ordens-servico/{id}/andamento`
+- `/ordens-servico/{id}/aprovacao/aprovar`
+- `/ordens-servico/{id}/aprovacao/reprovar`
+
+OS de outro cliente, inexistente ou sem proprietario pessoa fisica com CPF
+retorna HTTP 403 para `CUSTOMER`. O perfil `ADMIN` preserva seu acesso,
+inclusive a OS de pessoa juridica. Os endpoints PATCH de aprovacao/reprovacao
+continuam restritos a `ADMIN`. Nas rotas protegidas, envie
+`Authorization: Bearer <token>`; abrir um link de e-mail sem esse header nao
+autentica o cliente.
+
 ## Fluxo de autenticacao e abertura de OS (sequencia)
 
 ```mermaid
