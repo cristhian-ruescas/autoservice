@@ -38,6 +38,7 @@ autoservice:
     base-url: ${APP_BASE_URL:http://localhost:8088}
   jwt:
     secret: ${AUTOSERVICE_JWT_SECRET:}
+    issuer: ${AUTOSERVICE_JWT_ISSUER:autoservice-auth}
   mail:
     from: ${MAIL_FROM:orcamentos@autoservice.local}
   notificacao:
