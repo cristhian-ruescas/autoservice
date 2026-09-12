@@ -3,8 +3,6 @@ package com.autoservice.infrastructure.ordemservico.notificacao;
 import com.autoservice.application.ordemservico.notificacao.OrdemServicoStatusClienteNotifier;
 import com.autoservice.application.ordemservico.notificacao.OrdemServicoStatusNotificacao;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,15 +23,12 @@ public class WebhookOrdemServicoStatusClienteNotifier implements OrdemServicoSta
     private final ObjectMapper objectMapper;
     private final HttpClient httpClient;
     private final String webhookUrl;
-    private final MeterRegistry meterRegistry;
 
     public WebhookOrdemServicoStatusClienteNotifier(
             final ObjectMapper objectMapper,
-            final MeterRegistry meterRegistry,
             @Value("${autoservice.notificacao.webhook-url:}") final String webhookUrl
     ) {
         this.objectMapper = objectMapper;
-        this.meterRegistry = meterRegistry;
         this.webhookUrl = webhookUrl == null ? "" : webhookUrl.trim();
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(5))
@@ -43,11 +38,9 @@ public class WebhookOrdemServicoStatusClienteNotifier implements OrdemServicoSta
     @Override
     public void notificar(final OrdemServicoStatusNotificacao notificacao) {
         if (this.webhookUrl.isBlank()) {
-            this.meterRegistry.counter("autoservice.notifications.webhook.skipped", "reason", "webhook_blank").increment();
             return;
         }
 
-        final var sample = Timer.start(this.meterRegistry);
         try {
             final var payload = objectMapper.writeValueAsString(Map.of(
                     "ordemServicoId", notificacao.ordemServicoId(),
@@ -69,36 +62,22 @@ public class WebhookOrdemServicoStatusClienteNotifier implements OrdemServicoSta
                     .build();
 
             final var response = this.httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            sample.stop(this.meterRegistry.timer("autoservice.notifications.webhook.latency"));
 
             if (response.statusCode() >= 400) {
-                this.meterRegistry.counter(
-                        "autoservice.notifications.webhook.result",
-                        "result", "error",
-                        "status", Integer.toString(response.statusCode())
-                ).increment();
                 LOGGER.warn(
                         "Webhook de status da OS {} retornou HTTP {}",
                         notificacao.ordemServicoId(),
                         response.statusCode()
                 );
-            } else {
-                this.meterRegistry.counter(
-                        "autoservice.notifications.webhook.result",
-                        "result", "success",
-                        "status", Integer.toString(response.statusCode())
-                ).increment();
             }
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
-            this.meterRegistry.counter("autoservice.notifications.webhook.result", "result", "interrupted").increment();
             LOGGER.error(
                     "Webhook de status da OS {} interrompido",
                     notificacao.ordemServicoId(),
                     exception
             );
         } catch (Exception exception) {
-            this.meterRegistry.counter("autoservice.notifications.webhook.result", "result", "exception").increment();
             LOGGER.error(
                     "Falha ao enviar webhook de status da OS {}",
                     notificacao.ordemServicoId(),

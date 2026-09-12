@@ -2,19 +2,14 @@ package com.autoservice.infrastructure.security;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
-import com.auth0.jwt.interfaces.Verification;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.function.Function;
 
 @Component
@@ -22,48 +17,28 @@ public class JwtUtil {
     private static final long EXPIRATION = 1000L * 60 * 60 * 6;
     private static final Logger logger = LoggerFactory.getLogger(JwtUtil.class);
     private final Algorithm algorithm;
-    private final String issuer;
 
     public JwtUtil(@Value("${autoservice.jwt.secret:}") String secret) {
-        this(secret, "autoservice-auth");
-    }
-
-    @Autowired
-    public JwtUtil(
-            @Value("${autoservice.jwt.secret:}") String secret,
-            @Value("${autoservice.jwt.issuer:autoservice-auth}") String issuer
-    ) {
         if (secret == null || secret.isBlank()) {
             throw new IllegalStateException("JWT secret key not set. Defina a propriedade autoservice.jwt.secret.");
         }
         this.algorithm = Algorithm.HMAC256(secret);
-        this.issuer = issuer;
     }
 
     public String generateToken(String username) {
         return JWT.create()
                 .withSubject(username)
-                .withIssuer(issuer)
                 .withIssuedAt(new Date())
                 .withExpiresAt(new Date(System.currentTimeMillis() + EXPIRATION))
                 .sign(algorithm);
     }
 
-    public boolean validateToken(String token) {
-        try {
-            DecodedJWT jwt = decodeToken(token);
-            return hasValidExpiration(jwt);
-        } catch (Exception e) {
-            logger.warn("Token validation failed: {}", e.getMessage());
-            return false;
-        }
-    }
-
     public boolean validateToken(String token, String username) {
         try {
-            DecodedJWT jwt = decodeToken(token);
+            JWTVerifier verifier = JWT.require(algorithm).build();
+            DecodedJWT jwt = verifier.verify(token);
             String subject = jwt.getSubject();
-            return subject.equals(username) && hasValidExpiration(jwt);
+            return subject.equals(username) && !isTokenExpired(token);
         } catch (Exception e) {
             logger.warn("Token validation failed: {}", e.getMessage());
             return false;
@@ -78,45 +53,18 @@ public class JwtUtil {
         return extractClaim(token, DecodedJWT::getExpiresAt);
     }
 
-    public String extractIssuer(String token) {
-        return extractClaim(token, DecodedJWT::getIssuer);
-    }
-
-    public String extractCustomerStatus(String token) {
-        return extractClaim(token, jwt -> jwt.getClaim("customer_status").asString());
-    }
-
-    public List<String> extractRoles(String token) {
-        Claim rolesClaim = decodeToken(token).getClaim("roles");
-        if (rolesClaim == null || rolesClaim.isNull()) {
-            return Collections.emptyList();
-        }
-
-        List<String> roles = rolesClaim.asList(String.class);
-        return roles == null ? Collections.emptyList() : roles;
-    }
-
     public <T> T extractClaim(String token, Function<DecodedJWT, T> claimsResolver) {
         DecodedJWT jwt = decodeToken(token);
         return claimsResolver.apply(jwt);
     }
 
     private DecodedJWT decodeToken(String token) {
-        JWTVerifier verifier = buildVerifier();
+        JWTVerifier verifier = JWT.require(algorithm).build();
         return verifier.verify(token);
     }
 
-    private JWTVerifier buildVerifier() {
-        Verification verification = JWT.require(algorithm)
-                .withClaim("exp", (claim, jwt) -> claim.asDate() != null);
-        if (issuer != null && !issuer.isBlank()) {
-            verification.withIssuer(issuer);
-        }
-        return verification.build();
-    }
-
-    private boolean hasValidExpiration(DecodedJWT jwt) {
-        Date expiration = jwt.getExpiresAt();
-        return expiration != null && expiration.after(new Date());
+    private boolean isTokenExpired(String token) {
+        Date expiration = extractExpiration(token);
+        return expiration != null && expiration.before(new Date());
     }
 }

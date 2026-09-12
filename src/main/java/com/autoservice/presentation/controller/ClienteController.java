@@ -9,7 +9,6 @@ import com.autoservice.application.cliente.update.AtualizarClienteUseCase;
 import com.autoservice.presentation.dto.cliente.AtualizarClienteRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -48,7 +47,6 @@ public class ClienteController {
     }
 
     @GetMapping("/cpf/{cpf}")
-    @PreAuthorize("@cpfAccessGuard.canAccessCpf(#cpf, authentication)")
     public ResponseEntity<ClienteOutput> buscarPorCpf(@PathVariable final String cpf) {
         return ResponseEntity.ok(this.getClienteByCpfQuery.buscarPorCpf(cpf));
     }
