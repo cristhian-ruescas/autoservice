@@ -32,6 +32,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.actuate.health.HealthEndpoint;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -61,9 +63,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = {AtendimentoController.class, ClienteController.class,
-        OrdemServicoConsultaController.class, OrdemServicoAprovacaoController.class})
+        OrdemServicoConsultaController.class, OrdemServicoAprovacaoController.class, HealthController.class})
 @Import({WebSecurityConfig.class, CpfAccessGuard.class, ApiGatewaySecurityIntegrationTest.SecurityBeans.class})
 @MockitoBean(types = {
+        HealthEndpoint.class,
         AbrirAtendimentoUseCase.class,
         ListClientesQuery.class,
         GetClienteByIdQuery.class,
@@ -179,6 +182,23 @@ class ApiGatewaySecurityIntegrationTest {
                 .andExpect(status().isUnauthorized());
     }
 
+    @Test
+    void bloqueiaConsultaAoCpfDeOutroCliente() throws Exception {
+        mockMvc.perform(get("/clientes/cpf/11144477735")
+                        .header("Authorization", "Bearer " + gerarTokenCliente("39053344705")))
+                .andExpect(status().isForbidden());
+        verifyNoInteractions(getClienteByCpfQuery);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"/health", "/live", "/ready"})
+    void preservaHealthchecksPublicosDaDevelop(
+            final String rota, @Autowired final HealthEndpoint healthEndpoint
+    ) throws Exception {
+        when(healthEndpoint.health()).thenReturn(Health.up().build());
+        mockMvc.perform(get(rota)).andExpect(status().isOk());
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {"andamento", "aprovacao/aprovar", "aprovacao/reprovar"})
     void permiteClienteAcessarSomenteSuaOrdemServico(final String rota) throws Exception {
@@ -199,7 +219,8 @@ class ApiGatewaySecurityIntegrationTest {
 
         mockMvc.perform(get("/ordens-servico/" + ORDEM_SERVICO_ID + "/" + rota)
                         .header("Authorization", "Bearer " + gerarTokenCliente("39053344705")))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("Acesso negado"));
 
         verifyNoInteractions(acompanharOrdemServicoQuery, aprovarOrdemServicoUseCase, reprovarOrdemServicoUseCase);
     }

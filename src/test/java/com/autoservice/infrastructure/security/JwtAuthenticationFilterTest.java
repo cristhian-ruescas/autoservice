@@ -5,21 +5,27 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.io.IOException;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class JwtAuthenticationFilterTest {
 
     @Mock
@@ -40,14 +46,48 @@ class JwtAuthenticationFilterTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-        jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtUtil, userDetailsService);
+        SecurityContextHolder.clearContext();
+    }
+
+    @AfterEach
+    void limparAutenticacao() {
         SecurityContextHolder.clearContext();
     }
 
     @Test
+    void autenticaClienteDaLambdaSemConsultarUsuarioInterno() throws ServletException, IOException {
+        when(request.getHeader("Authorization")).thenReturn("Bearer tokencliente");
+        when(jwtUtil.extractUsername("tokencliente")).thenReturn("39053344705");
+        when(jwtUtil.extractRoles("tokencliente")).thenReturn(List.of("CUSTOMER"));
+        when(jwtUtil.validateToken("tokencliente", "39053344705")).thenReturn(true);
+
+        jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
+
+        final var authentication = SecurityContextHolder.getContext().getAuthentication();
+        assertNotNull(authentication);
+        assertEquals("39053344705", authentication.getName());
+        assertEquals(List.of("ROLE_CUSTOMER"),
+                authentication.getAuthorities().stream().map(Object::toString).toList());
+        verifyNoInteractions(userDetailsService);
+        verify(filterChain).doFilter(request, response);
+    }
+
+    @Test
+    void tokenDeClienteNaoConcedePerfilAdministrativo() throws ServletException, IOException {
+        when(request.getHeader("Authorization")).thenReturn("Bearer tokencliente");
+        when(jwtUtil.extractUsername("tokencliente")).thenReturn("39053344705");
+        when(jwtUtil.extractRoles("tokencliente")).thenReturn(List.of("CUSTOMER", "ADMIN"));
+        when(jwtUtil.validateToken("tokencliente", "39053344705")).thenReturn(true);
+
+        jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
+
+        assertEquals(List.of("ROLE_CUSTOMER"), SecurityContextHolder.getContext().getAuthentication()
+                .getAuthorities().stream().map(Object::toString).toList());
+        verifyNoInteractions(userDetailsService);
+    }
+
+    @Test
     void doFilterInternal_tokenValido_autenticaUsuario() throws ServletException, IOException {
-        when(request.getServletPath()).thenReturn("/api/test");
         when(request.getHeader("Authorization")).thenReturn("Bearer tokenvalido");
         when(jwtUtil.extractUsername("tokenvalido")).thenReturn("admin@email.com");
         org.springframework.security.core.userdetails.User realUser =
@@ -72,6 +112,7 @@ class JwtAuthenticationFilterTest {
         when(request.getHeader("Authorization")).thenReturn("Bearer tokeninvalido");
         when(jwtUtil.extractUsername("tokeninvalido")).thenReturn("admin@email.com");
         when(userDetailsService.loadUserByUsername("admin@email.com")).thenReturn(userDetails);
+        when(userDetails.getUsername()).thenReturn("admin@email.com");
         when(jwtUtil.validateToken("tokeninvalido", "admin@email.com")).thenReturn(false);
 
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);

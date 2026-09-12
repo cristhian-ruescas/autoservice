@@ -42,6 +42,31 @@ A arquitetura deste repositório foi alinhada ao desafio de escala corporativa d
 - `GET /ready` — readiness probe (aplicação pronta para receber tráfego)
 - `GET /actuator/health` — endpoint padrão do Spring Actuator
 
+### Contrato JWT e acesso por CPF
+
+A Lambda deve emitir JWT assinado com HS256, usando o segredo configurado em
+`AUTOSERVICE_JWT_SECRET`, `iss` igual a `AUTOSERVICE_JWT_ISSUER` (padrao:
+`autoservice-auth`), `sub` contendo o CPF, `roles` contendo `CUSTOMER` e `exp`
+com expiracao futura. Tokens sem `exp`, com expiracao nula/vencida, assinatura
+invalida ou outro issuer sao recusados com HTTP 401.
+
+Envie `Authorization: Bearer <token>` nas chamadas protegidas. O CPF utilizado
+na autorizacao e o `sub`, nao um claim separado `cpf`. A Lambda permanece
+responsavel por consultar a existencia e o status do cliente na emissao.
+
+Para clientes, `POST /atendimentos` e `GET /clientes/cpf/{cpf}` exigem o mesmo
+CPF do token. Os GETs `/ordens-servico/{id}/andamento`,
+`/ordens-servico/{id}/aprovacao/aprovar` e
+`/ordens-servico/{id}/aprovacao/reprovar` conferem a titularidade pelo
+relacionamento OS -> veiculo -> cliente -> pessoa fisica. OS de terceiros,
+inexistentes ou sem proprietario pessoa fisica com CPF retornam HTTP 403.
+Abrir um link de e-mail sem enviar o token nao autentica o cliente.
+
+O acesso de `ADMIN` e preservado, inclusive para OS de pessoa juridica.
+Os PATCHs de aprovacao/reprovacao continuam exclusivos de `ADMIN`. O login
+interno em `/auth/login` continua disponivel para usuarios da aplicacao.
+Healthchecks `/health`, `/live` e `/ready` permanecem publicos.
+
 ## Por que PostgreSQL?
 
 Foi adotado **PostgreSQL** por ser **open-source**, amplamente usado em produção, com forte suporte a **integridade

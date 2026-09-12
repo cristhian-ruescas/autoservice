@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
@@ -24,9 +25,15 @@ import java.util.List;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler({AuthenticationException.class, UsernameNotFoundException.class, ServletException.class})
-    public ResponseEntity<?> handleAuthenticationException(Exception ex, HttpServletRequest request) {
+    public ResponseEntity<?> handleAuthenticationException() {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(java.util.Map.of("error", "Credenciais inválidas"));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<java.util.Map<String, String>> handleAccessDeniedException() {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(java.util.Map.of("error", "Acesso negado"));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -77,7 +84,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleHttpMessageNotReadable(
-            final HttpMessageNotReadableException ex,
             final HttpServletRequest request
     ) {
         ErrorResponse errorResponse = new ErrorResponse(
@@ -144,7 +150,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(
-            Exception ex,
             HttpServletRequest request) {
 
         ErrorResponse errorResponse = new ErrorResponse(
