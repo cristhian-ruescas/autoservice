@@ -1,9 +1,16 @@
 package com.autoservice.presentation.handler;
 
 import com.autoservice.domain.exceptions.DomainException;
+import com.autoservice.infrastructure.observability.CorrelationIdFilter;
+import com.autoservice.infrastructure.observability.OrdemServicoObservabilityMetrics;
 import com.autoservice.presentation.dto.ErrorResponse;
+import io.micrometer.core.instrument.MeterRegistry;
+import org.springframework.beans.factory.annotation.Autowired;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,8 +30,18 @@ import java.util.List;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    private final OrdemServicoObservabilityMetrics ordemServicoMetrics;
+
+    public GlobalExceptionHandler(@Autowired(required = false) final MeterRegistry meterRegistry) {
+        this.ordemServicoMetrics = meterRegistry == null ? null : new OrdemServicoObservabilityMetrics(meterRegistry);
+    }
+
     @ExceptionHandler({AuthenticationException.class, UsernameNotFoundException.class, ServletException.class})
     public ResponseEntity<?> handleAuthenticationException(Exception ex, HttpServletRequest request) {
+        log.warn("event=auth_failed correlation_id={} path={} status=401 message={}",
+                correlationId(), request.getRequestURI(), ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(java.util.Map.of("error", "Credenciais inválidas"));
     }
@@ -56,6 +73,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleDomainException(
             DomainException ex,
             HttpServletRequest request) {
+        log.warn("event=domain_error correlation_id={} path={} status=422 message={}",
+                correlationId(), request.getRequestURI(), ex.getMessage());
+        registrarErroOrdemServico(request.getRequestURI(), "domain");
 
         final var errors = ex.getErrors().stream()
                 .map(error -> new ErrorResponse.FieldError(null, error.message()))
@@ -146,6 +166,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleGenericException(
             Exception ex,
             HttpServletRequest request) {
+        log.error("event=unexpected_error correlation_id={} path={} status=500",
+                correlationId(), request.getRequestURI(), ex);
+        registrarErroOrdemServico(request.getRequestURI(), "unexpected");
 
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
@@ -169,5 +192,16 @@ public class GlobalExceptionHandler {
         }
 
         return "Dados inválidos para gravação";
+    }
+
+    private void registrarErroOrdemServico(final String path, final String tipo) {
+        if (ordemServicoMetrics != null) {
+            ordemServicoMetrics.registrarErro(path, tipo);
+        }
+    }
+
+    private static String correlationId() {
+        final var value = MDC.get(CorrelationIdFilter.CORRELATION_ID_MDC_KEY);
+        return value == null ? "unknown" : value;
     }
 }

@@ -1,0 +1,68 @@
+[
+  {
+    "name": "Autoservice - Taxa de erros 5xx elevada",
+    "type": "query alert",
+    "query": "sum(last_5m):sum:trace.servlet.request.errors{service:autoservice}.as_count() > 3",
+    "message": "Autoservice apresentou erros 5xx acima do limiar.\n\nVerifique APM Traces e Logs com service:autoservice.",
+    "tags": ["service:autoservice", "team:tech-challenge", "obs:apm"],
+    "options": {
+      "thresholds": {
+        "critical": 3,
+        "warning": 1
+      },
+      "notify_no_data": false,
+      "include_tags": true,
+      "require_full_window": false
+    },
+    "priority": 3
+  },
+  {
+    "name": "Autoservice - Health check com falha",
+    "type": "query alert",
+    "query": "sum(last_5m):sum:trace.servlet.request.errors{service:autoservice,resource_name:get_/actuator/health}.as_count() > 0",
+    "message": "Health check (/actuator/health) retornou erro.\n\nConfirme se a app e o Agent Datadog estao ativos.",
+    "tags": ["service:autoservice", "team:tech-challenge", "obs:health"],
+    "options": {
+      "thresholds": {
+        "critical": 0
+      },
+      "notify_no_data": false,
+      "include_tags": true,
+      "require_full_window": false
+    },
+    "priority": 2
+  },
+  {
+    "name": "Autoservice - Falhas em ordens de servico",
+    "type": "query alert",
+    "query": "sum(last_15m):sum:autoservice.ordem_servico.erro{service:autoservice}.as_count() > 0",
+    "message": "Falha em fluxo de OS detectada (erro de dominio ou 500 em /ordens-servico).\n\nConsulte logs com event=domain_error ou event=unexpected_error.",
+    "tags": ["service:autoservice", "team:tech-challenge", "obs:ordem-servico"],
+    "options": {
+      "thresholds": {
+        "critical": 0
+      },
+      "notify_no_data": false,
+      "include_tags": true,
+      "require_full_window": false
+    },
+    "priority": 2
+  },
+  {
+    "name": "Autoservice - Ausencia de requisicoes (uptime)",
+    "type": "query alert",
+    "query": "sum(last_10m):sum:trace.servlet.request.hits{service:autoservice}.as_count() < 1",
+    "message": "Nenhuma requisicao registrada para o servico autoservice nos ultimos 10 minutos.\n\nVerifique containers, Agent Datadog e conectividade.",
+    "tags": ["service:autoservice", "team:tech-challenge", "obs:uptime"],
+    "options": {
+      "thresholds": {
+        "critical": 1
+      },
+      "notify_no_data": true,
+      "no_data_timeframe": 10,
+      "include_tags": true,
+      "require_full_window": false
+    },
+    "priority": 3
+  }
+]
