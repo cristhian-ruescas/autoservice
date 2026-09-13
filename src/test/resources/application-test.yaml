@@ -35,3 +35,11 @@ autoservice:
     base-url: http://localhost:0
   jwt:
     secret: "Xip4obfk6W9Mzo+cA+gUDuevNOfULy8Q3yYEr8ByYU8="
+  metrics:
+    publish-interval-ms: 3600000
+
+management:
+  statsd:
+    metrics:
+      export:
+        enabled: false

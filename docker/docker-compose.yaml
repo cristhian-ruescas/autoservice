@@ -27,6 +27,26 @@ services:
     networks:
       - autoservice-network
 
+  datadog-agent:
+    image: datadog/agent:7
+    container_name: autoservice-datadog-agent
+    restart: unless-stopped
+    env_file:
+      - ../local.variable.env
+    environment:
+      DD_APM_ENABLED: "true"
+      DD_APM_NON_LOCAL_TRAFFIC: "true"
+      DD_LOGS_ENABLED: "true"
+      DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL: "true"
+      DD_DOGSTATSD_NON_LOCAL_TRAFFIC: "true"
+      DD_PROCESS_AGENT_ENABLED: "true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc/:/host/proc/:ro
+      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
+    networks:
+      - autoservice-network
+
   app:
     build:
       context: ..
@@ -35,6 +55,9 @@ services:
     restart: unless-stopped
     env_file:
       - ../local.variable.env
+    labels:
+      com.datadoghq.ad.logs: '[{"source":"java","service":"autoservice"}]'
+      com.datadoghq.ad.tags: '["env:local"]'
     ports:
       - "8088:8088"
     environment:
@@ -44,9 +67,16 @@ services:
       APP_BASE_URL: http://localhost:8088
       MAIL_HOST: localhost
       MAIL_PORT: "1025"
+      DD_AGENT_HOST: datadog-agent
+      DD_LOGS_INJECTION: "true"
+      DD_TRACE_LOGS_INJECTION: "true"
+      DD_SERVICE: autoservice
+      DD_METRICS_EXPORT: "true"
     depends_on:
       postgres:
         condition: service_healthy
+      datadog-agent:
+        condition: service_started
     networks:
       - autoservice-network
 

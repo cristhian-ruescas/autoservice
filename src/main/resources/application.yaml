@@ -44,6 +44,8 @@ autoservice:
     webhook-url: ${AUTOSERVICE_NOTIFICACAO_WEBHOOK_URL:}
     simulada:
       habilitada: ${AUTOSERVICE_NOTIFICACAO_SIMULADA_HABILITADA:true}
+  metrics:
+    publish-interval-ms: 60000
 
 springdoc:
   api-docs:
@@ -73,19 +75,15 @@ management:
   tracing:
     sampling:
       probability: ${TRACING_SAMPLING_PROBABILITY:1.0}
+  statsd:
+    metrics:
+      export:
+        enabled: ${DD_METRICS_EXPORT:true}
+        host: ${DD_AGENT_HOST:localhost}
+        port: 8125
+        flavor: datadog
   metrics:
     tags:
+      env: ${DD_ENV:local}
+      service: ${DD_SERVICE:autoservice}
       application: ${spring.application.name}
-      environment: ${APP_ENV:local}
-
-management.metrics.export.datadog:
-  enabled: ${DATADOG_ENABLED:false}
-  api-key: ${DATADOG_API_KEY:}
-  host: ${DD_AGENT_HOST:localhost}
-  step: 30s
-
-logging:
-  level:
-    root: INFO
-  structured:
-    format: json

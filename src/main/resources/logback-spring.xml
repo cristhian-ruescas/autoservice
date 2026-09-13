@@ -1,16 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <springProperty scope="context" name="APP_NAME" source="spring.application.name" defaultValue="autoservice"/>
+    <springProperty scope="context" name="DD_ENV" source="DD_ENV" defaultValue="local"/>
 
-    <springProperty name="springAppName" source="spring.application.name"/>
-
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <customFields>{"app":"${springAppName:-autoservice}"}</customFields>
+            <includeMdc>true</includeMdc>
+            <includeMdcKeyName>correlation_id</includeMdcKeyName>
+            <includeMdcKeyName>dd.trace_id</includeMdcKeyName>
+            <includeMdcKeyName>dd.span_id</includeMdcKeyName>
+            <includeMdcKeyName>dd.service</includeMdcKeyName>
+            <customFields>{"service":"${APP_NAME}","env":"${DD_ENV}","ddsource":"java"}</customFields>
         </encoder>
     </appender>
 
     <root level="INFO">
-        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="JSON_CONSOLE"/>
     </root>
 </configuration>
