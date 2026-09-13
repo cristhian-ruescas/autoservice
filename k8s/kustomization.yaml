@@ -11,3 +11,4 @@ resources:
   - 30-deployment-app.yaml
   - 31-service-app.yaml
   - 32-hpa-app.yaml
+  - 33-ingress-app.yaml

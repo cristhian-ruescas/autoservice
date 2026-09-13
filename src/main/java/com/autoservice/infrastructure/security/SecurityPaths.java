@@ -6,6 +6,9 @@ public final class SecurityPaths {
 
     public static final String[] PUBLIC_ENDPOINTS = {
             "/auth/**",
+            "/health",
+            "/live",
+            "/ready",
             "/actuator/health",
             "/actuator/health/**",
             "/v3/api-docs/**",
