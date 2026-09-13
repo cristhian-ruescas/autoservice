@@ -36,6 +36,9 @@ build/
 local.variable.env
 .env
 
+# Cursor agent context (local only)
+.cursor/
+
 # Kubernetes Secrets (SENSITIVE - never commit!)
 k8s/11-secret-app.yaml
 k8s/21-secret-postgres.yaml

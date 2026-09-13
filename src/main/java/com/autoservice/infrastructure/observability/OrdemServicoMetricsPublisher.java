@@ -17,15 +17,15 @@ public class OrdemServicoMetricsPublisher {
     static final String METRIC_VOLUME_DIARIO = "autoservice.ordem_servico.volume_diario";
 
     private final MeterRegistry meterRegistry;
-    private final OrdemServicoDailyVolumeQuery dailyVolumeQuery;
+    private final OrdemServicoVolumeDiarioQuery volumeDiarioQuery;
     private final AtomicLong volumeDiario = new AtomicLong();
 
     public OrdemServicoMetricsPublisher(
             final MeterRegistry meterRegistry,
-            final OrdemServicoDailyVolumeQuery dailyVolumeQuery
+            final OrdemServicoVolumeDiarioQuery volumeDiarioQuery
     ) {
         this.meterRegistry = Objects.requireNonNull(meterRegistry);
-        this.dailyVolumeQuery = Objects.requireNonNull(dailyVolumeQuery);
+        this.volumeDiarioQuery = Objects.requireNonNull(volumeDiarioQuery);
     }
 
     @PostConstruct
@@ -38,6 +38,6 @@ public class OrdemServicoMetricsPublisher {
 
     @Scheduled(fixedRateString = "${autoservice.metrics.publish-interval-ms:60000}")
     void publicarVolumeDiario() {
-        volumeDiario.set(dailyVolumeQuery.contarAbertasHoje());
+        volumeDiario.set(volumeDiarioQuery.contarAbertasHoje());
     }
 }

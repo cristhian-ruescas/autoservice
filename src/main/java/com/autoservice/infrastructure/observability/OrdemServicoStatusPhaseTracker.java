@@ -44,6 +44,11 @@ public class OrdemServicoStatusPhaseTracker {
         inicioPorFase.put(chave(ordemServicoId, fase), Instant.now());
     }
 
+    public static String nomeFaseParaMetrica(final OrdemServicoStatus status) {
+        final var fase = FASES.get(status);
+        return fase != null ? fase : status.name().toLowerCase();
+    }
+
     private static String chave(final String ordemServicoId, final String fase) {
         return ordemServicoId + ":" + fase;
     }

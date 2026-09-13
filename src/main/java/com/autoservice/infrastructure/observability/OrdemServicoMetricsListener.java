@@ -33,7 +33,7 @@ public class OrdemServicoMetricsListener {
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
-    public void onStatusAlterado(final OrdemServicoStatusAlteradoEvent event) {
+    public void onOrdemServicoStatusAlterado(final OrdemServicoStatusAlteradoEvent event) {
         final var ordemServicoId = event.getOrdemServicoId().getValue();
 
         if (event.getStatusAnterior() != null) {
@@ -41,7 +41,7 @@ public class OrdemServicoMetricsListener {
                     .ifPresent(duration -> meterRegistry.timer(
                             METRIC_TEMPO_FASE,
                             "fase",
-                            faseDe(event.getStatusAnterior())
+                            OrdemServicoStatusPhaseTracker.nomeFaseParaMetrica(event.getStatusAnterior())
                     ).record(duration));
         }
 
@@ -52,14 +52,5 @@ public class OrdemServicoMetricsListener {
                 "status",
                 event.getStatusNovo().name()
         ).increment();
-    }
-
-    private static String faseDe(final com.autoservice.domain.ordemservico.enums.OrdemServicoStatus status) {
-        return switch (status) {
-            case EM_DIAGNOSTICO -> "diagnostico";
-            case EM_EXECUCAO -> "execucao";
-            case FINALIZADA -> "finalizacao";
-            default -> status.name().toLowerCase();
-        };
     }
 }

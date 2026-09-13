@@ -7,11 +7,11 @@ import java.math.BigDecimal;
 import java.util.Objects;
 
 @Repository
-public class OrdemServicoDailyVolumeQuery {
+public class OrdemServicoVolumeDiarioQuery {
 
     private final EntityManager entityManager;
 
-    public OrdemServicoDailyVolumeQuery(final EntityManager entityManager) {
+    public OrdemServicoVolumeDiarioQuery(final EntityManager entityManager) {
         this.entityManager = Objects.requireNonNull(entityManager);
     }
 
