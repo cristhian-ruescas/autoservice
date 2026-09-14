@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base/app
+
+patches:
+  - path: patch-configmap-datadog.yaml
+    target:
+      kind: ConfigMap
+      name: autoservice-app-config
+  - path: patch-deployment-datadog-tags.yaml
+    target:
+      kind: Deployment
+      name: autoservice-app

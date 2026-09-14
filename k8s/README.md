@@ -2,6 +2,16 @@
 
 This directory contains the Kubernetes manifests for deploying the Autoservice application.
 
+## Kustomize structure (`base/` + `overlays/`)
+
+- `base/app/` — namespace, configmap, deployment, service e hpa da aplicação (o que o CI aplica em homolog/prod)
+- `base/postgres/` — manifests do PostgreSQL para uso local/manual (não aplicado pelo CI)
+- `base/networking/` — Ingress (uso local/manual)
+- `base/` (raiz) — agrega os três acima, para subir o stack completo localmente: `kubectl apply -k k8s/base`
+- `overlays/homolog/` e `overlays/prod/` — usam só `base/app` e sobrescrevem `DD_ENV` e a label `tags.datadoghq.com/env` para o ambiente correspondente. É isso que o `ci-cd.yml` aplica via `kubectl apply -k k8s/overlays/prod`.
+
+O restante deste documento (`deployment.yaml`, `service.yaml`, `hpa.yaml`, `postgres-secret.yaml` na raiz de `k8s/`) descreve os manifests legados usados manualmente — mantidos como estão, sem relação com a estrutura kustomize acima.
+
 ## Files Overview
 
 - **deployment.yaml** - Main application deployment with resource requests/limits and health probes

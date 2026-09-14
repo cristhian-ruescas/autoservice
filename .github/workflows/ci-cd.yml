@@ -60,8 +60,10 @@ jobs:
       - name: Validate Kubernetes manifests (kustomize render)
         run: |
           set -euo pipefail
-          kubectl kustomize k8s > /tmp/k8s-rendered.yaml
-          test -s /tmp/k8s-rendered.yaml
+          for env in homolog prod; do
+            kubectl kustomize "k8s/overlays/${env}" > "/tmp/k8s-rendered-${env}.yaml"
+            test -s "/tmp/k8s-rendered-${env}.yaml"
+          done
 
       - name: Build & run tests
         env:
@@ -225,16 +227,8 @@ jobs:
       - name: Apply namespace and app manifests
         run: |
           $env:KUBECONFIG = Join-Path $HOME ".kube\config"
-          kubectl apply -f k8s/00-namespace.yaml
-          if ($LASTEXITCODE -ne 0) { throw "namespace apply failed" }
-          kubectl apply -f k8s/10-configmap-app.yaml
-          if ($LASTEXITCODE -ne 0) { throw "configmap apply failed" }
-          kubectl apply -f k8s/30-deployment-app.yaml
-          if ($LASTEXITCODE -ne 0) { throw "deployment apply failed" }
-          kubectl apply -f k8s/31-service-app.yaml
-          if ($LASTEXITCODE -ne 0) { throw "service apply failed" }
-          kubectl apply -f k8s/32-hpa-app.yaml
-          if ($LASTEXITCODE -ne 0) { throw "hpa apply failed" }
+          kubectl apply -k k8s/overlays/prod
+          if ($LASTEXITCODE -ne 0) { throw "kustomize apply (overlays/prod) failed" }
 
       - name: Update image tag
         run: |

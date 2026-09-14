@@ -12,7 +12,7 @@ spec:
     metadata:
       labels:
         app: autoservice-app
-        tags.datadoghq.com/env: homolog
+        tags.datadoghq.com/env: local
         tags.datadoghq.com/service: autoservice
       annotations:
         ad.datadoghq.com/autoservice-app.logs: '[{"source":"java","service":"autoservice"}]'

@@ -12,8 +12,8 @@ data:
   MAIL_SMTP_AUTH: "true"
   MAIL_SMTP_STARTTLS: "true"
   MAIL_FROM: orcamentos@autoservice.local
-  # Datadog — altere DD_ENV para "prod" no deploy de produção
-  DD_ENV: homolog
+  # Datadog — DD_ENV é sobrescrito por overlay (k8s/overlays/homolog|prod); este é só o default para uso local/base
+  DD_ENV: local
   DD_SERVICE: autoservice
   DD_TRACE_ENABLED: "true"
   DD_LOGS_INJECTION: "true"
