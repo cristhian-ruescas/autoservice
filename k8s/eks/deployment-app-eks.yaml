@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: autoservice-app
+  namespace: autoservice
+  labels:
+    app: autoservice-app
+    tags.datadoghq.com/env: homolog
+    tags.datadoghq.com/service: autoservice
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: autoservice-app
+  template:
+    metadata:
+      labels:
+        app: autoservice-app
+        tags.datadoghq.com/env: homolog
+        tags.datadoghq.com/service: autoservice
+      annotations:
+        ad.datadoghq.com/autoservice-app.logs: '[{"source":"java","service":"autoservice"}]'
+    spec:
+      containers:
+        - name: autoservice-app
+          image: ACCOUNT.dkr.ecr.REGION.amazonaws.com/autoservice:TAG
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8088
+          envFrom:
+            - configMapRef:
+                name: autoservice-app-config
+            - secretRef:
+                name: autoservice-app-secret
+          env:
+            - name: AUTOSERVICE_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: autoservice-app-secret
+                  key: AUTOSERVICE_JWT_SECRET
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: autoservice-app-secret
+                  key: SPRING_DATASOURCE_PASSWORD
+            - name: DD_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: autoservice-app-secret
+                  key: DD_API_KEY
+                  optional: true
+            - name: DD_AGENT_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            failureThreshold: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            initialDelaySeconds: 40
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi

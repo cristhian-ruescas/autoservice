@@ -19,6 +19,22 @@ class JwtUtilTest {
         assertNotNull(jwtUtil.extractExpiration(token));
         assertTrue(jwtUtil.validateToken(token, "admin@autoservice.local"));
         assertFalse(jwtUtil.validateToken(token, "outro@autoservice.local"));
+        assertFalse(jwtUtil.isClientToken(token));
+    }
+
+    @Test
+    @DisplayName("Reconhece token de cliente com claim CPF")
+    void reconheceTokenClienteComCpf() {
+        final var jwtUtil = new JwtUtil("segredo-local-com-tamanho-suficiente-para-testes");
+        final var token = com.auth0.jwt.JWT.create()
+                .withSubject("52998224725")
+                .withClaim("cpf", "52998224725")
+                .withExpiresAt(new java.util.Date(System.currentTimeMillis() + 3_600_000))
+                .sign(com.auth0.jwt.algorithms.Algorithm.HMAC256("segredo-local-com-tamanho-suficiente-para-testes"));
+
+        assertTrue(jwtUtil.isClientToken(token));
+        assertTrue(jwtUtil.validateSignature(token));
+        assertEquals("52998224725", jwtUtil.extractCpf(token));
     }
 
     @Test

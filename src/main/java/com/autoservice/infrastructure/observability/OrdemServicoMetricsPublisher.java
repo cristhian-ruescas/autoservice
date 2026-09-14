@@ -33,11 +33,20 @@ public class OrdemServicoMetricsPublisher {
         Gauge.builder(METRIC_VOLUME_DIARIO, volumeDiario, AtomicLong::get)
                 .description("Quantidade de ordens de servico abertas no dia corrente")
                 .register(meterRegistry);
-        publicarVolumeDiario();
+        try {
+            publicarVolumeDiario();
+        } catch (Exception ex) {
+            // Schema/tabelas podem ainda nao existir no primeiro boot (ddl-auto update).
+            volumeDiario.set(0);
+        }
     }
 
     @Scheduled(fixedRateString = "${autoservice.metrics.publish-interval-ms:60000}")
     void publicarVolumeDiario() {
-        volumeDiario.set(volumeDiarioQuery.contarAbertasHoje());
+        try {
+            volumeDiario.set(volumeDiarioQuery.contarAbertasHoje());
+        } catch (Exception ex) {
+            volumeDiario.set(0);
+        }
     }
 }

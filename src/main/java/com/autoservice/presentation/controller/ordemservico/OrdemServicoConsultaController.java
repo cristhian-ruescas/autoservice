@@ -12,6 +12,7 @@ import com.autoservice.application.ordemservico.list.ListOrdemServicoQuery;
 import com.autoservice.application.ordemservico.update.AtualizarOrdemServicoCommand;
 import com.autoservice.application.ordemservico.update.AtualizarOrdemServicoOutput;
 import com.autoservice.application.ordemservico.update.AtualizarOrdemServicoUseCase;
+import com.autoservice.infrastructure.security.SecurityAuth;
 import com.autoservice.presentation.dto.ordemservico.AtualizarOrdemServicoRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -63,8 +64,14 @@ public class OrdemServicoConsultaController {
     }
 
     @GetMapping("/{id}/andamento")
+    @Operation(
+            summary = "Acompanhar andamento da OS",
+            description = "Cliente autentica via CPF (JWT) e só acessa a própria OS. Admin acessa qualquer OS."
+    )
     public ResponseEntity<AcompanharOrdemServicoOutput> acompanhar(@PathVariable final UUID id) {
-        return ResponseEntity.ok(this.acompanharOrdemServicoQuery.acompanhar(id));
+        return SecurityAuth.currentClientCpf()
+                .map(cpf -> ResponseEntity.ok(this.acompanharOrdemServicoQuery.acompanharParaCliente(id, cpf)))
+                .orElseGet(() -> ResponseEntity.ok(this.acompanharOrdemServicoQuery.acompanhar(id)));
     }
 
     @PutMapping("/{id}")
