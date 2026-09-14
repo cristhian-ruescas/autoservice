@@ -12,6 +12,10 @@ spec:
     metadata:
       labels:
         app: autoservice-app
+        tags.datadoghq.com/env: homolog
+        tags.datadoghq.com/service: autoservice
+      annotations:
+        ad.datadoghq.com/autoservice-app.logs: '[{"source":"java","service":"autoservice"}]'
     spec:
       imagePullSecrets:
         - name: ghcr-pull-secret
@@ -28,6 +32,10 @@ spec:
             - secretRef:
                 name: autoservice-app-secret
           env:
+            - name: DD_AGENT_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
             - name: SPRING_DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:

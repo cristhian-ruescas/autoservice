@@ -12,4 +12,10 @@ data:
   MAIL_SMTP_AUTH: "true"
   MAIL_SMTP_STARTTLS: "true"
   MAIL_FROM: orcamentos@autoservice.local
+  # Datadog — altere DD_ENV para "prod" no deploy de produção
+  DD_ENV: homolog
+  DD_SERVICE: autoservice
+  DD_TRACE_ENABLED: "true"
+  DD_LOGS_INJECTION: "true"
+  DD_METRICS_EXPORT: "true"
 

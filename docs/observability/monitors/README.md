@@ -74,3 +74,5 @@ A app incrementa `autoservice.ordem_servico.erro{tipo=domain|unexpected}` quando
 
 Os monitors usam `service:autoservice`. Em homolog/prod, adicione `env:homolog` ou `env:prod` nas queries após deploy no EKS.
 
+Guia completo de deploy: [datadog-eks.md](../datadog-eks.md).
+
