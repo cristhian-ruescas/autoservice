@@ -39,7 +39,7 @@ O stack sobe **dois componentes** de observabilidade:
 
 > **Importante:** o `dd-java-agent` **não envia direto** para o Datadog. Ele manda para o Agent (`DD_AGENT_HOST=datadog-agent`). Sem o Agent, os traces falham com `Failed to connect to localhost:8126`.
 
-O agente Java só é ativado quando `DD_API_KEY` está definida no `local.variable.env`.
+O agente Java é ativado quando `DD_API_KEY` está definida no `local.variable.env` **ou** quando `DD_TRACE_ENABLED=true` (padrão no EKS; ver [datadog-eks.md](datadog-eks.md)).
 
 ## 3. Subir com Maven (sem Docker)
 

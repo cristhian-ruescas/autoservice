@@ -14,4 +14,4 @@ RUN apk add --no-cache curl \
 COPY --from=build /build/target/autoservice-*.jar /app/app.jar
 
 EXPOSE 8088
-ENTRYPOINT ["sh", "-c", "if [ -n \"${DD_API_KEY:-}\" ]; then exec java -javaagent:/app/dd-java-agent.jar ${JAVA_OPTS:-} -jar /app/app.jar; else exec java ${JAVA_OPTS:-} -jar /app/app.jar; fi"]
+ENTRYPOINT ["sh", "-c", "if [ \"${DD_TRACE_ENABLED:-false}\" = \"true\" ] || [ -n \"${DD_API_KEY:-}\" ]; then exec java -javaagent:/app/dd-java-agent.jar ${JAVA_OPTS:-} -jar /app/app.jar; else exec java ${JAVA_OPTS:-} -jar /app/app.jar; fi"]
