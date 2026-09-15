@@ -57,7 +57,7 @@ Documentação arquitetural (diagramas oficiais): [Miro — Autoservice](https:/
 
 ![Arquitetura AWS Autoservice](docs/observability/diagrams/autoservice-aws-architecture-corrigido.png)
 
-- Fonte editável: [`docs/observability/diagrams/autoservice-aws-architecture.drawio`](docs/observability/diagrams/autoservice-aws-architecture.drawio)
+- Diagrama oficial (PNG): [`docs/observability/diagrams/autoservice-aws-architecture-corrigido.png`](docs/observability/diagrams/autoservice-aws-architecture-corrigido.png)
 - Board completo (componentes, sequências, ER, K8s): [Miro](https://miro.com/app/board/uXjVHprBYf0=/)
 
 ```text
