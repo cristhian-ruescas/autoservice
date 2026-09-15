@@ -15,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.io.IOException;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.verify;
@@ -49,6 +50,7 @@ class JwtAuthenticationFilterTest {
     void doFilterInternal_tokenValido_autenticaUsuario() throws ServletException, IOException {
         when(request.getServletPath()).thenReturn("/api/test");
         when(request.getHeader("Authorization")).thenReturn("Bearer tokenvalido");
+        when(jwtUtil.isClientToken("tokenvalido")).thenReturn(false);
         when(jwtUtil.extractUsername("tokenvalido")).thenReturn("admin@email.com");
         org.springframework.security.core.userdetails.User realUser =
                 new org.springframework.security.core.userdetails.User(
@@ -68,8 +70,24 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
+    void doFilterInternal_tokenCliente_autenticaComRoleCliente() throws ServletException, IOException {
+        when(request.getServletPath()).thenReturn("/ordens-servico/1/andamento");
+        when(request.getHeader("Authorization")).thenReturn("Bearer tokencliente");
+        when(jwtUtil.isClientToken("tokencliente")).thenReturn(true);
+        when(jwtUtil.validateSignature("tokencliente")).thenReturn(true);
+        when(jwtUtil.extractCpf("tokencliente")).thenReturn("52998224725");
+
+        jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
+
+        verify(filterChain).doFilter(request, response);
+        assertNotNull(SecurityContextHolder.getContext().getAuthentication());
+        assertEquals("52998224725", SecurityContextHolder.getContext().getAuthentication().getName());
+    }
+
+    @Test
     void doFilterInternal_tokenInvalido_naoAutenticaUsuario() throws ServletException, IOException {
         when(request.getHeader("Authorization")).thenReturn("Bearer tokeninvalido");
+        when(jwtUtil.isClientToken("tokeninvalido")).thenReturn(false);
         when(jwtUtil.extractUsername("tokeninvalido")).thenReturn("admin@email.com");
         when(userDetailsService.loadUserByUsername("admin@email.com")).thenReturn(userDetails);
         when(jwtUtil.validateToken("tokeninvalido", "admin@email.com")).thenReturn(false);

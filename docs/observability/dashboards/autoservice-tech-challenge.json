@@ -1,0 +1,306 @@
+{
+  "title": "Autoservice — Tech Challenge Fase 3",
+  "description": "Dashboard compartilhado da oficina: latência, volume, erros e saúde da API.",
+  "layout_type": "ordered",
+  "reflow_type": "fixed",
+  "template_variables": [
+    {
+      "name": "env",
+      "prefix": "env",
+      "default": "local"
+    },
+    {
+      "name": "service",
+      "prefix": "service",
+      "default": "autoservice"
+    }
+  ],
+  "widgets": [
+    {
+      "definition": {
+        "type": "note",
+        "content": "# Autoservice — Observabilidade\n\nDashboard versionado em `docs/observability/dashboards/`. Filtros: **env** e **service**.\n\nMétricas custom: `autoservice.ordem_servico.*` via DogStatsD.",
+        "background_color": "vivid_blue",
+        "font_size": "14",
+        "text_align": "left",
+        "vertical_align": "top"
+      },
+      "layout": { "x": 0, "y": 0, "width": 12, "height": 2 }
+    },
+    {
+      "definition": {
+        "title": "Visão geral do serviço (APM)",
+        "type": "trace_service",
+        "service": "$service",
+        "env": "$env",
+        "span_name": "servlet.request",
+        "show_hits": true,
+        "show_errors": true,
+        "show_latency": true,
+        "show_breakdown": true,
+        "show_distribution": false,
+        "show_resource_list": true,
+        "size_format": "medium",
+        "display_format": "three_column"
+      },
+      "layout": { "x": 0, "y": 2, "width": 6, "height": 4 }
+    },
+    {
+      "definition": {
+        "title": "Total de requisições (1h)",
+        "type": "query_value",
+        "requests": [
+          {
+            "formulas": [{ "formula": "query1" }],
+            "queries": [
+              {
+                "name": "query1",
+                "data_source": "metrics",
+                "query": "sum:trace.servlet.request.hits{service:$service,env:$env}.as_count()",
+                "aggregator": "sum"
+              }
+            ],
+            "response_format": "scalar"
+          }
+        ],
+        "autoscale": true,
+        "precision": 0
+      },
+      "layout": { "x": 6, "y": 2, "width": 3, "height": 2 }
+    },
+    {
+      "definition": {
+        "title": "Taxa de erro (%)",
+        "type": "query_value",
+        "requests": [
+          {
+            "formulas": [{ "formula": "100 * query1 / query2" }],
+            "queries": [
+              {
+                "name": "query1",
+                "data_source": "metrics",
+                "query": "sum:trace.servlet.request.errors{service:$service,env:$env}.as_count()",
+                "aggregator": "sum"
+              },
+              {
+                "name": "query2",
+                "data_source": "metrics",
+                "query": "sum:trace.servlet.request.hits{service:$service,env:$env}.as_count()",
+                "aggregator": "sum"
+              }
+            ],
+            "response_format": "scalar",
+            "conditional_formats": [
+              { "comparator": ">", "value": 5, "palette": "white_on_red" },
+              { "comparator": ">", "value": 1, "palette": "white_on_yellow" },
+              { "comparator": "<=", "value": 1, "palette": "white_on_green" }
+            ]
+          }
+        ],
+        "autoscale": false,
+        "precision": 2,
+        "custom_unit": "%"
+      },
+      "layout": { "x": 9, "y": 2, "width": 3, "height": 2 }
+    },
+    {
+      "definition": {
+        "title": "Latência P95 por endpoint",
+        "type": "timeseries",
+        "requests": [
+          {
+            "formulas": [{ "formula": "query1" }],
+            "queries": [
+              {
+                "name": "query1",
+                "data_source": "metrics",
+                "query": "p95:trace.servlet.request{service:$service,env:$env} by {resource_name}"
+              }
+            ],
+            "response_format": "timeseries",
+            "display_type": "line"
+          }
+        ],
+        "yaxis": { "include_zero": true }
+      },
+      "layout": { "x": 0, "y": 6, "width": 6, "height": 3 }
+    },
+    {
+      "definition": {
+        "title": "Volume de requisições por endpoint",
+        "type": "timeseries",
+        "requests": [
+          {
+            "formulas": [{ "formula": "query1" }],
+            "queries": [
+              {
+                "name": "query1",
+                "data_source": "metrics",
+                "query": "sum:trace.servlet.request.hits{service:$service,env:$env} by {resource_name}.as_rate()"
+              }
+            ],
+            "response_format": "timeseries",
+            "display_type": "bars"
+          }
+        ],
+        "yaxis": { "include_zero": true }
+      },
+      "layout": { "x": 6, "y": 6, "width": 6, "height": 3 }
+    },
+    {
+      "definition": {
+        "title": "Erros 5xx por endpoint",
+        "type": "timeseries",
+        "requests": [
+          {
+            "formulas": [{ "formula": "query1" }],
+            "queries": [
+              {
+                "name": "query1",
+                "data_source": "metrics",
+                "query": "sum:trace.servlet.request.errors{service:$service,env:$env} by {resource_name}.as_count()"
+              }
+            ],
+            "response_format": "timeseries",
+            "display_type": "bars"
+          }
+        ],
+        "yaxis": { "include_zero": true }
+      },
+      "layout": { "x": 0, "y": 9, "width": 6, "height": 3 }
+    },
+    {
+      "definition": {
+        "title": "Top endpoints — latência P95",
+        "type": "toplist",
+        "requests": [
+          {
+            "formulas": [{ "formula": "query1", "limit": { "count": 10, "order": "desc" } }],
+            "queries": [
+              {
+                "name": "query1",
+                "data_source": "metrics",
+                "query": "p95:trace.servlet.request{service:$service,env:$env} by {resource_name}",
+                "aggregator": "avg"
+              }
+            ],
+            "response_format": "scalar"
+          }
+        ]
+      },
+      "layout": { "x": 6, "y": 9, "width": 6, "height": 3 }
+    },
+    {
+      "definition": {
+        "title": "Latência PostgreSQL (dependência)",
+        "type": "timeseries",
+        "requests": [
+          {
+            "formulas": [{ "formula": "query1" }],
+            "queries": [
+              {
+                "name": "query1",
+                "data_source": "metrics",
+                "query": "p95:trace.postgresql.query{service:$service,env:$env} by {resource_name}"
+              }
+            ],
+            "response_format": "timeseries",
+            "display_type": "line"
+          }
+        ],
+        "yaxis": { "include_zero": true }
+      },
+      "layout": { "x": 0, "y": 12, "width": 6, "height": 3 }
+    },
+    {
+      "definition": {
+        "title": "Logs da aplicação (JSON)",
+        "type": "log_stream",
+        "query": "service:$service env:$env",
+        "columns": ["host", "service", "message"],
+        "show_date_column": true,
+        "show_message_column": true
+      },
+      "layout": { "x": 6, "y": 12, "width": 6, "height": 3 }
+    },
+    {
+      "definition": {
+        "title": "Volume diário de OS (hoje)",
+        "type": "query_value",
+        "requests": [
+          {
+            "formulas": [{ "formula": "query1" }],
+            "queries": [
+              {
+                "name": "query1",
+                "data_source": "metrics",
+                "query": "avg:autoservice.ordem_servico.volume_diario{service:$service,env:$env}",
+                "aggregator": "last"
+              }
+            ],
+            "response_format": "scalar"
+          }
+        ],
+        "autoscale": true,
+        "precision": 0
+      },
+      "layout": { "x": 0, "y": 15, "width": 4, "height": 2 }
+    },
+    {
+      "definition": {
+        "title": "OS abertas (contador)",
+        "type": "query_value",
+        "requests": [
+          {
+            "formulas": [{ "formula": "query1" }],
+            "queries": [
+              {
+                "name": "query1",
+                "data_source": "metrics",
+                "query": "sum:autoservice.ordem_servico.abertura{service:$service,env:$env}.as_count()",
+                "aggregator": "sum"
+              }
+            ],
+            "response_format": "scalar"
+          }
+        ],
+        "autoscale": true,
+        "precision": 0
+      },
+      "layout": { "x": 4, "y": 15, "width": 4, "height": 2 }
+    },
+    {
+      "definition": {
+        "title": "Tempo médio por fase (segundos)",
+        "type": "timeseries",
+        "requests": [
+          {
+            "formulas": [{ "formula": "query1" }],
+            "queries": [
+              {
+                "name": "query1",
+                "data_source": "metrics",
+                "query": "avg:autoservice.ordem_servico.tempo_fase.avg{service:$service,env:$env} by {fase}"
+              }
+            ],
+            "response_format": "timeseries",
+            "display_type": "line"
+          }
+        ],
+        "yaxis": { "include_zero": true }
+      },
+      "layout": { "x": 8, "y": 15, "width": 4, "height": 2 }
+    },
+    {
+      "definition": {
+        "type": "note",
+        "content": "## Pendente\n\n- CPU/memória K8s (EKS)\n- Health/uptime (Synthetics)\n- Alertas 5xx e falha de OS",
+        "background_color": "yellow",
+        "font_size": "14",
+        "text_align": "left",
+        "vertical_align": "top"
+      },
+      "layout": { "x": 0, "y": 17, "width": 12, "height": 1 }
+    }
+  ]
+}

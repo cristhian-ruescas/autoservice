@@ -13,6 +13,36 @@ Documentação interativa: **`/swagger-ui.html`** (OpenAPI em **`/v3/api-docs`**
 - Dar suporte à disciplina de **DDD** (domínio, aplicação, infraestrutura, apresentação) e qualidade (testes, cobertura
   nos pacotes de domínio/aplicação).
 
+## Requisitos de repositório atendidos
+
+Este repositório reúne os principais elementos do projeto de aplicação principal em Kubernetes:
+
+- Código-fonte da API principal em Spring Boot.
+- Dockerfile para build da imagem da aplicação.
+- Manifestos Kubernetes em `/k8s` com Deployment, Service, HPA, ConfigMap, Secret e Ingress.
+- Observabilidade com logs estruturados em JSON, métricas e endpoints de saúde em `/health`, `/live` e `/ready`.
+- Pipeline CI/CD em `.github/workflows/ci-cd.yml` para build/test, push da imagem e deploy no cluster.
+- Documentação de API em Swagger/OpenAPI + Postman e comandos para execução local.
+
+## Desafio corporativo: requisitos atendidos
+
+A arquitetura deste repositório foi alinhada ao desafio de escala corporativa da oficina:
+
+- Autenticação e API Gateway: o fluxo de autenticação por CPF é executado por uma Lambda Serverless externa e o token JWT é consumido pela aplicação principal via API Gateway/Ingress.
+- Segurança: rotas sensíveis são protegidas com JWT; andamento da OS exige JWT com CPF do cliente; links de aprovação por e-mail continuam públicos; endpoints de oficina exigem role ADMIN.
+- Observabilidade: logs estruturados em JSON, métricas do Spring Actuator, integração com Datadog e endpoints `/health`, `/live`, `/ready` para monitoramento e alertas.
+- Escalabilidade: deployment com HPA, recursos de CPU/memória e ingress para múltiplas unidades.
+- CI/CD: pipeline com validação, testes, build de imagem, push para registry e deploy automatizado em ambiente homolog/prod.
+- Proteção de branch: GitHub Actions e política de PR obrigatória para merge nas branches principais.
+- Deploy EKS: overlay [`k8s/eks`](k8s/eks) (ConfigMap/Secret de exemplo, Ingress, Deployment).
+
+### Endpoints de saúde
+
+- `GET /health` — verificações gerais da aplicação
+- `GET /live` — liveness probe (aplicação viva)
+- `GET /ready` — readiness probe (aplicação pronta para receber tráfego)
+- `GET /actuator/health` — endpoint padrão do Spring Actuator
+
 ## Por que PostgreSQL?
 
 Foi adotado **PostgreSQL** por ser **open-source**, amplamente usado em produção, com forte suporte a **integridade

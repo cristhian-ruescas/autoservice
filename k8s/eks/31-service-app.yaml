@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: autoservice-app
+  namespace: autoservice
+spec:
+  selector:
+    app: autoservice-app
+  ports:
+    - name: http
+      port: 8088
+      targetPort: 8088
+  type: ClusterIP

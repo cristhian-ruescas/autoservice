@@ -36,10 +36,19 @@ build/
 local.variable.env
 .env
 
+# Cursor agent context (local only)
+.cursor/
+
 # Kubernetes Secrets (SENSITIVE - never commit!)
 k8s/11-secret-app.yaml
 k8s/21-secret-postgres.yaml
+k8s/eks/secret-app.yaml
+k8s/postgres-secret.yaml
+**/secret-app.yaml
 .k8s_secrets
+
+# Notas/operacionais locais (não versionar)
+spec/
 
 # Terraform (SENSITIVE - state may contain plaintext secrets; cache is machine-specific)
 **/.terraform/
