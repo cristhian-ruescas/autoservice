@@ -35,6 +35,8 @@ build/
 # Local environment overrides (never commit secrets)
 local.variable.env
 .env
+.env.*
+!.env.example
 
 # Cursor agent context (local only)
 .cursor/
@@ -45,7 +47,19 @@ k8s/21-secret-postgres.yaml
 k8s/eks/secret-app.yaml
 k8s/postgres-secret.yaml
 **/secret-app.yaml
+k8s/**/secret*.yaml
+!k8s/**/*.example.yaml
 .k8s_secrets
+
+# Keys / cloud / kube
+*.pem
+*.key
+*.p12
+*.pfx
+.aws/
+**/credentials
+**/kubeconfig*
+.kube/
 
 # Notas/operacionais locais (não versionar)
 spec/
@@ -55,3 +69,6 @@ spec/
 *.tfstate
 *.tfstate.backup
 *.tfvars
+*.tfvars.json
+!*.tfvars.example
+crash.log

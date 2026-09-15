@@ -34,7 +34,8 @@ autoservice:
   app:
     base-url: http://localhost:0
   jwt:
-    secret: "Xip4obfk6W9Mzo+cA+gUDuevNOfULy8Q3yYEr8ByYU8="
+    # Somente testes locais — nunca reutilizar em homolog/prod/Lambda
+    secret: "test-only-jwt-secret-min-32-chars-xx"
   metrics:
     publish-interval-ms: 3600000
 
