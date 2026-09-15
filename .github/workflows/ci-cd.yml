@@ -1,10 +1,14 @@
-name: CI/CD Pipeline
+# CI/CD — autoservice (app)
+# Padrão: develop → CI (test) | main → CI + GHCR + deploy (self-hosted / k3d)
+# Deploy EKS homolog: overlay k8s/eks (manual ou fluxo do Lab) — ver README
+
+name: CI/CD
 
 on:
   push:
     branches: [ "main", "master", "develop" ]
   pull_request:
-    branches: [ "main", "master" ]
+    branches: [ "main", "master", "develop" ]
   workflow_dispatch:
 
 concurrency:
