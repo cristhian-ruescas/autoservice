@@ -50,6 +50,8 @@ resource "kubernetes_manifest" "postgres_initdb" {
 }
 
 # Deploy application manifests
+# Gere o Secret local a partir do exemplo (não versionado):
+#   cp k8s/postgres-secret.example.yaml k8s/postgres-secret.yaml
 resource "kubernetes_manifest" "postgres_secret" {
   manifest = yamldecode(file("${path.module}/../k8s/postgres-secret.yaml"))
   depends_on = [kubernetes_namespace.app]
