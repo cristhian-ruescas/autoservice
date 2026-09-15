@@ -38,11 +38,44 @@ public class JwtUtil {
             JWTVerifier verifier = JWT.require(algorithm).build();
             DecodedJWT jwt = verifier.verify(token);
             String subject = jwt.getSubject();
-            return subject.equals(username) && !isTokenExpired(token);
+            return subject != null && subject.equals(username) && !isTokenExpired(jwt);
         } catch (Exception e) {
             logger.warn("Token validation failed: {}", e.getMessage());
             return false;
         }
+    }
+
+    public boolean validateSignature(String token) {
+        try {
+            decodeToken(token);
+            return true;
+        } catch (Exception e) {
+            logger.warn("Token signature validation failed: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean isClientToken(String token) {
+        try {
+            final DecodedJWT jwt = decodeToken(token);
+            final String cpfClaim = jwt.getClaim("cpf").asString();
+            if (cpfClaim != null && SecurityAuth.digitsOnly(cpfClaim).length() == 11) {
+                return true;
+            }
+            final String subject = jwt.getSubject();
+            return subject != null && SecurityAuth.digitsOnly(subject).length() == 11;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public String extractCpf(String token) {
+        final DecodedJWT jwt = decodeToken(token);
+        final String cpfClaim = jwt.getClaim("cpf").asString();
+        if (cpfClaim != null && !cpfClaim.isBlank()) {
+            return SecurityAuth.digitsOnly(cpfClaim);
+        }
+        return SecurityAuth.digitsOnly(jwt.getSubject());
     }
 
     public String extractUsername(String token) {
@@ -63,8 +96,8 @@ public class JwtUtil {
         return verifier.verify(token);
     }
 
-    private boolean isTokenExpired(String token) {
-        Date expiration = extractExpiration(token);
+    private boolean isTokenExpired(DecodedJWT jwt) {
+        Date expiration = jwt.getExpiresAt();
         return expiration != null && expiration.before(new Date());
     }
 }

@@ -13,7 +13,7 @@ Dashboard compartilhado na org Datadog para o Tech Challenge Fase 3.
 | Logs JSON | ✅ |
 | Volume diário de OS | ✅ `autoservice.ordem_servico.volume_diario` |
 | Tempo médio por fase | ✅ `autoservice.ordem_servico.tempo_fase` |
-| CPU/memória K8s | ⏳ pendente (EKS) |
+| CPU/memória K8s | ✅ após Agent Helm no EKS (`autoservice-infra-k8s/observability`) |
 
 ## Importar (recomendado — via UI)
 

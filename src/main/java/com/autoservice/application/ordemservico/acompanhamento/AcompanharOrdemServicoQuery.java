@@ -5,4 +5,6 @@ import java.util.UUID;
 public interface AcompanharOrdemServicoQuery {
 
     AcompanharOrdemServicoOutput acompanhar(UUID ordemServicoId);
+
+    AcompanharOrdemServicoOutput acompanharParaCliente(UUID ordemServicoId, String cpfCliente);
 }

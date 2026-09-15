@@ -29,11 +29,12 @@ Este repositório reúne os principais elementos do projeto de aplicação princ
 A arquitetura deste repositório foi alinhada ao desafio de escala corporativa da oficina:
 
 - Autenticação e API Gateway: o fluxo de autenticação por CPF é executado por uma Lambda Serverless externa e o token JWT é consumido pela aplicação principal via API Gateway/Ingress.
-- Segurança: rotas sensíveis são protegidas com JWT e endpoints públicos restritos a autenticação, Swagger e healthchecks.
+- Segurança: rotas sensíveis são protegidas com JWT; andamento da OS exige JWT com CPF do cliente; links de aprovação por e-mail continuam públicos; endpoints de oficina exigem role ADMIN.
 - Observabilidade: logs estruturados em JSON, métricas do Spring Actuator, integração com Datadog e endpoints `/health`, `/live`, `/ready` para monitoramento e alertas.
 - Escalabilidade: deployment com HPA, recursos de CPU/memória e ingress para múltiplas unidades.
 - CI/CD: pipeline com validação, testes, build de imagem, push para registry e deploy automatizado em ambiente homolog/prod.
 - Proteção de branch: GitHub Actions e política de PR obrigatória para merge nas branches principais.
+- Deploy EKS: overlay [`k8s/eks`](k8s/eks) (ConfigMap/Secret de exemplo, Ingress, Deployment).
 
 ### Endpoints de saúde
 

@@ -95,6 +95,45 @@ public class OrdemServicoQueryService implements ListOrdemServicoQuery, DetailOr
         return AcompanharOrdemServicoOutput.from(buscarResumo(OrdemServicoID.from(ordemServicoId)));
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public AcompanharOrdemServicoOutput acompanharParaCliente(final UUID ordemServicoId, final String cpfCliente) {
+        final var cpfNormalizado = normalizeCpf(cpfCliente);
+        if (cpfNormalizado.length() != 11) {
+            throw DomainException.with(new Error("Ordem de serviço não encontrada"));
+        }
+
+        final var resumo = buscarResumo(OrdemServicoID.from(ordemServicoId));
+        if (!cpfPertenceAoCliente(resumo.cliente(), cpfNormalizado)) {
+            throw DomainException.with(new Error("Ordem de serviço não encontrada"));
+        }
+
+        return AcompanharOrdemServicoOutput.from(resumo);
+    }
+
+    private static boolean cpfPertenceAoCliente(
+            final ListOrdemServicoOutput.ClienteOutput cliente,
+            final String cpfNormalizado
+    ) {
+        if (cliente == null) {
+            return false;
+        }
+        if (cpfNormalizado.equals(normalizeCpf(cliente.cpf()))) {
+            return true;
+        }
+        if (cliente.representanteLegal() != null) {
+            return cpfNormalizado.equals(normalizeCpf(cliente.representanteLegal().cpf()));
+        }
+        return false;
+    }
+
+    private static String normalizeCpf(final String cpf) {
+        if (cpf == null) {
+            return "";
+        }
+        return cpf.replaceAll("\\D", "");
+    }
+
     private ListOrdemServicoOutput buscarResumo(final OrdemServicoID id) {
         final var query = RESUMO_ORDEM_SERVICO_QUERY + " where os.id = :id";
 

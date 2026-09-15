@@ -45,18 +45,26 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers(SecurityPaths.PUBLIC_ENDPOINTS).permitAll()
-                        .requestMatchers(HttpMethod.GET, SecurityPaths.ANDAMENTO_ORDEM_SERVICO).permitAll()
+                        .requestMatchers(HttpMethod.GET, SecurityPaths.ANDAMENTO_ORDEM_SERVICO)
+                        .hasAnyRole(SecurityPaths.ROLE_ADMIN, SecurityPaths.ROLE_CLIENTE)
                         .requestMatchers(HttpMethod.GET, SecurityPaths.APROVACAO_APROVAR).permitAll()
                         .requestMatchers(HttpMethod.GET, SecurityPaths.APROVACAO_REPROVAR).permitAll()
                         .requestMatchers(SecurityPaths.ADMIN_ENDPOINTS).hasRole(SecurityPaths.ROLE_ADMIN)
                         .anyRequest().authenticated()
                 )
-                .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, authException) -> {
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.setContentType("application/json");
-                    response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-                    response.getWriter().write("{\"error\":\"Credenciais inválidas ou token ausente\"}");
-                }))
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setContentType("application/json");
+                            response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+                            response.getWriter().write("{\"error\":\"Credenciais inválidas ou token ausente\"}");
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.setContentType("application/json");
+                            response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+                            response.getWriter().write("{\"error\":\"Acesso negado\"}");
+                        }))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

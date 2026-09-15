@@ -146,6 +146,6 @@ curl.exe -H "X-Correlation-Id: teste-demo-001" http://localhost:8088/actuator/he
 
 Detalhes: [`dashboards/README.md`](./dashboards/README.md)
 
-## Próximo passo (EKS)
+## EKS
 
-Quando o cluster EKS estiver pronto, instale o Datadog Agent via Helm no repositório `autoservice-infra-k8s` e retome o wizard do Datadog (passos 3–5).
+Instale o Datadog Agent no cluster com os valores em `autoservice-infra-k8s/observability/` e o overlay da app em `k8s/eks/`.
